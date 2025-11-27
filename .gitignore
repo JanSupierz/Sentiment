@@ -1,0 +1,64 @@
+# Python cache
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Jupyter Notebook checkpoints
+.ipynb_checkpoints/
+
+# Virtual environment
+venv/
+env/
+.venv/
+.env/
+
+# Python package files
+*.egg-info/
+*.egg
+dist/
+build/
+
+# IDE/editor files
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Mac OS files
+.DS_Store
+
+# Logs and temporary files
+*.log
+*.tmp
+*.bak
+
+# Data files (optional, ignore large datasets)
+data/
+*.csv
+*.tsv
+*.h5
+*.pickle
+*.pkl
+
+# Output folders
+figures/
+plots/
+reports/
+*.pdf
+
+# Jupyter Notebook hidden files
+.ipynb_checkpoints/
+.nbproject/
+
+# Coverage reports
+.coverage
+htmlcov/
+
+# Pytest cache
+.pytest_cache/
+
+# MyPy type checker cache
+.mypy_cache/
+
+# Sphinx documentation build
+docs/_build/
