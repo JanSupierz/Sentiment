@@ -62,3 +62,24 @@ htmlcov/
 
 # Sphinx documentation build
 docs/_build/
+
+# latex intermediate files
+*.aux
+*.lof
+*.log
+*.lot
+*.fls
+*.out
+*.toc
+*.fdb_latexmk
+*.synctex.gz
+*.nav
+*.snm
+*.blg
+*.bbl
+*.xdv
+*.pdf
+*.dvi
+*.rks 
+
+
