@@ -194,11 +194,6 @@ def conceptualize_units(unit_list: List[str], unit_to_cluster_map: Dict[str, int
 
 def conceptualize_df(df, column: str, unit_to_cluster_map: Dict[str, int], new_col: str = "concept_ids"):
     def convert(units):
-        if isinstance(units, str):
-            units = units.split()
-        if not isinstance(units, list):
-            logger.error(f"Unexpected unit format: {units}")
-            return []
         return conceptualize_units(units, unit_to_cluster_map)
 
     df[new_col] = df[column].apply(convert)

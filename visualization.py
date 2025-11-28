@@ -18,13 +18,9 @@ class ModelVisualizer:
         plt.show()
 
     @staticmethod
-    def plot_certainty_analysis(probs, y_true, title="Certainty Analysis", lower=0.3, upper=0.7):
-        """
-        Combined plot: 
-        1) Heatmap of certainty vs correctness
-        2) Bar plot of percentage of certain/uncertain predictions
-        """
+    def plot_certainty_analysis(preds, probs, y_true, lower: float, title="Certainty Analysis"):
         import matplotlib.gridspec as gridspec
+        upper = 1 - lower
 
         # Categorize certainty
         categories = np.empty(len(probs), dtype=object)
@@ -33,14 +29,24 @@ class ModelVisualizer:
         categories[(probs >= lower) & (probs <= upper)] = "Uncertain"
 
         # Correctness
-        preds = (probs > 0.5).astype(int)
         correctness = np.where(preds == y_true, "Correct", "Incorrect")
 
         # Heatmap data
         table = pd.crosstab(categories, correctness, normalize="index")
+        # Optional: reorder rows for consistent heatmap
+        row_order = ["Certain Positive", "Certain Negative", "Uncertain"]
+        table = table.reindex(row_order)
 
         # Bar plot data
         counts = pd.Series(categories).value_counts(normalize=True) * 100  # percentage
+        counts = counts.reindex(row_order)  # enforce fixed order
+
+        # Define fixed colors
+        color_map = {
+            "Uncertain": "gray",
+            "Certain Negative": "red",
+            "Certain Positive": "green"
+        }
 
         # Create combined figure
         plt.figure(figsize=(12, 5))
@@ -59,10 +65,12 @@ class ModelVisualizer:
             x=counts.index,
             y=counts.values,
             hue=counts.index,
-            palette="Set2",
-            ax=ax1,
-            legend=False
+            palette=[color_map[c] for c in counts.index],
+            order=counts.index,
+            legend=False,
+            ax=ax1
         )
+
         ax1.set_ylim(0, 100)
         ax1.set_ylabel("Percentage (%)")
         ax1.set_title(f"{title} - Certainty Distribution")
@@ -71,4 +79,3 @@ class ModelVisualizer:
 
         plt.tight_layout()
         plt.show()
-

@@ -1,6 +1,9 @@
 import numpy as np
+import pandas as pd
+from IPython.display import display, Markdown
 from models import LSTMClassifier, LinearSVMClassifier, RbfSVMClassifier, LogisticRegressionClassifier
 from visualization import ModelVisualizer
+
 
 class EnsemblePredictor:
     @staticmethod
@@ -14,20 +17,26 @@ class EnsemblePredictor:
 
         for i in range(len(p_all)):
             neg_prob = 1 - p_neg[i]
+
             if p_pos[i] > threshold and neg_prob > threshold:
                 final_preds[i] = int(p_all[i] > 0.5)
                 final_probs[i] = p_all[i]
+
             elif p_pos[i] > threshold:
                 final_preds[i] = 1
-                final_probs[i] = p_pos[i] #High probability, meaning positive classification
+                final_probs[i] = p_pos[i]
+
             elif neg_prob > threshold:
                 final_preds[i] = 0
-                final_probs[i] = p_neg[i] #Low probablity, meaning negative classification
+                final_probs[i] = p_neg[i]
+
             else:
                 final_preds[i] = int(p_all[i] > 0.5)
                 final_probs[i] = p_all[i]
 
         return final_preds, final_probs
+
+
 
 def run_experiment(
     X_train_sets, y_train, 
@@ -37,16 +46,18 @@ def run_experiment(
     vocab_size=None,
     seq_lens=None,
     lower_uncertain=0.3,
-    upper_uncertain=0.7,
-    n_examples=10
+    n_examples=5
 ):
-    """
-    X_train_sets, X_test_sets: dict of 'all', 'pos', 'neg', 'important' datasets
-    y_train, y_test: labels
-    texts: optional, pandas Series of review texts corresponding to X_test_sets["all"]
-    """
+    upper_uncertain = 1 - lower_uncertain
+
     models = {}
+    results = {}
+
     for key in ["all", "pos", "neg", "important"]:
+
+        # ------------------------------------------
+        # Select model
+        # ------------------------------------------
         if model_type == "lstm":
             models[key] = LSTMClassifier(vocab_size=vocab_size, max_len=seq_lens[key], name=key)
         elif model_type == "linear-svm":
@@ -58,52 +69,111 @@ def run_experiment(
         else:
             raise ValueError("Unknown model type")
 
+        # ------------------------------------------
         # Train & evaluate
+        # ------------------------------------------
         models[key].train(X_train_sets[key], y_train)
-        models[key].evaluate(X_test_sets[key], y_test)
+        probs, preds = models[key].evaluate(X_test_sets[key], y_test, lower_uncertain)
 
-        # Predict & plot
-        probs = models[key].predict_proba(X_test_sets[key])
-        preds = models[key].predict_label(X_test_sets[key])
-        print(f"\n=== {key.upper()} MODEL ===")
-        print(f"Accuracy: {np.mean(preds == y_test):.4f}")
-        ModelVisualizer.plot_confusion_matrix(y_test, preds, f"{key.upper()} Confusion Matrix")
-        ModelVisualizer.plot_certainty_analysis(probs, y_test, f"{key.upper()} Certainty vs Correctness")
-
-        print(f"\n{key.upper()} MODEL - Unsure Predictions (probability near {lower_uncertain}-{upper_uncertain}):")
-        # Unsure predictions
+        # ------------------------------------------
+        # Unsure predictions DataFrame
+        # ------------------------------------------
         unsure_idx = np.where((probs >= lower_uncertain) & (probs <= upper_uncertain))[0]
-        for i in unsure_idx[:n_examples]:
-            print(f"Probability [{probs[i]:.2f}], Label [{y_test.iloc[i]}]: \"{texts.iloc[i]}\"")
+        unsure_df = pd.DataFrame({
+            "probability": probs[unsure_idx],
+            "true_label": y_test.iloc[unsure_idx].values,
+            "text": texts.iloc[unsure_idx].values
+        })
 
-        print(f"\n{key.upper()} MODEL - Misclassified Predictions:")
-        # Misclassified predictions
+        # ------------------------------------------
+        # Misclassified DataFrame
+        # ------------------------------------------
         mis_idx = np.where(preds != y_test)[0]
-        for i in mis_idx[:n_examples]:
-            print(f"Probability [{probs[i]:.2f}], Label [{y_test.iloc[i]}], Pred [{preds[i]}]: \"{texts.iloc[i]}\"")
+        mis_df = pd.DataFrame({
+            "probability": probs[mis_idx],
+            "true_label": y_test.iloc[mis_idx].values,
+            "predicted": preds[mis_idx],
+            "text": texts.iloc[mis_idx].values
+        })
 
-    # Ensemble
-    ens_preds, ens_probs = EnsemblePredictor.predict(models, X_test_sets)
-    acc = np.mean(ens_preds == y_test)
-    print(f"\nENSEMBLE ACCURACY: {acc:.4f}")
-    ModelVisualizer.plot_confusion_matrix(y_test, ens_preds, "Ensemble Confusion Matrix")
-    ModelVisualizer.plot_certainty_analysis(ens_probs, y_test, "Ensemble Certainty vs Correctness")
+        # ------------------------------------------
+        # Show results in notebook
+        # ------------------------------------------
+        display(Markdown(f"## {key.upper()} Model — Unsure Predictions"))
+        display(unsure_df.head(n_examples))
 
-    # Ensemble unsure / misclassified examples
-    if texts is not None:
-        print(f"\nENSEMBLE - Unsure Predictions (probability near {lower_uncertain}-{upper_uncertain}):")
-        unsure_idx = np.where((ens_probs >= lower_uncertain) & (ens_probs <= upper_uncertain))[0]
-        for i in unsure_idx[:n_examples]:
-            print(f"Probability [{ens_probs[i]:.2f}], Label [{y_test.iloc[i]}]: \"{texts.iloc[i]}\"")
+        display(Markdown(f"## {key.upper()} Model — Misclassified Predictions"))
+        display(mis_df.head(n_examples))
 
-        print(f"\nENSEMBLE - Misclassified Predictions:")
-        mis_idx = np.where(ens_preds != y_test)[0]
-        for i in mis_idx[:n_examples]:
-            print(f"Probability [{ens_probs[i]:.2f}], Label [{y_test.iloc[i]}], Pred [{ens_preds[i]}]: \"{texts.iloc[i]}\"")
+        # ------------------------------------------
+        # Store results
+        # ------------------------------------------
+        results[key] = {
+            "preds": preds,
+            "probs": probs,
+            "unsure_df": unsure_df,
+            "misclassified_df": mis_df
+        }
 
-    return {
-        "models": models,
-        "ensemble_preds": ens_preds,
-        "ensemble_probs": ens_probs,
-        "ensemble_acc": acc
-    }
+    # ---------------------------------------------------------------------
+    # Ensemble Section
+    # ---------------------------------------------------------------------
+    ens_preds, ens_probs = EnsemblePredictor.predict(models, X_test_sets, threshold=upper_uncertain)
+    ensemble_acc = np.mean(ens_preds == y_test)
+
+    display(Markdown(f"# Ensemble Accuracy: **{ensemble_acc:.4f}**"))
+
+    ModelVisualizer.plot_confusion_matrix(y_test, ens_preds, "Ensemble")
+    ModelVisualizer.plot_certainty_analysis(ens_preds, ens_probs, y_test, lower_uncertain, "Ensemble")
+
+    # Unsure
+    unsure_idx = np.where((ens_probs >= lower_uncertain) & (ens_probs <= upper_uncertain))[0]
+    ensemble_unsure_df = pd.DataFrame({
+        "probability": ens_probs[unsure_idx],
+        "true_label": y_test.iloc[unsure_idx].values,
+        "text": texts.iloc[unsure_idx].values
+    })
+
+    # Misclassified
+    mis_idx = np.where(ens_preds != y_test)[0]
+    ensemble_mis_df = pd.DataFrame({
+        "probability": ens_probs[mis_idx],
+        "true_label": y_test.iloc[mis_idx].values,
+        "predicted": ens_preds[mis_idx],
+        "text": texts.iloc[mis_idx].values
+    })
+
+    display(Markdown("## Ensemble — Unsure Predictions"))
+    display(ensemble_unsure_df.head(n_examples))
+
+    display(Markdown("## Ensemble — Misclassified Predictions"))
+    display(ensemble_mis_df.head(n_examples))
+
+    # ------------------------------------------
+    # Verification: no identical rows in TF-IDF train/test
+    # ------------------------------------------
+    display(Markdown("## Train/Test Feature Overlap Check"))
+
+    overlap_report = {}
+
+    for key in ["all", "pos", "neg", "important"]:
+        X_train = X_train_sets[key]  # csr_matrix
+        X_test = X_test_sets[key]    # csr_matrix
+
+        # Convert each row to bytes for hashing
+        train_hashes = {hash(row.todense().tobytes()) for row in X_train}
+        test_hashes = {hash(row.todense().tobytes()) for row in X_test}
+
+        # Compute intersection
+        overlap = train_hashes & test_hashes
+        overlap_count = len(overlap)
+        overlap_report[key] = overlap_count
+
+        if overlap_count > 0:
+            display(Markdown(f"**WARNING:** {overlap_count} identical TF-IDF rows detected in '{key}' train/test sets."))
+        else:
+            display(Markdown(f"✅ No identical TF-IDF rows detected in '{key}'"))
+
+    # Summary table
+    overlap_df = pd.DataFrame.from_dict(overlap_report, orient='index', columns=['train_test_overlap'])
+    display(overlap_df)

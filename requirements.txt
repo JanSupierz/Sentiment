@@ -1,0 +1,22 @@
+pandas
+scikit-learn
+
+tensorflow[and-cuda]
+tensorflow_datasets
+tf-keras
+
+#BERT Embeddings
+sentence-transformers
+torch
+
+#Fast Kmeans
+faiss-gpu-cu12
+
+#Visualizations
+matplotlib
+seaborn
+wordcloud
+
+#Preprocessing
+contractions
+nltk

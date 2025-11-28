@@ -1,4 +1,4 @@
-
+from visualization import ModelVisualizer
 from tensorflow.keras.models import Sequential
 from tensorflow.keras.layers import Embedding, LSTM, Dense, Dropout, Input
 from tensorflow.keras.callbacks import EarlyStopping, ReduceLROnPlateau
@@ -9,6 +9,11 @@ from sklearn.svm import LinearSVC, SVC
 from sklearn.linear_model import LogisticRegression
 from sklearn.calibration import CalibratedClassifierCV
 import matplotlib.pyplot as plt
+from IPython.display import display, Markdown
+import pandas as pd
+import numpy as np
+
+PROBS_PRECISION = 4
 
 # ----------------------------
 # Base class for all models
@@ -27,15 +32,32 @@ class BaseModel:
         probs = self.predict_proba(X)
         return (probs > 0.5).astype(int)
     
-    def evaluate(self, X_test, y_test):
-        """Simple evaluation: accuracy and classification report"""
+    def evaluate(self, X_test, y_test, lower):
+        """Jupyter-friendly evaluation: accuracy + classification report + plots"""
         probs = self.predict_proba(X_test)
         preds = self.predict_label(X_test)
         acc = accuracy_score(y_test, preds)
-        print(f"\n=== {self.name.upper()} EVALUATION ===")
-        print(f"Accuracy: {acc:.4f}")
-        print(classification_report(y_test, preds, digits=4))
-        return {"accuracy": acc, "preds": preds, "probs": probs}
+
+        # Display heading
+        display(Markdown(f"## {self.name.upper()} Evaluation"))
+        display(Markdown(f"**Accuracy:** {acc:.4f}"))
+
+        # Classification report as DataFrame
+        report_dict = classification_report(y_test, preds, output_dict=True, digits=4)
+        report_df = pd.DataFrame(report_dict).transpose()
+
+        # Round metrics, keep support as int
+        metrics_cols = ['precision', 'recall', 'f1-score']
+        report_df[metrics_cols] = report_df[metrics_cols].round(5)
+        report_df['support'] = report_df['support'].astype(int)
+
+        display(report_df)
+
+        # Plots
+        ModelVisualizer.plot_confusion_matrix(y_test, preds, self.name)
+        ModelVisualizer.plot_certainty_analysis(preds, probs, y_test, lower, self.name)
+
+        return probs, preds
 
 # ----------------------------
 # LSTM Model
@@ -109,7 +131,8 @@ class LSTMClassifier(BaseModel):
         plt.show()
 
     def predict_proba(self, X):
-        return self.model.predict(X, verbose=0).flatten()
+        probs = self.model.predict(X, verbose=0).flatten()
+        return np.round(probs, PROBS_PRECISION)
 
 
 # ----------------------------
@@ -128,7 +151,8 @@ class LinearSVMClassifier(BaseModel):
         print(f"LinearSVM '{self.name}' trained.")
 
     def predict_proba(self, X):
-        return self.model.predict_proba(X)[:, 1]
+        probs = self.model.predict_proba(X)[:, 1]
+        return np.round(probs, PROBS_PRECISION)
 
 # ----------------------------
 # Non-linear SVM (RBF kernel)
@@ -146,7 +170,8 @@ class RbfSVMClassifier(BaseModel):
         print(f"RbfSVM '{self.name}' trained.")
 
     def predict_proba(self, X):
-        return self.model.predict_proba(X)[:, 1]
+        probs = self.model.predict_proba(X)[:, 1]
+        return np.round(probs, PROBS_PRECISION)
 
 # ----------------------------
 # Logistic Regression
@@ -168,4 +193,5 @@ class LogisticRegressionClassifier(BaseModel):
         print(f"LogisticRegression '{self.name}' trained.")
 
     def predict_proba(self, X):
-        return self.model.predict_proba(X)[:, 1]
+        probs = self.model.predict_proba(X)[:, 1]
+        return np.round(probs, PROBS_PRECISION)
