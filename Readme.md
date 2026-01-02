@@ -1,6 +1,6 @@
 # IMDb Sentiment Classification
 
-This project implements sentiment classification on IMDb movie reviews using multiple models, including **LSTM**, **Linear SVM**, **RBF SVM**, and **Logistic Regression**. It also supports an **ensemble predictor** to combine model predictions and analyze uncertainty.
+This project implements sentiment classification on IMDb movie reviews using multiple models, including **Linear SVM**, **RBF SVM**, and **Logistic Regression**. It also supports an **ensemble predictor** to combine model predictions and analyze uncertainty.
 
 ---
 

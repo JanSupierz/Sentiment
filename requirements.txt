@@ -20,3 +20,5 @@ wordcloud
 #Preprocessing
 contractions
 nltk
+
+ipywidgets
