@@ -13,9 +13,8 @@ class ConceptExtractor:
         unique_units = sorted(list(dict.fromkeys(units)))
         n_clusters = min(n_clusters, len(unique_units))
 
-        print(f"Generowanie embeddingów dla {len(unique_units)} unikalnych jednostek...")
+        print(f"Generating embeddings for {len(unique_units)} unique units...")
         with torch.inference_mode():
-            # SBERT ma wbudowany pasek postępu (show_progress_bar=True)
             embeddings = self.model.encode(
                 unique_units, 
                 batch_size=batch_size, 
@@ -28,7 +27,7 @@ class ConceptExtractor:
             del embeddings
             torch.cuda.empty_cache()
 
-        print(f"Klastrowanie FAISS (n={n_clusters})...")
+        print(f"FAISS Clustering (n={n_clusters})...")
         d = embeddings_np.shape[1]
         index = faiss.IndexFlatL2(d)
         kmeans = faiss.Clustering(d, n_clusters)
@@ -40,7 +39,7 @@ class ConceptExtractor:
         _, labels = index.search(embeddings_np, 1)
         labels = labels.flatten()
 
-        # Szybki wybór reprezentantów
+        # Fast representative selection
         centroid_index = faiss.IndexFlatL2(d)
         centroid_index.add(embeddings_np)
         _, rep_indices = centroid_index.search(cluster_centers, 1)
@@ -75,5 +74,5 @@ class ConceptExtractor:
         index.add(centers_np)
         distances, labels = index.search(embeddings_np, 1)
 
-        # Filtr podobieństwa 0.5 (dist^2 <= 1.0)
+        # Probability filter for similarity 0.5 (dist^2 <= 1.0)
         return {u: int(l) for u, d, l in zip(unique_units, distances.flatten(), labels.flatten()) if d <= 1.0}

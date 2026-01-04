@@ -1,67 +1,94 @@
+import os
+os.environ["TF_USE_LEGACY_KERAS"] = "1"
+os.environ["TF_CPP_MIN_LOG_LEVEL"] = "3"
+
 import tensorflow as tf
-from transformers import DistilBertTokenizer, TFAutoModelForSequenceClassification
-from src.models.base_model import BaseModel
 import numpy as np
+from transformers import DistilBertTokenizer, TFAutoModelForSequenceClassification
+from sklearn.model_selection import train_test_split
+import tf_keras as tfk
+from src.models.base_model import BaseModel
+
 
 class BERTClassifier(BaseModel):
-    def __init__(self, model_name="distilbert-base-uncased-finetuned-sst-2-english", max_len=128, name="bert"):
+    def __init__(self, model_name="distilbert-base-uncased-finetuned-sst-2-english", max_len=128, name="bert", from_pt=True):
         super().__init__(name)
+
         self.max_len = max_len
         self.tokenizer = DistilBertTokenizer.from_pretrained(model_name)
-        self.model = TFAutoModelForSequenceClassification.from_pretrained(model_name, from_pt=True)
-        
-        # Default compilation
+        tfk.mixed_precision.set_global_policy("mixed_float16")
+
+        self.model = TFAutoModelForSequenceClassification.from_pretrained(model_name, from_pt=from_pt)
         self._compile_model(lr=2e-5)
 
+    def save(self, path: str):
+        os.makedirs(path, exist_ok=True)
+        self.model.save_pretrained(path)
+        self.tokenizer.save_pretrained(path)
+
+    @classmethod
+    def load(cls, path: str, name="bert_loaded"):
+        return cls(model_name=path, name=name, from_pt=False)
+
     def _compile_model(self, lr):
-        """Helper to compile the model with a specific learning rate."""
         self.model.compile(
-            optimizer=tf.keras.optimizers.Adam(learning_rate=lr),
-            loss=tf.keras.losses.SparseCategoricalCrossentropy(from_logits=True),
-            metrics=["accuracy"]
+            optimizer=tfk.mixed_precision.LossScaleOptimizer(tfk.optimizers.Adam(learning_rate=lr)),
+            loss=tfk.losses.SparseCategoricalCrossentropy(from_logits=True),
+            metrics=["accuracy"],
         )
 
     def freeze_backbone(self, num_layers_to_freeze=4):
-        """Freezes the first N layers of the DistilBERT transformer."""
-        # DistilBERT has 6 transformer layers
         for layer in self.model.layers[0].transformer.layer[:num_layers_to_freeze]:
             layer.trainable = False
-        print(f"Froze the first {num_layers_to_freeze} layers of BERT.")
 
-    def _tokenize(self, texts):
-        return self.tokenizer(
-            texts, padding="max_length", truncation=True,
-            max_length=self.max_len, return_tensors="tf"
+    def train(self, X_text, y, epochs=3, batch_size=16, validation_split=0.2, lr=None,):
+        if lr: self._compile_model(lr)
+
+        X_train, X_val, y_train, y_val = train_test_split(np.array(X_text), np.array(y), test_size=validation_split, stratify=y, random_state=42,)
+        train_enc = self.tokenizer(list(X_train), truncation=True, max_length=self.max_len, padding=False,)
+        val_enc = self.tokenizer(list(X_val), truncation=True, max_length=self.max_len, padding=False,)
+
+        def make_gen(enc, labels):
+            def gen():
+                for i in range(len(labels)):
+                    yield (
+                        {
+                            "input_ids": enc["input_ids"][i],
+                            "attention_mask": enc["attention_mask"][i],
+                        }, labels[i],
+                    )
+            return gen
+
+        output_signature = (
+            {
+                "input_ids": tf.TensorSpec((None,), tf.int32),
+                "attention_mask": tf.TensorSpec((None,), tf.int32),
+            }, tf.TensorSpec((), tf.int32),
         )
 
-    def train(self, X_text, y, epochs=3, batch_size=8, validation_split=0.2, lr=None):
-        """Modified train method to support learning rate adjustment."""
-        if lr:
-            self._compile_model(lr)
-            
-        tokenized_data = self._tokenize(X_text)
-        y_array = np.array(y)
+        train_ds = tf.data.Dataset.from_generator(make_gen(train_enc, y_train),output_signature=output_signature,)
+
+        val_ds = tf.data.Dataset.from_generator(make_gen(val_enc, y_val),output_signature=output_signature,)
+
+        train_ds = (train_ds.shuffle(buffer_size=min(len(X_train), 1000)).padded_batch(batch_size).prefetch(tf.data.AUTOTUNE))
+
+        val_ds = (val_ds.padded_batch(batch_size).prefetch(tf.data.AUTOTUNE))
 
         callbacks = [
-            tf.keras.callbacks.EarlyStopping(monitor='val_loss', patience=2, restore_best_weights=True),
-            tf.keras.callbacks.ReduceLROnPlateau(monitor='val_loss', factor=0.2, patience=1, min_lr=1e-7)
+            tfk.callbacks.EarlyStopping(monitor="val_loss", patience=3, restore_best_weights=True),
+            tfk.callbacks.ReduceLROnPlateau(monitor="val_loss", factor=0.2, patience=2, min_lr=1e-7),
         ]
 
-        self.model.fit(
-            {"input_ids": tokenized_data["input_ids"], "attention_mask": tokenized_data["attention_mask"]},
-            y_array,
-            epochs=epochs,
-            batch_size=batch_size,
-            validation_split=validation_split,
-            callbacks=callbacks,
-            verbose=1
-        )
+        return self.model.fit(train_ds, validation_data=val_ds, epochs=epochs, callbacks=callbacks, verbose=1)
 
     def predict_proba(self, X_text):
-        tokenized_data = self._tokenize(X_text)
+        tok = self.tokenizer(list(X_text), padding=True, truncation=True, max_length=self.max_len, return_tensors="tf",)
         logits = self.model.predict(
-            {"input_ids": tokenized_data["input_ids"], "attention_mask": tokenized_data["attention_mask"]},
-            verbose=0
+            {
+                "input_ids": tok["input_ids"],
+                "attention_mask": tok["attention_mask"],
+            }, verbose=0,
         ).logits
+
         probs = tf.nn.softmax(logits, axis=1).numpy()
         return probs[:, 1]

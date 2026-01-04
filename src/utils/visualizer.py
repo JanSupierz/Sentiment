@@ -10,40 +10,39 @@ from IPython.display import display
 
 class ModelVisualizer:
     @staticmethod
-    def plot_confusion_matrix(y_true, y_pred, title="Macierz Pomyłek"):
-        """Klasyczna macierz pomyłek w ładnej oprawie."""
+    def plot_confusion_matrix(y_true, y_pred, title="Confusion Matrix"):
         cm = confusion_matrix(y_true, y_pred)
         plt.figure(figsize=(6, 5))
         sns.heatmap(cm, annot=True, fmt="d", cmap="Blues", cbar=False)
         plt.title(title, fontsize=14, pad=15)
-        plt.ylabel('Rzeczywista etykieta')
-        plt.xlabel('Predykcja modelu')
+        plt.ylabel('Actual Label')
+        plt.xlabel('Predicted Label')
         plt.show()
 
     @staticmethod
-    def plot_certainty_histogram(preds, probs, y_true, lower=0.3, title="Rozkład Pewności Modelu"):
-        """Nowoczesny histogram gęstości (KDE) z podziałem na poprawność."""
+    def plot_certainty_histogram(preds, probs, y_true, lower=0.3, title="Certainty Distribution"):
+        """Density histogram showing model certainty regions."""
         upper = 1 - lower
-        correctness = np.where(preds == y_true, "Poprawna", "Błędna")
+        correctness = np.where(preds == y_true, "Correct", "Incorrect")
         
         df = pd.DataFrame({'Probability': probs, 'Result': correctness})
-        plt.figure(figsize=(10, 5))
+        plt.figure(figsize=(12, 8))
         
         sns.histplot(data=df, x='Probability', hue='Result', bins=40, 
-                     multiple="stack", palette={'Poprawna': '#2ecc71', 'Błędna': '#e74c3c'},
+                     multiple="stack", palette={'Correct': '#2ecc71', 'Incorrect': '#e74c3c'},
                      kde=True, alpha=0.7)
         
         plt.axvline(lower, color='black', linestyle='--', alpha=0.5)
         plt.axvline(upper, color='black', linestyle='--', alpha=0.5)
         plt.title(title, fontsize=14)
-        plt.xlabel("Prawdopodobieństwo klasy pozytywnej")
-        plt.ylabel("Liczba przypadków")
+        plt.xlabel("Probability of Positive Class")
+        plt.ylabel("Number of Samples")
         sns.despine()
         plt.show()
 
     @staticmethod
     def plot_top_concepts(sf, concept_units, top_n=15):
-        """Wykres Lollipop dla najbardziej znaczących konceptów (Z-score)."""
+        """Lollipop plot for the most significant concepts (Z-score)."""
         df_pos = sf.logodds_per_class[1].sort_values("zscore", ascending=False).head(top_n)
         df_neg = sf.logodds_per_class[0].sort_values("zscore", ascending=False).head(top_n)
         
@@ -51,11 +50,11 @@ class ModelVisualizer:
             "concept_name": [concept_units[c] for c in df_pos["concept"]] + 
                             [concept_units[c] for c in df_neg["concept"]],
             "score": list(df_pos["zscore"]) + list(-df_neg["zscore"]),
-            "sentiment": ["Pozytywny"] * top_n + ["Negatywny"] * top_n
+            "sentiment": ["Positive"] * top_n + ["Negative"] * top_n
         }).sort_values("score")
 
         plt.figure(figsize=(12, 8))
-        colors = {"Pozytywny": "#2ecc71", "Negatywny": "#e74c3c"}
+        colors = {"Positive": "#2ecc71", "Negative": "#e74c3c"}
         
         plt.hlines(y=df_plot["concept_name"], xmin=0, xmax=df_plot["score"], 
                    color=[colors[s] for s in df_plot["sentiment"]], alpha=0.5)
@@ -66,7 +65,7 @@ class ModelVisualizer:
                         color=color, s=100, label=sentiment, edgecolors='white', zorder=3)
 
         plt.axvline(0, color='black', linewidth=0.8)
-        plt.title(f"Top {top_n} Konceptów Dyskryminatywnych (Z-score)", fontsize=15)
+        plt.title(f"Top {top_n} Discriminative Concepts (Z-score)", fontsize=15)
         plt.legend()
         plt.tight_layout()
         plt.show()
@@ -75,12 +74,11 @@ class ModelVisualizer:
     def plot_sentiment_wordclouds(train, train_map, unique_units_to_train, sf, top_n=4, max_words=50, n_gram_range=(1,3)):
 
         """
-        Generuje siatkę WordCloudów dla topowych pozytywnych i negatywnych
-        konceptów sentymentu. Każda jednostka (unit) jest traktowana jako
-        nierozerwalna fraza.
+        Generates a grid of WordClouds for top positive and negative sentiment concepts.
+        Each unit (concept) is treated as an indivisible phrase.
         """
 
-        # 1. Grupowanie jednostek według Concept ID
+        # 1. Grouping units by Concept ID
         cluster_to_units = {}
 
         for item in tqdm(train, desc="Building WordCloud clusters"):
@@ -94,7 +92,7 @@ class ModelVisualizer:
                             cluster_to_units.setdefault(cid, []).append(normalized_unit)
 
 
-        # 2. Wybór konceptów na podstawie Z-score
+        # 2. Choosing concepts based on Z-score
         pos_ids = (
             sf.logodds_per_class[1]
             .sort_values('zscore', ascending=False)
@@ -111,11 +109,11 @@ class ModelVisualizer:
             .tolist()
         )
 
-        # 3. Przygotowanie siatki wykresów
-        fig, axes = plt.subplots(2, top_n, figsize=(18, 10))
+        # 3. Preparing the plot grid
+        fig, axes = plt.subplots(2, top_n, figsize=(12, 8))
 
         def draw_wc(ax, cid, colormap, label):
-            # Zliczanie częstości FRAZ (nie słów)
+            # Count frequency of phrases in the cluster
             word_freq = Counter(cluster_to_units.get(cid, []))
 
             wc = WordCloud(
@@ -124,7 +122,7 @@ class ModelVisualizer:
                 max_words=max_words,
                 width=400,
                 height=300,
-                regexp=r"\w+"  # pozwala na podkreślniki
+                regexp=r"\w+"  # allows underscores
             ).generate_from_frequencies(word_freq)
 
             ax.imshow(wc, interpolation='bilinear')
@@ -137,16 +135,16 @@ class ModelVisualizer:
             )
             ax.axis('off')
 
-        # 4. Rysowanie pozytywnych konceptów
+        # 4. Drawing positive concepts
         for i, cid in enumerate(pos_ids):
-            draw_wc(axes[0, i], cid, 'Greens', "POZYTYWNY")
+            draw_wc(axes[0, i], cid, 'Greens', "POSITIVE")
 
-        # 5. Rysowanie negatywnych konceptów
+        # 5. Drawing negative concepts
         for i, cid in enumerate(neg_ids):
-            draw_wc(axes[1, i], cid, 'Reds', "NEGATYWNY")
+            draw_wc(axes[1, i], cid, 'Reds', "NEGATIVE")
 
         plt.suptitle(
-            "Analiza Semantyczna Top Konceptów Sentymentu",
+            "Semantic Analysis of Top Sentiment Concepts",
             fontsize=20,
             y=1.02
         )
@@ -155,27 +153,26 @@ class ModelVisualizer:
 
 
     @staticmethod
-    def visualize_concept_wordcloud(concept_units, title="Globalna Mapa Odkrytych Konceptów"):
+    def visualize_concept_wordcloud(concept_units, title="Global Map of Discovered Concepts"):
             """
-            Wizualizuje reprezentantów wszystkich klastrów. 
-            Każdy koncept jest traktowany jako jedna nierozerwalna fraza.
+            Visualizes representatives of all clusters.
+            Each concept is treated as one indivisible phrase.
             """
-            # Łączymy frazy używając podkreślników, aby WordCloud traktował 
-            # "bad acting" jako jeden token "bad_acting"
+            # Join phrases using underscores so that WordCloud treats
+            # "bad acting" as one token "bad_acting"
             text = " ".join([u.replace(" ", '_') for u in concept_units])
             
             wc = WordCloud(
                 width=1200, 
                 height=600, 
                 background_color="white",
-                colormap="tab20", # Kolorowa paleta dla różnorodnych tematów
+                colormap="tab20", # Colorful palette for diverse topics
                 max_font_size=100,
                 random_state=42,
-                # Ten regex pozwala na podkreślniki wewnątrz słów
                 regexp=r"\w+" 
             ).generate(text)
             
-            plt.figure(figsize=(15, 7.5))
+            plt.figure(figsize=(12, 8))
             plt.imshow(wc, interpolation='bilinear')
             plt.title(title, fontsize=18, pad=20, fontweight='bold')
             plt.axis("off")
@@ -185,41 +182,39 @@ class ModelVisualizer:
     @staticmethod
     def get_detailed_certainty_stats(preds, probs, y_true, lower=0.3):
         """
-        Zwraca DataFrame z dokładnymi statystykami % dla regionów pewności.
+        Returns DataFrame with detailed statistics for certainty regions.
         """
         upper = 1 - lower
-    
-        # Klasyfikacja pewności
-        conditions = [
-            (probs < lower),
-            (probs > upper),
-            ((probs >= lower) & (probs <= upper))
-        ]
+
+        # Certainty classification
+        conditions = [probs < lower, probs > upper, (probs >= lower) & (probs <= upper)]
         choices = ["Certain Negative", "Certain Positive", "Uncertain"]
-        
-        # KLUCZOWA POPRAWKA: Dodajemy default="Unknown" (musi być string!)
         categories = np.select(conditions, choices, default="Unknown")
-                
-        df = pd.DataFrame({
-            'Category': categories,
-            'Correct': preds == y_true
-        })
-                
-        # Agregacja wyników
-        stats = df.groupby('Category').agg(
-            Liczba_przypadkow=('Correct', 'count'),
-            Poprawne=('Correct', 'sum')
-        )
-                
-        # Obliczenia procentowe
+        df = pd.DataFrame({"Category": categories, "Correct": preds == y_true})
+
+        # Category-level aggregation
+        stats = df.groupby("Category").agg(
+             Number_Samples=("Correct", "count"), 
+             Correct=("Correct", "sum")
+             )
+        
         total_samples = len(df)
-        stats['Accuracy (%)'] = (stats['Poprawne'] / stats['Liczba_przypadkow'] * 100).round(2)
-        stats['Coverage (%)'] = (stats['Liczba_przypadkow'] / total_samples * 100).round(2)
-                
-        # Sortowanie dla czytelności
-        order = ["Certain Positive", "Certain Negative", "Uncertain"]
-        return stats.reindex([c for c in order if c in stats.index])
-    
+        stats["Accuracy (%)"] = (stats["Correct"] / stats["Number_Samples"] * 100).round(2)
+        stats["Coverage (%)"] = (stats["Number_Samples"] / total_samples * 100).round(2)
+
+        # ---- Overall row ----
+        overall = pd.DataFrame({
+            "Number_Samples": [total_samples],
+            "Correct": [(preds == y_true).sum()],
+            "Accuracy (%)": [((preds == y_true).mean() * 100).round(2)],
+            "Coverage (%)": [100.0]
+        }, index=["Overall"])
+
+        # Combine
+        stats = pd.concat([overall, stats])
+        order = ["Overall", "Certain Positive", "Certain Negative", "Uncertain"]
+        return stats.reindex(order)
+
     @staticmethod
     def display_extreme_errors(data_list, top_n=5):
         """
@@ -257,3 +252,14 @@ class ModelVisualizer:
         df_display['uncertainty_score'] = (df_display['prob'] - 0.5).abs()
         
         display(df_display[['clean_review', 'sentiment', 'pred', 'prob', 'uncertainty_score']])
+
+    @staticmethod
+    def display_dataset_previews(train, val, test, n_rows=5):
+        """
+        Displays a summary and first few rows of each dataset split.
+        """
+        data_sets = [("TRAIN", train), ("VALIDATION", val), ("TEST", test)]
+
+        for name, ds in data_sets:
+            print(f"\n--- {name} SET (Total: {len(ds)} reviews) ---")
+            display(pd.DataFrame(ds[:n_rows]))
