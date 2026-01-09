@@ -25,7 +25,6 @@ class RbfSVMClassifier(BaseModel):
         super().__init__(name)
         self.svm = SVC(C=C, kernel='rbf', gamma=gamma, probability=False, random_state=42, verbose=True)
         self.model = CalibratedClassifierCV(self.svm)
-        print(f"RbfSVM '{self.name}' initialized with C={C}, gamma={gamma}")
 
     def train(self, X, y):
         self.model.fit(X, y)

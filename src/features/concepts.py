@@ -9,16 +9,16 @@ class ConceptExtractor:
         self.device = 'cuda' if torch.cuda.is_available() else 'cpu'
         self.model = SentenceTransformer(model_name).to(self.device)
 
-    def train_concepts(self, units: List[str], n_clusters: int = 5000, batch_size: int = 128) -> Dict[str, Any]:
+    def train_concepts(self, units: List[str], n_clusters: int = 5000, batch_size: int = 128, printing: bool = True) -> Dict[str, Any]:
         unique_units = sorted(list(dict.fromkeys(units)))
         n_clusters = min(n_clusters, len(unique_units))
 
-        print(f"Generating embeddings for {len(unique_units)} unique units...")
+        if printing: print(f"Generating embeddings for {len(unique_units)} unique units...")
         with torch.inference_mode():
             embeddings = self.model.encode(
                 unique_units, 
                 batch_size=batch_size, 
-                show_progress_bar=True, 
+                show_progress_bar=printing,
                 convert_to_tensor=True,
                 device=self.device
             )
@@ -27,12 +27,12 @@ class ConceptExtractor:
             del embeddings
             torch.cuda.empty_cache()
 
-        print(f"FAISS Clustering (n={n_clusters})...")
+        if printing: print(f"FAISS Clustering (n={n_clusters})...")
         d = embeddings_np.shape[1]
         index = faiss.IndexFlatL2(d)
         kmeans = faiss.Clustering(d, n_clusters)
         kmeans.niter = 20
-        kmeans.verbose = True
+        kmeans.verbose = printing
         kmeans.train(embeddings_np, index)
 
         cluster_centers = faiss.vector_to_array(kmeans.centroids).reshape(n_clusters, d)
@@ -52,7 +52,7 @@ class ConceptExtractor:
             "n_concepts": n_clusters
         }
 
-    def map_units_to_clusters(self, units: List[str], cluster_centers: torch.Tensor, batch_size: int = 128) -> Dict[str, int]:
+    def map_units_to_clusters(self, units: List[str], cluster_centers: torch.Tensor, batch_size: int = 128, printing: bool = True) -> Dict[str, int]:
         if not units: return {}
         unique_units = sorted(list(dict.fromkeys(units)))
         
@@ -60,7 +60,7 @@ class ConceptExtractor:
             embeddings = self.model.encode(
                 unique_units, 
                 batch_size=batch_size, 
-                show_progress_bar=True, 
+                show_progress_bar=printing, 
                 convert_to_tensor=True,
                 device=self.device
             )

@@ -182,7 +182,7 @@ class ModelVisualizer:
     @staticmethod
     def get_detailed_certainty_stats(preds, probs, y_true, lower=0.3):
         """
-        Returns DataFrame with detailed statistics for certainty regions.
+        Returns DataFrame with detailed statistics for certainty regions,
         """
         upper = 1 - lower
 
@@ -190,30 +190,42 @@ class ModelVisualizer:
         conditions = [probs < lower, probs > upper, (probs >= lower) & (probs <= upper)]
         choices = ["Certain Negative", "Certain Positive", "Uncertain"]
         categories = np.select(conditions, choices, default="Unknown")
+
         df = pd.DataFrame({"Category": categories, "Correct": preds == y_true})
 
         # Category-level aggregation
         stats = df.groupby("Category").agg(
-             Number_Samples=("Correct", "count"), 
-             Correct=("Correct", "sum")
-             )
-        
+            Number_Samples=("Correct", "count"),
+            Correct=("Correct", "sum")
+        )
+
         total_samples = len(df)
         stats["Accuracy (%)"] = (stats["Correct"] / stats["Number_Samples"] * 100).round(2)
         stats["Coverage (%)"] = (stats["Number_Samples"] / total_samples * 100).round(2)
+
+        # ---- Combined Certain row ----
+        certain_rows = ["Certain Positive", "Certain Negative"]
+        if all(r in stats.index for r in certain_rows):
+            num_samples_certain = stats.loc[certain_rows, "Number_Samples"].sum()
+            correct_certain = stats.loc[certain_rows, "Correct"].sum()
+            acc_certain = round(correct_certain / num_samples_certain * 100, 2) if num_samples_certain > 0 else np.nan
+            coverage_certain = round(num_samples_certain / total_samples * 100, 2)
+            stats.loc["Certain"] = [num_samples_certain, correct_certain, acc_certain, coverage_certain]
 
         # ---- Overall row ----
         overall = pd.DataFrame({
             "Number_Samples": [total_samples],
             "Correct": [(preds == y_true).sum()],
-            "Accuracy (%)": [((preds == y_true).mean() * 100).round(2)],
+            "Accuracy (%)": [round((preds == y_true).mean() * 100, 2)],
             "Coverage (%)": [100.0]
         }, index=["Overall"])
 
         # Combine
         stats = pd.concat([overall, stats])
-        order = ["Overall", "Certain Positive", "Certain Negative", "Uncertain"]
-        return stats.reindex(order)
+
+        # Reorder
+        order = ["Overall", "Certain", "Certain Positive", "Certain Negative", "Uncertain"]
+        return stats.reindex([i for i in order if i in stats.index])
 
     @staticmethod
     def display_extreme_errors(data_list, top_n=5):

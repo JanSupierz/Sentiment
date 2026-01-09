@@ -11,14 +11,16 @@ def process_evaluation_set(
     important_set, 
     n_gram_range=(1, 3),
     extractor_obj=None,
-    cluster_centers=None
+    cluster_centers=None,
+    printing=True
 ):
     """
     Filters and maps IDs.
     """
-    print(f"\n1/3: Scanning {set_name} for local rare tokens...")
+    if printing: print(f"\n1/3: Scanning {set_name} for local rare tokens...")
+
     set_counts = Counter()
-    for item in tqdm(dataset, desc=f"Scanning {set_name}"):
+    for item in tqdm(dataset, desc=f"Scanning {set_name}", disable=not printing):
         units = DataLoader.get_ngrams(item['clean_bow'], ngram_range=n_gram_range)
         valid_units = [u for u in units if u not in stop_units_set]
         set_counts.update(valid_units)
@@ -32,16 +34,17 @@ def process_evaluation_set(
     num_unknown = len(all_unknown_units)
     unknown_pct = (num_unknown / num_significant * 100) if num_significant > 0 else 0
 
-    print(f"2/3: Mapping {num_unknown} unknown units ({unknown_pct:.1f}% of significant) for {set_name}...")
+    if printing: print(f"2/3: Mapping {num_unknown} unknown units ({unknown_pct:.1f}% of significant) for {set_name}...")
     
     unknown_mapping = {}
     if extractor_obj and cluster_centers is not None and all_unknown_units: 
-        unknown_mapping = extractor_obj.map_units_to_clusters(all_unknown_units, cluster_centers)
+        unknown_mapping = extractor_obj.map_units_to_clusters(all_unknown_units, cluster_centers, printing = False)
 
-    print(f"3/3: Mapping and Filtering {set_name}...")
+    if printing: print(f"3/3: Mapping and Filtering {set_name}...")
+        
     stats = {"from_train": 0, "from_unknown": 0, "total_filtered_out": 0}
 
-    for item in tqdm(dataset, desc=f"Processing {set_name}"):
+    for item in tqdm(dataset, desc=f"Processing {set_name}", disable=not printing):
         units = DataLoader.get_ngrams(item['clean_bow'], ngram_range=n_gram_range)
         filtered_ids = []
         
@@ -68,17 +71,18 @@ def process_evaluation_set(
         
         item['important_ids'] = filtered_ids
 
-    total_mapped = stats["from_train"] + stats["from_unknown"]
-    print(f"\n--- Mapping Verification for {set_name} ---")
-    print(f"Significant Vocabulary Discovery:")
-    print(f"  - Total Significant Units: {num_significant}")
-    print(f"  - Known (from train):     {num_significant - num_unknown}")
-    print(f"  - Unknown (New):          {num_unknown} ({unknown_pct:.1f}%)")
-    
-    if total_mapped > 0:
-        print(f"\nToken-Level Impact (Instances in Text):")
-        print(f"  - Units from Train Mapping:   {stats['from_train']} ({(stats['from_train']/total_mapped)*100:.1f}%)")
-        print(f"  - Units from Unknown Mapping: {stats['from_unknown']} ({(stats['from_unknown']/total_mapped)*100:.1f}%)")
-        print(f"  - Successfully re-mapped:     {len(unknown_mapping)}/{num_unknown} unique unknown tokens.")
-    else:
-        print(f"\n--- Warning: No units from {set_name} were mapped to important concepts ---")
+    if printing:
+        total_mapped = stats["from_train"] + stats["from_unknown"]
+        print(f"\n--- Mapping Verification for {set_name} ---")
+        print(f"Significant Vocabulary Discovery:")
+        print(f"  - Total Significant Units: {num_significant}")
+        print(f"  - Known (from train):     {num_significant - num_unknown}")
+        print(f"  - Unknown (New):          {num_unknown} ({unknown_pct:.1f}%)")
+        
+        if total_mapped > 0:
+            print(f"\nToken-Level Impact (Instances in Text):")
+            print(f"  - Units from Train Mapping:   {stats['from_train']} ({(stats['from_train']/total_mapped)*100:.1f}%)")
+            print(f"  - Units from Unknown Mapping: {stats['from_unknown']} ({(stats['from_unknown']/total_mapped)*100:.1f}%)")
+            print(f"  - Successfully re-mapped:     {len(unknown_mapping)}/{num_unknown} unique unknown tokens.")
+        else:
+            print(f"\n--- Warning: No units from {set_name} were mapped to important concepts ---")

@@ -32,22 +32,24 @@ class BaseModel:
         probs = self.predict_proba(X)
         return (probs > 0.5).astype(int)
     
-    def evaluate(self, X_test, y_test, lower_threshold: float, name: str = "Train Data"):
+    def evaluate(self, X_test, y_test, lower_threshold: float, name: str = "Train Data", plotting: bool = True):
         probs = self.predict_proba(X_test)
         preds = self.predict_label(X_test)
         acc = accuracy_score(y_test, preds)
 
-        display(Markdown(f"## {self.name.upper()} Evaluation ({name})"))
-        display(Markdown(f"**Accuracy:** {acc:.4f}"))
+        if plotting: 
+            display(Markdown(f"## {self.name.upper()} Evaluation ({name})"))
+            display(Markdown(f"**Accuracy:** {acc:.4f}"))
 
-        report_dict = classification_report(y_test, preds, output_dict=True, digits=4)
-        report_df = pd.DataFrame(report_dict).transpose()
-        report_df[['precision', 'recall', 'f1-score']] = report_df[['precision', 'recall', 'f1-score']].round(5)
-        report_df['support'] = report_df['support'].astype(int)
+            report_dict = classification_report(y_test, preds, output_dict=True, digits=4)
+            report_df = pd.DataFrame(report_dict).transpose()
+            report_df[['precision', 'recall', 'f1-score']] = report_df[['precision', 'recall', 'f1-score']].round(5)
+            report_df['support'] = report_df['support'].astype(int)
 
-        display(report_df)
-        ModelVisualizer.plot_confusion_matrix(y_test, preds, f'Confusion Matrix {self.name} ({name})')
-        ModelVisualizer.plot_certainty_histogram(preds, probs, y_test, lower_threshold, f'Certainty Distribution {self.name} ({name})')
-        stats_table = ModelVisualizer.get_detailed_certainty_stats(preds, probs, y_test, lower=lower_threshold)
-        display(stats_table)
+            display(report_df)
+            ModelVisualizer.plot_confusion_matrix(y_test, preds, f'Confusion Matrix {self.name} ({name})')
+            ModelVisualizer.plot_certainty_histogram(preds, probs, y_test, lower_threshold, f'Certainty Distribution {self.name} ({name})')
+            stats_table = ModelVisualizer.get_detailed_certainty_stats(preds, probs, y_test, lower=lower_threshold)
+            display(stats_table)
+            
         return probs, preds
