@@ -38,7 +38,7 @@ def process_evaluation_set(
     
     unknown_mapping = {}
     if extractor_obj and cluster_centers is not None and all_unknown_units: 
-        unknown_mapping = extractor_obj.map_units_to_clusters(all_unknown_units, cluster_centers, printing = False)
+        unknown_mapping = extractor_obj.map_units_to_clusters(all_unknown_units, cluster_centers)
 
     if printing: print(f"3/3: Mapping and Filtering {set_name}...")
         

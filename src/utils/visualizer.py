@@ -1,3 +1,4 @@
+# src/utils/visualizer.py
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
@@ -7,6 +8,8 @@ from wordcloud import WordCloud
 from collections import Counter
 from tqdm.auto import tqdm
 from IPython.display import display
+from typing import List, Dict, Any
+
 
 class ModelVisualizer:
     @staticmethod
@@ -24,14 +27,14 @@ class ModelVisualizer:
         """Density histogram showing model certainty regions."""
         upper = 1 - lower
         correctness = np.where(preds == y_true, "Correct", "Incorrect")
-        
+
         df = pd.DataFrame({'Probability': probs, 'Result': correctness})
         plt.figure(figsize=(12, 8))
-        
-        sns.histplot(data=df, x='Probability', hue='Result', bins=40, 
+
+        sns.histplot(data=df, x='Probability', hue='Result', bins=40,
                      multiple="stack", palette={'Correct': '#2ecc71', 'Incorrect': '#e74c3c'},
                      kde=True, alpha=0.7)
-        
+
         plt.axvline(lower, color='black', linestyle='--', alpha=0.5)
         plt.axvline(upper, color='black', linestyle='--', alpha=0.5)
         plt.title(title, fontsize=14)
@@ -45,9 +48,9 @@ class ModelVisualizer:
         """Lollipop plot for the most significant concepts (Z-score)."""
         df_pos = sf.logodds_per_class[1].sort_values("zscore", ascending=False).head(top_n)
         df_neg = sf.logodds_per_class[0].sort_values("zscore", ascending=False).head(top_n)
-        
+
         df_plot = pd.DataFrame({
-            "concept_name": [concept_units[c] for c in df_pos["concept"]] + 
+            "concept_name": [concept_units[c] for c in df_pos["concept"]] +
                             [concept_units[c] for c in df_neg["concept"]],
             "score": list(df_pos["zscore"]) + list(-df_neg["zscore"]),
             "sentiment": ["Positive"] * top_n + ["Negative"] * top_n
@@ -55,13 +58,13 @@ class ModelVisualizer:
 
         plt.figure(figsize=(12, 8))
         colors = {"Positive": "#2ecc71", "Negative": "#e74c3c"}
-        
-        plt.hlines(y=df_plot["concept_name"], xmin=0, xmax=df_plot["score"], 
+
+        plt.hlines(y=df_plot["concept_name"], xmin=0, xmax=df_plot["score"],
                    color=[colors[s] for s in df_plot["sentiment"]], alpha=0.5)
-        
+
         for sentiment, color in colors.items():
             mask = df_plot["sentiment"] == sentiment
-            plt.scatter(df_plot.loc[mask, "score"], df_plot.loc[mask, "concept_name"], 
+            plt.scatter(df_plot.loc[mask, "score"], df_plot.loc[mask, "concept_name"],
                         color=color, s=100, label=sentiment, edgecolors='white', zorder=3)
 
         plt.axvline(0, color='black', linewidth=0.8)
@@ -72,25 +75,22 @@ class ModelVisualizer:
 
     @staticmethod
     def plot_sentiment_wordclouds(train, train_map, unique_units_to_train, sf, top_n=4, max_words=50, n_gram_range=(1,3)):
-
         """
         Generates a grid of WordClouds for top positive and negative sentiment concepts.
         Each unit (concept) is treated as an indivisible phrase.
         """
-
         # 1. Grouping units by Concept ID
         cluster_to_units = {}
 
         for item in tqdm(train, desc="Building WordCloud clusters"):
-                    from src.utils.loader import DataLoader 
-                    row_units = DataLoader.get_ngrams(item['clean_bow'], ngram_range=n_gram_range)
-                    
-                    for u in row_units:
-                        if u in train_map and u in unique_units_to_train:
-                            cid = train_map[u]
-                            normalized_unit = u.replace(" ", "_")
-                            cluster_to_units.setdefault(cid, []).append(normalized_unit)
+            from src.utils.loader import DataLoader
+            row_units = DataLoader.get_ngrams(item['clean_bow'], ngram_range=n_gram_range)
 
+            for u in row_units:
+                if u in train_map and u in unique_units_to_train:
+                    cid = train_map[u]
+                    normalized_unit = u.replace(" ", "_")
+                    cluster_to_units.setdefault(cid, []).append(normalized_unit)
 
         # 2. Choosing concepts based on Z-score
         pos_ids = (
@@ -151,118 +151,58 @@ class ModelVisualizer:
         plt.tight_layout()
         plt.show()
 
-
     @staticmethod
     def visualize_concept_wordcloud(concept_units, title="Global Map of Discovered Concepts"):
-            """
-            Visualizes representatives of all clusters.
-            Each concept is treated as one indivisible phrase.
-            """
-            # Join phrases using underscores so that WordCloud treats
-            # "bad acting" as one token "bad_acting"
-            text = " ".join([u.replace(" ", '_') for u in concept_units])
-            
-            wc = WordCloud(
-                width=1200, 
-                height=600, 
-                background_color="white",
-                colormap="tab20", # Colorful palette for diverse topics
-                max_font_size=100,
-                random_state=42,
-                regexp=r"\w+" 
-            ).generate(text)
-            
-            plt.figure(figsize=(12, 8))
-            plt.imshow(wc, interpolation='bilinear')
-            plt.title(title, fontsize=18, pad=20, fontweight='bold')
-            plt.axis("off")
-            plt.tight_layout()
-            plt.show()
+        """
+        Visualizes representatives of all clusters.
+        Each concept is treated as one indivisible phrase.
+        """
+        # Join phrases using underscores so that WordCloud treats
+        # "bad acting" as one token "bad_acting"
+        text = " ".join([u.replace(" ", '_') for u in concept_units])
+
+        wc = WordCloud(
+            width=1200,
+            height=600,
+            background_color="white",
+            colormap="tab20",  # Colorful palette for diverse topics
+            max_font_size=100,
+            random_state=42,
+            regexp=r"\w+"
+        ).generate(text)
+
+        plt.figure(figsize=(12, 8))
+        plt.imshow(wc, interpolation='bilinear')
+        plt.title(title, fontsize=18, pad=20, fontweight='bold')
+        plt.axis("off")
+        plt.tight_layout()
+        plt.show()
 
     @staticmethod
-    def get_detailed_certainty_stats(preds, probs, y_true, lower=0.3):
-        """
-        Returns DataFrame with detailed statistics for certainty regions,
-        """
-        upper = 1 - lower
-
-        # Certainty classification
-        conditions = [probs < lower, probs > upper, (probs >= lower) & (probs <= upper)]
-        choices = ["Certain Negative", "Certain Positive", "Uncertain"]
-        categories = np.select(conditions, choices, default="Unknown")
-
-        df = pd.DataFrame({"Category": categories, "Correct": preds == y_true})
-
-        # Category-level aggregation
-        stats = df.groupby("Category").agg(
-            Number_Samples=("Correct", "count"),
-            Correct=("Correct", "sum")
-        )
-
-        total_samples = len(df)
-        stats["Accuracy (%)"] = (stats["Correct"] / stats["Number_Samples"] * 100).round(2)
-        stats["Coverage (%)"] = (stats["Number_Samples"] / total_samples * 100).round(2)
-
-        # ---- Combined Certain row ----
-        certain_rows = ["Certain Positive", "Certain Negative"]
-        if all(r in stats.index for r in certain_rows):
-            num_samples_certain = stats.loc[certain_rows, "Number_Samples"].sum()
-            correct_certain = stats.loc[certain_rows, "Correct"].sum()
-            acc_certain = round(correct_certain / num_samples_certain * 100, 2) if num_samples_certain > 0 else np.nan
-            coverage_certain = round(num_samples_certain / total_samples * 100, 2)
-            stats.loc["Certain"] = [num_samples_certain, correct_certain, acc_certain, coverage_certain]
-
-        # ---- Overall row ----
-        overall = pd.DataFrame({
-            "Number_Samples": [total_samples],
-            "Correct": [(preds == y_true).sum()],
-            "Accuracy (%)": [round((preds == y_true).mean() * 100, 2)],
-            "Coverage (%)": [100.0]
-        }, index=["Overall"])
-
-        # Combine
-        stats = pd.concat([overall, stats])
-
-        # Reorder
-        order = ["Overall", "Certain", "Certain Positive", "Certain Negative", "Uncertain"]
-        return stats.reindex([i for i in order if i in stats.index])
-
-    @staticmethod
-    def display_extreme_errors(data_list, top_n=5):
+    def display_extreme_errors(data_list: List[Dict], top_n: int = 5):
         """
         Displays reviews where the model was most confident but incorrect.
         """
-        # Filter for errors (creates a list of references, not a copy)
         errors = [item for item in data_list if item['sentiment'] != item['pred']]
-        
-        # Sort by probability (Descending)
-        # High prob = Model was very sure it was positive, but it was negative
-        # Low prob = Model was very sure it was negative, but it was positive
         errors.sort(key=lambda x: x['prob'], reverse=True)
 
         print(f"\n--- Top {top_n} 'Confident' Positive Errors (Sure it was 1, actually 0) ---")
         display(pd.DataFrame(errors[:top_n])[['clean_review', 'sentiment', 'pred', 'prob']])
-        
+
         print(f"\n--- Top {top_n} 'Confident' Negative Errors (Sure it was 0, actually 1) ---")
         display(pd.DataFrame(errors[-top_n:])[['clean_review', 'sentiment', 'pred', 'prob']])
 
     @staticmethod
-    def display_uncertain_errors(data_list, top_n=10):
+    def display_uncertain_errors(data_list: List[Dict], top_n: int = 10):
         """
         Displays reviews where the model was most uncertain (probability near 0.5).
         """
-        # Filter for errors
         errors = [item for item in data_list if item['sentiment'] != item['pred']]
-        
-        # Calculate uncertainty score: distance from 0.5
-        # We don't need to store this in the dict; we can calculate it during sorting
         errors.sort(key=lambda x: abs(x['prob'] - 0.5))
 
         print(f"\n--- Top {top_n} Most Uncertain Reviews (Prob near 0.5) ---")
-        # Use a temporary DataFrame slice for display
         df_display = pd.DataFrame(errors[:top_n]).copy()
         df_display['uncertainty_score'] = (df_display['prob'] - 0.5).abs()
-        
         display(df_display[['clean_review', 'sentiment', 'pred', 'prob', 'uncertainty_score']])
 
     @staticmethod

@@ -1,0 +1,38 @@
+# ==========================================
+# STATIC PIPELINE SETTINGS
+# ==========================================
+data:
+    train_size: 0.5
+    test_size: 0.3
+    min_term_freq: 10
+    max_df_ratio: 0.4
+
+cascade:  
+    specialist_weight: 0.7       
+
+bert:
+    sentence_model: "all-MiniLM-L6-v2"
+    basic:
+        model_name: "distilbert-base-uncased-finetuned-sst-2-english"
+        epochs: 3
+        batch_size: 16
+        max_len: 256
+        learning_rate: 2e-5
+        patience: 2
+    specialist:
+        epochs: 3
+        batch_size: 8
+        learning_rate: 1e-5
+        num_layers_to_freeze: 4
+        patience: 8
+
+# ==========================================
+# GRID SEARCH SPACE (Iterated by Dask)
+# ==========================================
+grid_search:
+    models: ["linear_svm", "logreg"]
+    ngram_range: [[1,1], [1,2], [1,3]]
+    n_concepts: [0, 1000, 5000, 7000]
+    z_threshold: [0, 1.0, 1.96, 2.576]
+    sentiment_weight: [0.0, 30.0]
+    C: [1.0]

@@ -3,6 +3,8 @@ __pycache__/
 *.py[cod]
 *$py.class
 
+configs/best_params.yaml
+
 # Jupyter Notebook checkpoints
 .ipynb_checkpoints/
 
@@ -44,6 +46,8 @@ data/
 figures/
 plots/
 reports/
+results/
+models/
 *.pdf
 
 # Jupyter Notebook hidden files
