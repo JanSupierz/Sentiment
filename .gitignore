@@ -43,12 +43,8 @@ data/
 *.pkl
 
 # Output folders
-figures/
-plots/
-reports/
 results/
 models/
-*.pdf
 
 # Jupyter Notebook hidden files
 .ipynb_checkpoints/
@@ -85,5 +81,9 @@ docs/_build/
 *.pdf
 *.dvi
 *.rks 
+
+#Other LaTeX
+*.run.xml
+*-blx.bib
 
 

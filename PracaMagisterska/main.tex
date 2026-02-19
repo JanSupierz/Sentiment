@@ -1,0 +1,941 @@
+% !TeX spellcheck = en_GB
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%                                        %
+%     Master thesis LaTeX template       %
+%  compliant with the SZJK regulations   %
+%                                        %
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%                                        %
+%  (c) Krzysztof Simiński, 2018-2024     %
+%                                        %
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%                                        %
+% The latest version of the templates is %
+% available at                           %
+% github.com/ksiminski/polsl-aei-theses  %
+%                                        %
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%
+%
+% This LaTeX project formats the final thesis
+% with compliance to the SZJK regulations.
+% Please to not change formatting (fonts, margins,
+% bolds, italics, etc).
+%
+% You can compile the project in several ways.
+%
+% 1. pdfLaTeX compilation
+%
+% pdflatex main
+% bibtex   main
+% pdflatex main
+% pdflatex main
+%
+%
+% 2. XeLaTeX compilation
+%
+% Compilation with the XeLaTeX engine inserts Calibri font
+% in the title page. Of course the font has to be installed.
+%
+
+% xelatex main
+% bibtex  main
+% xelatex main
+% xelatex main
+%
+%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% If you have any questions, remarks, just send me an email: %
+%            krzysztof.siminski(at)polsl.pl               %
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+% We would like to improve the LaTeX templates
+% of final theses. By answering the questions
+% in the survey whose address your can find below
+% you help us to do so. The survey is completely
+% anonimous. Thank you!
+%
+% https://docs.google.com/forms/d/e/1FAIpQLScyllVxNKzKFHfILDfdbwC-jvT8YL0RSTFs-s27UGw9CKn-fQ/viewform?usp=sf_link
+%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%                                             %
+% CUSTOMISATION OF THE THESIS                 %
+%                                             %
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+% Please customise your thesis with the macros below.
+
+% TODO
+% author:
+\newcommand{\FirstNameAuthor}{Jan}
+\newcommand{\SurnameAuthor}{Supierz}
+\newcommand{\Firstnames}{\FirstNameAuthor}
+\newcommand{\Surname}{\SurnameAuthor}
+\newcommand{\IdAuthor}{319212}
+
+% coauthor:
+%\newcommand{\FirstNameCoauthor}{First Names}  % If there is a coauthor, put the first names here.
+%\newcommand{\SurnameCoauthor}{Surname}        % If there is a coauthor, put the surnames here.
+%\newcommand{\IdCoauthor}{$\langle$student id$\rangle$} % If there is a coauthor, put the student id here (remove $\langle$ and $\rangle)
+% If there is no coathor, leave the definitions empty like below. If a coauthor exists, comment the lines below.
+\newcommand{\FirstNameCoauthor}{} % If there is only one author, leave the definitions empty.
+\newcommand{\SurnameCoauthor}{}   % If there is only one author, leave the definitions empty.
+\newcommand{\IdCoauthor}{}        % If there is only one author, leave the definitions empty.
+%%%%%%%%%%
+
+\newcommand{\Supervisor}{dr hab. inż. Krzysztof Simiński, prof. PŚ}  % supervisor (remove $\langle$ and $\rangle)
+\newcommand{\Title}{Granular Computations for Sentiment Detection in Natural Language Texts}
+\newcommand{\TitleAlt}{Wykorzystanie obliczeń ziarnistych do wykrywania ładunku emocjonalnego w tekstach w języku naturalnym}
+\newcommand{\Program}{Informatics}
+\newcommand{\Specialisation}{System Software}
+\newcommand{\Id}{319212}
+\newcommand{\Departament}{of Algorithmics and Software}
+
+
+% If you have a consultant for your thesis, put their name below ...
+\newcommand{\Consultant}{}  %  (remove $\langle$ and $\rangle)
+% ... else leave the braces empty:
+%\newcommand{\Consultant}{} % no consultant
+
+% end of thesis customisation
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%                                             %
+% END OF CUSTOMISATION                        %
+%                                             %
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%                                             %
+%   PLEASE DO NOT MODIFY THE SETTINGS BELOW!  %
+%                                             %
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+
+\documentclass[a4paper,twoside,12pt]{book}
+\usepackage[utf8]{inputenc}                                      
+\usepackage[T1]{fontenc}  
+\usepackage{amsmath,amsfonts,amssymb,amsthm}
+\usepackage[polish,british]{babel} 
+\usepackage{indentfirst}
+\usepackage{xurl}
+\usepackage{xstring}
+\usepackage{ifthen}
+
+
+
+\usepackage{ifxetex}
+
+\ifxetex
+	\usepackage{fontspec}
+	\defaultfontfeatures{Mapping=tex—text} % to support TeX conventions like ``——-''
+	\usepackage{xunicode} % Unicode support for LaTeX character names (accents, European chars, etc)
+	\usepackage{xltxtra} % Extra customizations for XeLaTeX
+\else
+	\usepackage{lmodern}
+\fi
+
+
+
+\usepackage[margin=2.5cm]{geometry}
+\usepackage{graphicx} 
+\usepackage{hyperref}
+\usepackage{booktabs}
+\usepackage{tikz}
+\usepackage{pgfplots}
+\usepackage{mathtools}
+\usepackage{geometry}
+\usepackage{subcaption}   % subfigures
+\usepackage[page]{appendix} % toc,
+
+
+
+
+\usepackage{csquotes}
+\usepackage[natbib=true,backend=bibtex,maxbibnames=99]{biblatex}  % compilation of bibliography with BibTeX
+%\usepackage[natbib=true,backend=biber,maxbibnames=99]{biblatex}  % compilation of bibliography with Biber
+\bibliography{biblio}
+
+\usepackage{ifmtarg}   % empty commands  
+
+\usepackage{setspace}
+\onehalfspacing
+
+
+\frenchspacing
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% environments for definitios, examples, and theorems
+\usepackage{amsthm}
+
+\newtheorem{Definition}{Definition}
+\newtheorem{Example}{Example}
+\newtheorem{Theorem}{Theorem}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%%%% TODO LIST GENERATOR %%%%%%%%%
+
+\usepackage{color}
+\definecolor{brickred}      {cmyk}{0   , 0.89, 0.94, 0.28}
+
+\makeatletter \newcommand \kslistofremarks{\section*{Remarks} \@starttoc{rks}}
+  \newcommand\l@uwagas[2]
+    {\par\noindent \textbf{#2:} %\parbox{10cm}
+{#1}\par} \makeatother
+
+
+\newcommand{\ksremark}[1]{%
+{%\marginpar{\textdbend}
+{\color{brickred}{[#1]}}}%
+\addcontentsline{rks}{uwagas}{\protect{#1}}%
+}
+
+
+
+
+
+
+
+
+
+
+%%%%%%%%%%%%%% END OF TODO LIST GENERATOR %%%%%%%%%%%  
+
+\newcommand{\printCoauthor}{%		
+    \StrLen{\FirstNameCoauthor}[\FNCoALen]
+    \ifthenelse{\FNCoALen > 0}%
+    {%
+		{\large\bfseries\Coauthor\par}
+	
+		{\normalsize\bfseries \LeftId: \IdCoauthor\par}
+    }%
+    {}
+} 
+
+%%%%%%%%%%%%%%%%%%%%%
+\newcommand{\autor}{%		
+    \StrLen{\FirstNameCoauthor}[\FNCoALenXX]
+    \ifthenelse{\FNCoALenXX > 0}%
+    {\FirstNameAuthor\ \SurnameAuthor, \FirstNameCoauthor\ \SurnameCoauthor}%
+	{\FirstNameAuthor\ \SurnameAuthor}%
+}
+%%%%%%%%%%%%%%%%%%%%%
+
+\StrLen{\FirstNameCoauthor}[\FNCoALen]
+\ifthenelse{\FNCoALen > 0}%
+{%
+\author{\FirstNameAuthor\ \SurnameAuthor, \FirstNameCoauthor\ \SurnameCoauthor}
+}%
+{%
+\author{\FirstNameAuthor\ \SurnameAuthor}
+}%
+
+%%%%%%%%%%%% FANCY HEADERS %%%%%%%%%%%%%%%
+% no capitalisation of headers
+\usepackage{fancyhdr}
+\pagestyle{fancy}
+\fancyhf{}
+\fancyhead[LO]{\nouppercase{\it\rightmark}}
+\fancyhead[RE]{\nouppercase{\it\leftmark}}
+\fancyhead[LE,RO]{\it\thepage}
+
+
+\fancypagestyle{onlyPageNumbers}{%
+   \fancyhf{} 
+   \fancyhead[LE,RO]{\it\thepage}
+}
+
+\fancypagestyle{noNumbers}{%
+   \fancyhf{} 
+   \fancyhead[LE,RO]{}
+}
+
+
+\fancypagestyle{PageNumbersChapterTitles}{%
+   \fancyhf{} 
+   \fancyhead[LO]{\nouppercase{\Firstnames\ \Surname}}
+   \fancyhead[RE]{\nouppercase{\leftmark}} 
+   \fancyfoot[CE, CO]{\thepage}
+}
+ 
+
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+
+
+
+
+
+
+\newcounter{pagesWithoutNumbers}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%% 
+\newcommand{\printOpiekun}[1]{%		
+
+    \StrLen{\Consultant}[\mystringlen]
+    \ifthenelse{\mystringlen > 0}%
+    {%
+       {\large{\bfseries CONSULTANT}\par}
+       
+       {\large{\bfseries \Consultant}\par}
+    }%
+    {}
+} 
+%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+ 
+% Please do not modify the lines below!
+\newcommand{\Author}{\FirstNameAuthor\ \MakeUppercase{\SurnameAuthor}} 
+\newcommand{\Coauthor}{\FirstNameCoauthor\ \MakeUppercase{\SurnameCoauthor}}
+\newcommand{\Type}{MASTER THESIS}
+\newcommand{\Faculty}{Faculty of Automatic Control, Electronics and Computer Science}
+\newcommand{\Polsl}{Silesian University of Technology}
+\newcommand{\Logo}{politechnika_sl_logo_bw_pion_en.pdf}
+\newcommand{\LeftId}{Student identification number}
+\newcommand{\LeftProgram}{Programme}
+\newcommand{\LeftSpecialisation}{Specialisation}
+\newcommand{\LeftSUPERVISOR}{SUPERVISOR}
+\newcommand{\LeftDEPARTMENT}{DEPARTMENT}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%                                             %
+% END OF SETTINGS                             %
+%                                             %
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%                                             %
+% MY PACKAGES, SETTINGS ETC.                  %
+%                                             %
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+% Put your packages, macros, setting here.
+ 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% listings
+% packages: listings or minted
+% % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % 
+
+% package listings
+\usepackage{listings}
+\lstset{%
+morekeywords={string,exception,std,vector},% add the keyword you need
+language=C++,% C, Matlab, Python, SQL, TeX, XML, bash, ... – vide https://www.ctan.org/pkg/listings
+commentstyle=\textit,%
+identifierstyle=\textsf,%
+keywordstyle=\sffamily\bfseries, %\texttt, %
+%captionpos=b,%
+tabsize=3,%
+frame=lines,%
+numbers=left,%
+numberstyle=\tiny,%
+numbersep=5pt,%
+breaklines=true,%
+escapeinside={@*}{*@},%
+}
+
+% % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % 
+% package minted
+% \usepackage{minted}
+
+% This package requires a special command line option in compilation
+% pdflatex -shell-escape main.tex
+% xelatex  -shell-escape main.tex
+
+%\usepackage[chapter]{minted} % [section]
+%%\usemintedstyle{bw}   % black and white codes
+%
+%\setminted % https://ctan.org/pkg/minted
+%{
+%%fontsize=\normalsize,%\footnotesize,
+%%captionpos=b,%
+%tabsize=3,%
+%frame=lines,%
+%framesep=2mm,
+%numbers=left,%
+%numbersep=5pt,%
+%breaklines=true,%
+%escapeinside=@@,%
+%}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%                                             %
+% END OF MY PACKAGES, SETTINGS ETC.           %
+%                                             %
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+\begin{document}
+%\kslistofremarks
+
+\frontmatter
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%                                             %
+%    PLEASE DO NOT MODIFY THE TITLE PAGE!     %
+%                                             %
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+%%%%%%%%%%%%%%%%%%  TITLE PAGE %%%%%%%%%%%%%%%%%%%
+\pagestyle{empty}
+{
+	\newgeometry{top=1.5cm,%
+	             bottom=2.5cm,%
+	             left=3cm,
+	             right=2.5cm}
+ 
+	\ifxetex 
+	  \begingroup
+	  \setsansfont{Calibri}
+	   
+	\fi 
+	 \sffamily
+	\begin{center}
+	\includegraphics[width=50mm]{\Logo}
+	 
+	
+	{\Large\bfseries\Type\par}
+	
+	\vfill  \vfill  
+			 
+	{\large\Title\par}
+	
+	\vfill  
+		
+	{\large\bfseries\Author\par}
+	
+	{\normalsize\bfseries \LeftId: \IdAuthor}
+
+	\printCoauthor
+	
+	\vfill  		
+ 
+	{\large{\bfseries \LeftProgram:} \Program\par} 
+	
+	{\large{\bfseries \LeftSpecialisation:} \Specialisation\par} 
+	 		
+	\vfill  \vfill 	\vfill 	\vfill 	\vfill 	\vfill 	\vfill  
+	 
+	{\large{\bfseries \LeftSUPERVISOR}\par}
+	
+	{\large{\bfseries \Supervisor}\par}
+				
+	{\large{\bfseries \LeftDEPARTMENT\ \Departament} \par}
+		
+	{\large{\bfseries \Faculty}\par}
+		
+	\vfill  \vfill  
+
+    	
+    \printOpiekun{\Consultant}
+    
+	\vfill  \vfill  
+		
+    {\large\bfseries  Gliwice \the\year}
+
+   \end{center}	
+       \ifxetex 
+       	  \endgroup
+       \fi
+	\restoregeometry
+}
+  
+
+
+\cleardoublepage
+
+\rmfamily\normalfont
+\pagestyle{empty}
+
+
+%%% Let's start the thesis %%%%
+
+% TODO
+\subsubsection*{Thesis title}  
+\Title
+
+\subsubsection*{Abstract} 
+(Thesis abstract – to be copied into an appropriate field during an electronic submission – in English.)
+
+\subsubsection*{Key words}  
+(2-5 keywords, separated by commas)
+
+\subsubsection*{Tytuł pracy}
+\begin{otherlanguage}{polish}
+\TitleAlt
+\end{otherlanguage}
+
+\subsubsection*{Streszczenie} 
+\begin{otherlanguage}{polish}
+(Streszczenie pracy – odpowiednie pole w systemie APD powinno zawierać kopię tego streszczenia.)
+\end{otherlanguage}
+
+\subsubsection*{Słowa kluczowe} 
+\begin{otherlanguage}{polish}
+(2-5 slow (fraz) kluczowych, oddzielonych przecinkami)
+\end{otherlanguage}
+
+
+
+
+%%%%%%%%%%%%%%%%%% Table of contents %%%%%%%%%%%%%%%%%%%%%%
+% Add \thispagestyle{empty} to the toc file (main.toc), because \pagestyle{empty} doesn't work if the TOC has multiple pages
+\addtocontents{toc}{\protect\thispagestyle{empty}}
+\tableofcontents
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\setcounter{pagesWithoutNumbers}{\value{page}}
+\mainmatter
+\pagestyle{empty}
+
+\cleardoublepage
+
+\pagestyle{PageNumbersChapterTitles}
+
+%%%%%%%%%%%%%% body of the thesis %%%%%%%%%%%%%%%%%
+
+% TODO
+\chapter{Introduction}
+
+%\begin{itemize}
+%\item introduction into the problem domain
+%\item settling of the problem in the domain
+%\item objective of the thesis 
+%\item scope of the thesis
+%\item short description of chapters
+%\item clear description of contribution of the thesis's author
+%\end{itemize}
+
+
+
+% TODO
+
+\chapter{State of the Art}
+
+\section{Introduction to Sentiment Analysis}
+
+Sentiment analysis (or opinion mining) is an umbrella term for the computational study of people's opinions, sentiments, emotions, and attitudes expressed in written language \cite{bib:Liu2012sentiment}. During my study I discovered that there are many names for this field and tasks associated with them: sentiment analysis, opinion mining, opinion extraction, sentiment mining, subjectivity analysis, affect analysis, emotion analysis, review mining, etc. However, the main terms in academia are both sentiment analysis and opinion mining.
+
+With the explosive growth of user-generated content on social media, review platforms, and forums, automated sentiment detection has become a crucial tool for businesses, governments, and researchers \cite{sharma2025review}. Applications range from brand monitoring and customer feedback analysis to political trend prediction and mental health assessment.
+
+Despite its importance, sentiment analysis faces several fundamental challenges which can be found in \cite{sharma2025review}. Language is inherently ambiguous: the same word can convey different sentiments depending on context. Sarcasm, irony, and domain-specific expressions further complicate the task. Models often struggle with multiple languages. Moreover, vocabulary evolves rapidly; new words, slang, and abbreviations appear constantly, especially in social media. Any practical system must therefore be robust to such linguistic shifts.
+
+\subsection{Sentiment Analysis Tasks}
+
+Sentiment analysis covers a range of tasks that differ in granularity, objective, and methodological complexity. As discussed in recent comprehensive surveys \cite{sharma2025review}, the field has evolved beyond simple polarity detection and now addresses multiple complementary problems. The most relevant tasks are outlined below.
+
+\begin{itemize}
+	\item \textbf{Document-level sentiment analysis (DLSA)} aims to determine the overall polarity of an entire document, typically classifying it as positive, negative, or neutral. This formulation assumes that the document has a coherent opinion about a single entity or topic, which is very common in product or movie reviews.
+	
+	\item \textbf{Sentence-level sentiment analysis (SLSA)} operates at a finer granularity. It often involves two stages: first, identifying whether a sentence is subjective or objective, and second, assigning a sentiment label to subjective sentences. This approach is useful when documents contain both factual statements and opinions.
+	
+	\item \textbf{Aspect-based sentiment analysis (ABSA)} focuses on identifying sentiments expressed towards specific aspects or attributes of an entity. For example, in a restaurant review, the sentiment towards ``food'' may differ from that towards ``service''. ABSA therefore requires both aspect extraction and sentiment classification at the aspect level.
+	
+	\item \textbf{Aspect extraction (AE)} is a related task that involves detecting the entities, components, or attributes that are targets of opinions (e.g., finding opinions on a certain products or their features).
+	
+	\item \textbf{Emotion detection (ED)} extends polarity classification by identifying fine-grained emotional states such as joy, anger, sadness, or fear. Compared to binary or ternary sentiment classification, emotion detection requires more expressive representations and often relies on specialised lexical resources or deep neural architectures.
+	
+	\item \textbf{Multi-domain sentiment classification} addresses the problem of transferring models across domains (areas of focus) (e.g., from movie reviews to product reviews). Since vocabulary and linguistic patterns vary between domains, domain adaptation and transfer learning techniques are commonly employed.
+	
+	\item \textbf{Multilingual sentiment analysis} aims to analyse sentiment across multiple languages. This task may involve language-specific resources such as sentiment lexicons, or large translated collections of text (corpora). Language detectors can be used as an alternative approach.
+	
+	\item \textbf{Multimodal sentiment analysis (MMSA)} integrates information from multiple modalities, such as text, audio, and visual signals.
+	
+	\item \textbf{Opinion spam detection (OSD)} focuses on identifying deceptive or fabricated opinions, such as fake reviews intended to manipulate public perception. Or social media posts that try to promote a particular person or service.
+\end{itemize}
+
+\section{Sentiment Analysis Methods}
+
+Early sentiment analysis methods can be divided into two main categories: lexicon-based and machine learning based.
+
+\subsection{Lexicon-Based Methods}
+
+Lexicon-based approaches rely on pre-compiled dictionaries of words annotated with sentiment scores (e.g., positive, negative, neutral). Tools such as \textsc{WordNet-Affect} \cite{bib:wordnet-affect} and \textsc{SentiWordNet} \cite{bib:sentiwordnet2010} provide such lexical resources. A popular rule-based tool is \textsc{VADER} (Valence Aware Dictionary and sEntiment Reasoner) \cite{bib:hutto2015vader}, which not only uses a sentiment lexicon but also accounts for grammatical and syntactical cues like intensifiers, negations, and punctuation. VADER is particularly effective for social media text and requires no training data.
+
+The main advantage of lexicon-based methods is their simplicity and speed. However, they are limited to the words present in the lexicon, cannot capture word order, and often fail when words are used in novel contexts. 
+
+These methods remain in active use; for example, a recent study compared several lexicon-based approaches for sentiment analysis \cite{bib:nursal2025battle}.
+
+\subsection{Classic Machine Learning Models}
+
+With the availability of labelled datasets, supervised machine learning became the dominant paradigm. Text is first converted into a numerical representation, typically a \textit{bag-of-words} (BoW) model where each document is represented by a vector of word frequencies. Variants include \textit{n-grams} (contiguous sequences of words) and \textit{TF-IDF} (term frequency–inverse document frequency) weighting, which down-weights common words \cite{[]}.
+
+Classifiers such as Naïve Bayes, Logistic Regression, and Support Vector Machines (SVM) are then trained on these vectors. SVM, in particular, has been shown to be highly effective for high-dimensional sparse text data \cite{[]}. While these models are fast and interpretable, they require careful feature engineering and cannot capture deep semantic relationships. Moreover, they are inherently limited to the vocabulary seen during training—any word not present in the training corpus is either ignored or treated as an unknown token.
+
+\section{Deep Learning for Sentiment Analysis}
+
+Neural networks revolutionised natural language processing. Word embeddings such as \textsc{Word2Vec} \cite{[]} and \textsc{GloVe} \cite{bib:pennington2014glove} map words to dense continuous vectors that capture semantic similarity. Recurrent neural networks (RNNs) and convolutional neural networks (CNNs) can model sequences of words, while long short-term memory (LSTM) networks address the vanishing gradient problem, allowing the model to retain long-range dependencies \cite{[]}.
+
+The most significant breakthrough came with the Transformer architecture \cite{[]} and its pre-trained variants like \textsc{BERT} (Bidirectional Encoder Representations from Transformers) \cite{[]}. BERT is pre-trained on a large corpus using masked language modelling and next-sentence prediction, then fine-tuned on downstream tasks. For sentiment analysis, fine-tuned BERT models achieve state-of-the-art results; for instance, DistilBERT \cite{[]} (a distilled version of BERT) attains around 91\% accuracy on the Stanford Sentiment Treebank (SST-2) while being smaller and faster.
+
+Despite their accuracy, deep learning models come with large computational costs. They require GPUs for training and inference, have large memory footprint, and are slower than classic models. This makes them less suitable for real-time applications and deployment on resource-constrained devices.
+
+\section{Granular Computing: Foundations}
+
+Granular Computing (GrC) is an emerging paradigm that mimics human problem-solving by processing information at multiple levels of granularity \cite{[]}. An \textit{information granule} is a collection of objects drawn together by indistinguishability, similarity, or functionality. Granules can be organised hierarchically—coarse granules provide an overview, while finer granules reveal details. This hierarchical structure aligns with the way humans naturally perceive and analyse complex phenomena.
+
+Three fundamental concepts underpin GrC: \textit{granulation} (decomposing a whole into parts), \textit{organisation} (integrating parts into a whole), and \textit{causation} (associating causes and effects) \cite{[]}. In the context of text analysis, granules can be characters, words, phrases, sentences, or even higher-level concepts. Moving between these levels allows a system to balance abstraction and detail, potentially improving both efficiency and interpretability.
+
+
+\subsection{Three-Way Decisions}
+
+A closely related idea is the theory of three-way decisions \cite{[][]}, which extends the traditional binary classification (accept/reject) by introducing a third option: deferment or uncertainty. In many real-world scenarios, it is preferable to withhold a decision when evidence is insufficient. Three-way decisions have been successfully integrated with GrC to create models that can delay classification until more information becomes available, a concept particularly useful in dynamic environments.
+
+\subsection{Prototype Theory and Conceptual Spaces}
+
+In cognitive science, prototype theory \cite{[]} posits that natural categories are formed around prototypical examples. Conceptual spaces \cite{[]} provide a geometric framework where concepts correspond to convex regions, and prototypes are points within those regions. This aligns naturally with granular computing: a concept can be seen as a granule whose members are semantically similar words, and its centroid (cluster centre) serves as a prototype. Recent work has begun to bridge prototype theory and word embeddings \cite{[]}, demonstrating the potential of using clustering to derive concept-level representations for text.
+
+\section{Granular Computing in Text Classification and Sentiment Analysis}
+
+The literature contains numerous applications of GrC to text mining. Below we review the most relevant contributions, grouped by their focus.
+
+\subsection{Data-Level Granularity}
+
+A \textit{classified feature representation three-way decision model} was proposed by \cite{[]}. The method selects distinct feature subsets for positive and negative classes using fuzzy quotient space theory and variance-weighted mutual information. If a sample falls into an uncertain region, the full feature set is used. This approach speeds up classification and reduces noise, albeit at the cost of training three separate models.
+
+Another data-level technique is presented in \cite{[]}, where granular computing is combined with deep learning for cyberbullying detection. The authors generate \textit{textual granules} via a “reverse pancake scramble” algorithm and \textit{numerical granules} from word embeddings, then augment the training set with these granules. The resulting model, GCDL, demonstrates improved robustness.
+
+\subsection{Relational Granular Techniques}
+
+One of the earliest GrC-based text classification methods \cite{[]} extracts two types of information from training data: semantic information (the degree to which a feature is associated with a class) and structural information (overlap between feature sets). For a new document, similarity is computed as a weighted combination of inclusion degree and association similarity, and the document is assigned to the class of the most similar decision granule. This relational approach captures both feature co-occurrence and class association.
+
+\subsection{Bag-of-Concepts Approaches}
+
+Moving beyond words, several authors have explored \textit{bag-of-concepts} (BoC) representations. \cite{[]} directly apply prototype theory: word embeddings are clustered into Voronoi regions, and each document is represented by a histogram of cluster memberships. The authors show that such concept-level representations, when combined with standard classifiers, can rival word-level methods while offering better interpretability.
+
+Similarly, \cite{[]} extract m-grams, embed them using fastText, and cluster them per class to obtain class-specific alphabets of symbols. Documents are then converted into \textit{symbolic histograms} and classified with SVM. An evolutionary algorithm optimises hyperparameters and selects the most discriminative symbols.
+
+\cite{[]} address the problem of unbalanced datasets by first extracting n-grams, then running a granular algorithm (RL-GRADIS) per class to obtain representative symbols (cluster centres). The union of these symbols forms an alphabet, and documents are converted into histograms. Again, SVM with feature selection yields the final classification.
+
+\subsection{Retrainable and Dynamic Models}
+
+In dynamic environments where data streams arrive over time, static models become outdated. \cite{[]} propose a temporal-spatial three-way granular computing framework for sentiment classification. Initially, a small training set is used to classify only confident samples into positive or negative; uncertain samples remain in a boundary region. As new data arrives, the model is updated and the boundary samples are re-evaluated. This iterative refinement gradually improves accuracy without retraining on the entire dataset.
+
+Open-topic classification, where new topics may appear after deployment, is tackled by \cite{[]}. The model uses BERT embeddings and DBSCAN to discover unknown topics, then incrementally learns new classes. A three-way mechanism defers uncertain samples, allowing them to be revisited when more knowledge is accumulated.
+
+\subsection{Targeted Sentiment Analysis}
+
+Targeted (or topic-aware, aspect-based, or sometimes fine-grained) sentiment analysis aims to determine the sentiment expressed towards a specific aspect of a text. \cite{[]} devise a multi-level interactive attention network where granules at different levels (word, phrase, sentence) interact through attention mechanisms. The architecture computes influence matrices between child and parent granules, enabling fine-grained sentiment prediction.
+
+At the document level, \cite{[]} propose a multi-granular joint sentiment-topic model (MgJST) that introduces a sentence layer between documents and words, and a sentiment layer between documents and topics. By modelling topics at the sentence level, the model captures nuanced sentiment–topic relationships, which is valuable for applications such as brand monitoring.
+
+\subsection{Multi-Level and Interpretable Methods}
+
+Interpretability is a key motivation for granular computing. \cite{[]} develop a fuzzy rule-based system for sentiment analysis using a divide-and-conquer strategy. Information granules at different levels allow local features to be extracted, reducing both instance complexity and fuzziness, and resulting in a more interpretable model.
+
+\cite{[]} provide a broader perspective on GrC for text mining, emphasising that text can be represented at character, word, phrase, and concept levels. Integrating these multiple views can capture richer information and improve mining performance.
+
+\section{Gap Analysis and Contribution}
+
+Several key patterns emerge from the literature. Traditional machine learning models are computationally efficient but operate on a fixed vocabulary, making them sensitive to changes in wording. Deep learning models achieve high accuracy but require substantial computational resources, making them impractical for large-scale deployment. Granular computing offers a theoretical middle path by representing text at the conceptual level rather than the lexical level.
+
+This thesis empirically investigates this middle path by proposing a framework that combines concept-level text representation with a three-way cascade classifier. Based on the experimental results, the contributions and limitations of this approach are summarized below.
+
+\subsection*{Pros}
+\begin{itemize}
+	\item \textbf{Semantic generalization to unseen words:} By clustering Sentence-BERT embeddings into conceptual groups, the system can map out-of-vocabulary words to semantically similar prototypes. This allows the model to maintain performance when encountering new terminology, addressing a key limitation of traditional bag-of-words approaches.
+	
+	\item \textbf{Efficient allocation of computational resources:} The cascade architecture implements three-way decision theory by routing samples based on classification confidence. A lightweight model handles clear-cut cases, while only the most ambiguous samples are passed to the computationally intensive specialist model. This balances accuracy against computational cost.
+	
+    \item \textbf{Targeted improvement on difficult cases:} Fine-tuning a deep learning model exclusively on the uncertain samples identified by the cascade resulted in approximately 0.1\% accuracy improvement on the training set compared to a standard DistilBERT baseline. This confirms that the cascade can be further specialized through transfer-learning.
+\end{itemize}
+
+\subsection*{Cons}
+\begin{itemize}
+	\item \textbf{Loss of lexical detail through abstraction:} The most significant finding is a measurable trade-off inherent in dimensionality reduction. Mapping thousands of specific n-grams onto a smaller set of conceptual clusters inevitably loses fine-grained lexical information. This loss resulted in approximately 2\% lower accuracy for the standalone concept-based classifiers compared to their vocabulary-based counterparts. For instance, the baseline SVM achieved 91.48\% accuracy, while the concept-clustered SVM reached 89.12\%.
+	
+	\item \textbf{Upfront computational cost:} Generating deep embeddings and clustering them into conceptual groups requires significant preprocessing time and resources. Sentence-BERT was chosen specifically because it can embed multi-word phrases, unlike static models such as Word2Vec which are limited to single tokens. However, the results indicate that even these context-aware embeddings cannot fully preserve the lexical precision lost during clustering.
+\end{itemize}
+
+\subsection*{Verdict}
+The two experiments point in opposite directions. Concept-level clustering failed to match the accuracy of vocabulary-based methods, showing that granular abstraction comes at a measurable cost. 
+
+However, the cascade classifier succeeded in distributing workload efficiently, proving that three-way decisions can reduce computational expense while maintaining accuracy.
+
+\chapter{Cascade System for Granular Sentiment Analysis using Grid-Search}
+
+\section{Overview of the Pipeline}
+
+Figure~\ref{fig:pipeline} provides a high-level overview of the proposed system. The process can be divided into several stages:
+
+\begin{figure}
+	\centering
+	\includegraphics[width=1\textwidth]{./figures/pipeline_overview.png}
+	\caption{Overview of the proposed granular cascade pipeline.}
+	\label{fig:pipeline}
+\end{figure}
+
+% TODO
+\chapter{Experiments}
+
+\begin{figure}
+	\centering
+	\includegraphics[width=1\textwidth]{./figures/analysis/champion_confusion_matrices.png}
+	\caption{}
+	\label{fig:b}
+\end{figure}
+
+\begin{figure}
+	\centering
+	\includegraphics[width=1\textwidth]{./figures/analysis/accuracy_coverage_tradeoff.png}
+	\caption{Overview of the proposed granular cascade pipeline.}
+	\label{fig:a}
+\end{figure}
+
+\begin{figure}
+	\centering
+	\includegraphics[width=1\textwidth]{./figures/analysis/zscore_full_trellis.png}
+	\caption{}
+	\label{fig:c}
+\end{figure}
+
+\begin{figure}
+	\centering
+	\includegraphics[width=1\textwidth]{./figures/thesis/thesis_final_results.png}
+	\caption{}
+	\label{fig:e}
+\end{figure}
+
+\begin{figure}
+	\centering
+	\includegraphics[width=1\textwidth]{./figures/vocabulary/top_5_Positive_w30.png}
+	\caption{}
+	\label{fig:d}
+\end{figure}
+
+%
+%This chapter presents the experiments. It is a crucial part of the thesis and has to dominate in the thesis. 
+%The experiments and their analysis should be done in the way commonly accepted in the scientific community (eg. benchmark datasets, cross validation of elaborated results, reproducibility and replicability of tests etc).
+%
+%
+%\section{Methodology}
+%
+%\begin{itemize}
+%\item description of methodology of experiments
+%\item description of experimental framework (description of user interface of research applications – move to an appendix)
+%\end{itemize}
+%
+%
+%\section{Data sets}
+%
+%\begin{itemize}
+%\item description of data sets
+%\end{itemize}
+%
+%
+%\section{Results}
+%
+%\begin{itemize}
+%\item presentation of results, analysis and wide discussion of elaborated results, conclusions
+%\end{itemize}
+%
+%
+%
+%\begin{table}
+%\centering
+%\caption{A caption of a table is ABOVE it.}
+%\label{id:tab:wyniki}
+%\begin{tabular}{rrrrrrrr}
+%\toprule
+%	         &                                     \multicolumn{7}{c}{method}                                      \\
+%	         \cmidrule{2-8}
+%	         &         &         &        \multicolumn{3}{c}{alg. 3}        & \multicolumn{2}{c}{alg. 4, $\gamma = 2$} \\
+%	         \cmidrule(r){4-6}\cmidrule(r){7-8}
+%	$\zeta$ &     alg. 1 &   alg. 2 & $\alpha= 1.5$ & $\alpha= 2$ & $\alpha= 3$ &   $\beta = 0.1$  &   $\beta = -0.1$ \\
+%\midrule
+%	       0 &  8.3250 & 1.45305 &       7.5791 &    14.8517 &    20.0028 & 1.16396 &                       1.1365 \\
+%	       5 &  0.6111 & 2.27126 &       6.9952 &    13.8560 &    18.6064 & 1.18659 &                       1.1630 \\
+%	      10 & 11.6126 & 2.69218 &       6.2520 &    12.5202 &    16.8278 & 1.23180 &                       1.2045 \\
+%	      15 &  0.5665 & 2.95046 &       5.7753 &    11.4588 &    15.4837 & 1.25131 &                       1.2614 \\
+%	      20 & 15.8728 & 3.07225 &       5.3071 &    10.3935 &    13.8738 & 1.25307 &                       1.2217 \\
+%	      25 &  0.9791 & 3.19034 &       5.4575 &     9.9533 &    13.0721 & 1.27104 &                       1.2640 \\
+%	      30 &  2.0228 & 3.27474 &       5.7461 &     9.7164 &    12.2637 & 1.33404 &                       1.3209 \\
+%	      35 & 13.4210 & 3.36086 &       6.6735 &    10.0442 &    12.0270 & 1.35385 &                       1.3059 \\
+%	      40 & 13.2226 & 3.36420 &       7.7248 &    10.4495 &    12.0379 & 1.34919 &                       1.2768 \\
+%	      45 & 12.8445 & 3.47436 &       8.5539 &    10.8552 &    12.2773 & 1.42303 &                       1.4362 \\
+%	      50 & 12.9245 & 3.58228 &       9.2702 &    11.2183 &    12.3990 & 1.40922 &                       1.3724 \\
+%\bottomrule
+%\end{tabular}
+%\end{table}  
+
+%%%%%%%%%%%%%%%%%%%%%
+% FIGURE FROM FILE
+%
+%\begin{figure}
+%\centering
+%\includegraphics[width=0.5\textwidth]{./politechnika_sl_logo_bw_pion_en.pdf}
+%\caption{Caption of a figure is always below the figure.}
+%\label{fig:label}
+%\end{figure}
+%Fig. \ref{fig:label} presents …
+%%%%%%%%%%%%%%%%%%%%%
+%
+%%%%%%%%%%%%%%%%%%%%
+%% SUBFIGURES
+%
+%\begin{figure}
+%\centering
+%\begin{subfigure}{0.4\textwidth}
+%    \includegraphics[width=\textwidth]{./politechnika_sl_logo_bw_pion_en.pdf}
+%    \caption{Upper left figure.}
+%    \label{fig:upper-left}
+%\end{subfigure}
+%\hfill
+%\begin{subfigure}{0.4\textwidth}
+%    \includegraphics[width=\textwidth]{./politechnika_sl_logo_bw_pion_en.pdf}
+%    \caption{Upper right figure.}
+%    \label{fig:upper-right}
+%\end{subfigure}
+%
+%\begin{subfigure}{0.4\textwidth}
+%    \includegraphics[width=\textwidth]{./politechnika_sl_logo_bw_pion_en.pdf}
+%    \caption{Lower left figure.}
+%    \label{fig:lower-left}
+%\end{subfigure}
+%\hfill
+%\begin{subfigure}{0.4\textwidth}
+%    \includegraphics[width=\textwidth]{./politechnika_sl_logo_bw_pion_en.pdf}
+%    \caption{Lower right figure.}
+%    \label{fig:lower-right}
+%\end{subfigure}
+%        
+%\caption{Common caption for all subfigures.}
+%\label{fig:subfigures}
+%\end{figure}
+%Fig. \ref{fig:subfigures} presents very important information, eg. Fig. \ref{fig:upper-right} is an upper right subfigure.
+%%%%%%%%%%%%%%%%%%%%%
+
+
+%
+%\begin{figure}
+%\centering
+%\begin{tikzpicture}
+%\begin{axis}[
+%    y tick label style={
+%        /pgf/number format/.cd,
+%            fixed,   % po zakomentowaniu os rzednych jest indeksowana wykladniczo
+%            fixed zerofill, % 1.0 zamiast 1
+%            precision=1,
+%        /tikz/.cd
+%    },
+%    x tick label style={
+%        /pgf/number format/.cd,
+%            fixed,
+%            fixed zerofill,
+%            precision=2,
+%        /tikz/.cd
+%    }
+%]
+%\addplot [domain=0.0:0.1] {rnd};
+%\end{axis} 
+%\end{tikzpicture}
+%\caption{Figure caption is BELOW the figure.}
+%\label{fig:2}
+%\end{figure}
+%
+%\begin{figure}
+%\begin{lstlisting}
+%if (_nClusters < 1)
+%	throw std::string ("unknown number of clusters");
+%if (_nIterations < 1 and _epsilon < 0)
+%	throw std::string ("You should set a maximal number of iteration or minimal difference -- epsilon.");
+%if (_nIterations > 0 and _epsilon > 0)
+%	throw std::string ("Both number of iterations and minimal epsilon set -- you should set either number of iterations or minimal epsilon.");
+%\end{lstlisting}
+%\caption{Example of pseudocode.}
+%\end{figure}
+
+% TODO
+\chapter{Summary}
+
+%\begin{itemize}
+%\item What problem have I solved?
+%\item How have I solved the problem?
+%\item What are pros and cons of my solutions?
+%\item Can I state some recommendations?
+%\end{itemize}
+
+\begin{itemize}
+\item synthetic description of performed work
+\item conclusions
+\item  future development, potential future research
+\item Has the objective been reached?
+\end{itemize}
+
+
+
+\backmatter
+
+\cleardoublepage
+\phantomsection
+%\bibliographystyle{plplain}  % bibtex
+%\bibliography{biblio} % bibtex
+\addcontentsline{toc}{chapter}{Bibliography}
+\printbibliography           % biblatex
+
+\begin{appendices}
+
+% TODO
+\chapter{Technical documentation}
+
+
+% TODO
+\chapter{List of abbreviations and symbols}
+
+\begin{itemize}
+\item[DNA] deoxyribonucleic acid
+\item[MVC] model--view--controller 
+\item[$N$] cardinality of data set
+\item[$\mu$] membership function of a fuzzy set
+\item[$\mathbb{E}$] set of edges of a graph
+\item[$\mathcal{L}$] Laplace transformation
+\end{itemize}
+
+% TODO
+\chapter{List of additional files in~electronic submission (if applicable)}
+
+Additional files uploaded to the system include:
+\begin{itemize}
+\item source code of the application,
+\item test data,
+\item a video file showing how software or hardware developed for thesis is used,
+\item etc.
+\end{itemize}
+
+
+
+\listoffigures
+\addcontentsline{toc}{chapter}{List of figures}
+\listoftables
+\addcontentsline{toc}{chapter}{List of tables}
+
+\end{appendices}
+
+\end{document}
+
+
+%% Finis coronat opus.
+
