@@ -78,7 +78,6 @@ docs/_build/
 *.blg
 *.bbl
 *.xdv
-*.pdf
 *.dvi
 *.rks 
 
@@ -86,4 +85,5 @@ docs/_build/
 *.run.xml
 *-blx.bib
 
+main.pdf
 
