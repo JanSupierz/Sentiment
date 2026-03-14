@@ -4,6 +4,7 @@ import joblib
 from sklearn.metrics import classification_report
 from src.utils.paths import RESULTS_DIR
 
+
 class BaseModel:
     def __init__(self, name: str):
         self.name = name
@@ -41,7 +42,7 @@ class BaseModel:
     def evaluate(self, X_test, y_test, name: str = "val"):
         probs = self.predict_proba(X_test)
         preds = self.predict_label(X_test)
-        
+
         # --- PATHS ---
         data_dir = RESULTS_DIR / name / "raw_predictions"
         report_dir = RESULTS_DIR / name / "classification_reports"
@@ -49,11 +50,11 @@ class BaseModel:
         for d in [data_dir, report_dir]:
             d.mkdir(parents=True, exist_ok=True)
 
-        # 1. Save Raw Evaluation Data (Source for all future plots)
+        # Save Raw Evaluation Data (future plots)
         eval_df = self.get_evaluation_data(y_test, probs)
         eval_df.to_csv(data_dir / f"{self.name}.csv", index=False)
 
-        # 2. Save Standard Metrics
+        # Save Standard Metrics
         report_dict = classification_report(y_test, preds, output_dict=True, digits=4)
         report_df = pd.DataFrame(report_dict).transpose()
         report_df.to_csv(report_dir / f"{self.name}.csv")

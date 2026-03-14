@@ -1,24 +1,8 @@
-# src/features/concept_remap.py
 import numpy as np
 from scipy.sparse import coo_matrix, csr_matrix
 
 
 def remap_sparse_matrix(X_unit: csr_matrix, unit_to_concept: dict, n_concepts: int = None):
-    """
-    Transform CSR matrix with columns = unit IDs into CSR matrix with columns = concept IDs.
-
-    Parameters
-    ----------
-    X_unit : csr_matrix, shape (n_docs, n_units)
-    unit_to_concept : dict
-        Mapping from unit ID (int) to concept ID (int). Units not in mapping are dropped.
-    n_concepts : int, optional
-        Total number of concepts (must be >= max(concept ID)+1). If None, inferred.
-
-    Returns
-    -------
-    X_concept : csr_matrix
-    """
     X_unit = X_unit.tocoo()
     rows = X_unit.row
     cols = X_unit.col

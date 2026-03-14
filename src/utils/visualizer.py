@@ -1,4 +1,3 @@
-# src/utils/visualizer.py
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
@@ -8,7 +7,7 @@ from wordcloud import WordCloud
 from collections import Counter
 from tqdm.auto import tqdm
 from IPython.display import display
-from typing import List, Dict, Any
+from typing import List, Dict
 
 
 class ModelVisualizer:
@@ -79,7 +78,7 @@ class ModelVisualizer:
         Generates a grid of WordClouds for top positive and negative sentiment concepts.
         Each unit (concept) is treated as an indivisible phrase.
         """
-        # 1. Grouping units by Concept ID
+        # Grouping units by Concept ID
         cluster_to_units = {}
 
         for item in tqdm(train, desc="Building WordCloud clusters"):
@@ -109,7 +108,7 @@ class ModelVisualizer:
             .tolist()
         )
 
-        # 3. Preparing the plot grid
+        # Preparing the plot grid
         fig, axes = plt.subplots(2, top_n, figsize=(12, 8))
 
         def draw_wc(ax, cid, colormap, label):
@@ -153,11 +152,6 @@ class ModelVisualizer:
 
     @staticmethod
     def visualize_concept_wordcloud(concept_units, title="Global Map of Discovered Concepts"):
-        """
-        Visualizes representatives of all clusters.
-        Each concept is treated as one indivisible phrase.
-        """
-        # Join phrases using underscores so that WordCloud treats
         # "bad acting" as one token "bad_acting"
         text = " ".join([u.replace(" ", '_') for u in concept_units])
 
@@ -165,7 +159,7 @@ class ModelVisualizer:
             width=1200,
             height=600,
             background_color="white",
-            colormap="tab20",  # Colorful palette for diverse topics
+            colormap="tab20",
             max_font_size=100,
             random_state=42,
             regexp=r"\w+"
@@ -180,9 +174,6 @@ class ModelVisualizer:
 
     @staticmethod
     def display_extreme_errors(data_list: List[Dict], top_n: int = 5):
-        """
-        Displays reviews where the model was most confident but incorrect.
-        """
         errors = [item for item in data_list if item['sentiment'] != item['pred']]
         errors.sort(key=lambda x: x['prob'], reverse=True)
 
@@ -194,9 +185,6 @@ class ModelVisualizer:
 
     @staticmethod
     def display_uncertain_errors(data_list: List[Dict], top_n: int = 10):
-        """
-        Displays reviews where the model was most uncertain (probability near 0.5).
-        """
         errors = [item for item in data_list if item['sentiment'] != item['pred']]
         errors.sort(key=lambda x: abs(x['prob'] - 0.5))
 
@@ -207,9 +195,6 @@ class ModelVisualizer:
 
     @staticmethod
     def display_dataset_previews(train, val, test, n_rows=5):
-        """
-        Displays a summary and first few rows of each dataset split.
-        """
         data_sets = [("TRAIN", train), ("VALIDATION", val), ("TEST", test)]
 
         for name, ds in data_sets:

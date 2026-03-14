@@ -1,53 +1,62 @@
-#!/usr/bin/env python3
-"""
-Generate the final thesis figure comparing all systems.
-- Loads ensemble_results.csv (produced by run_ensemble.py)
-- Creates a bar chart of accuracies and saves it.
-"""
-
 import pandas as pd
 import matplotlib.pyplot as plt
 import seaborn as sns
-from pathlib import Path
 from src.utils.paths import RESULTS_DIR, FIGURES_DIR
 
-sns.set_theme(style="whitegrid", context="talk")
+sns.set_theme(style="whitegrid", context="paper", font_scale=1.2)
+
 
 def main():
-    results_path = RESULTS_DIR / "thesis" / "ensemble_results.csv"
-    if not results_path.exists():
-        raise FileNotFoundError("ensemble_results.csv not found. Run scripts/run_ensemble.py first.")
+    input_csv = RESULTS_DIR / "thesis" / "cascade_simulation_results.csv"
+    out_plot = FIGURES_DIR / "thesis" / "cascade_comparison_f1.png"
 
-    df = pd.read_csv(results_path)
-    # Extract accuracy columns (all except Delegation Rate and Threshold)
-    acc_cols = [c for c in df.columns if "Rate" not in c and "Threshold" not in c]
-    acc_df = df[acc_cols].melt(var_name="System", value_name="Accuracy")
+    if not input_csv.exists():
+        print(f"Error: {input_csv} not found. Please run the simulation script first.")
+        return
 
-    # Sort systems by accuracy
-    order = acc_df.groupby("System")["Accuracy"].max().sort_values(ascending=False).index
+    # Load the simulation results
+    df = pd.read_csv(input_csv)
 
+    # Extract the metadata for the title
+    threshold = df['Threshold'].iloc[0]
+    delegation_rate = df['Delegation_Rate'].iloc[0]
+    metrics_df = df.drop(columns=['Threshold', 'Delegation_Rate'])
+
+    # Reshape the data for seaborn
+    plot_data = metrics_df.T.reset_index()
+    plot_data.columns = ['Model', 'F1_Score']
+
+    # Initialize the plot
     plt.figure(figsize=(10, 6))
-    ax = sns.barplot(data=acc_df, x="System", y="Accuracy", hue="System", order=order, palette="viridis", legend=False)
-    ax.set_ylim(0.8, 1.0)  # adjust as needed
-    ax.set_title("Final Thesis: Cascade Performance Comparison", fontsize=16, fontweight='bold')
-    ax.set_ylabel("Accuracy")
-    ax.set_xlabel("")
-    plt.xticks(rotation=15, ha='right')
+    ax = sns.barplot(data=plot_data, x='Model', y='F1_Score', palette='viridis', hue='Model', legend=False)
 
-    # Add value labels on bars
+    # Add the exact F1 scores on top of each bar
     for p in ax.patches:
         height = p.get_height()
-        ax.annotate(f'{height:.3f}', (p.get_x() + p.get_width()/2., height),
-                    ha='center', va='bottom', fontsize=11, color='black')
+        ax.annotate(f'{height:.4f}',
+                    (p.get_x() + p.get_width() / 2., height),
+                    ha='center', va='bottom',
+                    xytext=(0, 5),
+                    textcoords='offset points',
+                    fontweight='bold')
+
+    plt.title(f"Cascade System Comparison (F1 Score)\nThreshold: {threshold:.2f} | Data Delegated: {delegation_rate:.1%}", 
+              fontweight='bold', pad=15)
+    plt.xlabel("System Architecture", fontweight='bold', labelpad=10)
+    plt.ylabel("Weighted F1 Score", fontweight='bold', labelpad=10)
+
+    min_score = plot_data['F1_Score'].min()
+    max_score = plot_data['F1_Score'].max()
+    plt.ylim(max(0, min_score - 0.05), min(1.0, max_score + 0.05))
+
+    # Clean up the X-axis labels
+    labels = [label.get_text().split('. ', 1)[-1] if '. ' in label.get_text() else label.get_text() for label in ax.get_xticklabels()]
+    ax.set_xticklabels(labels, rotation=15, ha='right')
 
     plt.tight_layout()
-    out_path = FIGURES_DIR / "thesis" / "thesis_final_results.png"
-    out_path.parent.mkdir(parents=True, exist_ok=True)
-    plt.savefig(out_path, dpi=150, bbox_inches='tight')
-    print(f"✅ Thesis figure saved to {out_path}")
+    plt.savefig(out_plot, dpi=300)
+    print(f"Visualization saved successfully to: {out_plot}")
 
-    # Also save a CSV with the accuracy comparison
-    acc_df.to_csv(FIGURES_DIR / "thesis" / "thesis_accuracy_table.csv", index=False)
 
 if __name__ == "__main__":
     main()

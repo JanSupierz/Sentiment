@@ -1,4 +1,5 @@
 # ===== File: Experiment.ipynb =====
+import tensorflow as tf
 import os
 import warnings
 import logging
@@ -8,24 +9,607 @@ import subprocess
 from pathlib import Path
 from IPython.display import Image, display
 
-# 1. Suppress TensorFlow C++ logs 
-os.environ["TF_CPP_MIN_LOG_LEVEL"] = "3"
-
-# 2. Suppress Python Warnings
-warnings.filterwarnings("ignore")
-
-# 3. Suppress internal Abseil/TensorFlow Python logging
-logging.getLogger("absl").setLevel(logging.ERROR)
-logging.getLogger("tensorflow").setLevel(logging.ERROR)
-
-# Safe import of TensorFlow (must be after env vars)
-import tensorflow as tf
-tf.get_logger().setLevel('ERROR')
-
 # Set PYTHONPATH to project root so we can import 'src'
 project_root = os.getcwd()
 os.environ["PYTHONPATH"] = project_root
 print(f"PYTHONPATH set to: {project_root}")
+
+!python -m spacy download en_core_web_sm
+
+subprocess.run(["python", "-m", "scripts.loader"], check=True)
+
+import pandas as pd
+
+
+def preview_parquet_compact(filepath, n=2, text_chars=200, token_items=30):
+    df = pd.read_parquet(filepath)
+
+    print(f"File: {filepath}")
+    print(f"Shape: {df.shape[0]} rows, {df.shape[1]} columns\n")
+
+    df_sample = df.head(n)
+
+    for col in df_sample.columns:
+        print("=" * 60)
+        print(f"COLUMN: {col}")
+        print("=" * 60)
+
+        for i, val in enumerate(df_sample[col]):
+            print(f"--- Row {i} ---")
+
+            # Handle long text
+            if isinstance(val, str):
+                preview = val[:text_chars]
+                if len(val) > text_chars:
+                    preview += " ..."
+                print(preview)
+
+            # Handle token arrays / lists
+            elif isinstance(val, (list, tuple)) or hasattr(val, "__array__"):
+                tokens = list(val)
+                preview = tokens[:token_items]
+                print(" ".join(preview))
+
+                if len(tokens) > token_items:
+                    print(f"... ({len(tokens)-token_items} more tokens)")
+
+            else:
+                print(val)
+
+            print()
+
+
+preview_parquet_compact('data/preprocessed/train.parquet', n=2)
+
+!python -m scripts.run_basic
+
+import itertools
+from pathlib import Path
+from typing import List
+
+import numpy as np
+import pandas as pd
+import matplotlib.pyplot as plt
+from matplotlib.lines import Line2D
+
+# --- Configuration ---
+MODELS = {"linear_svm": "Linear SVM", "logreg": "LogReg"}
+TEXT_VERSIONS = ["text_clean", "text_expanded"]
+CASINGS = ["cased", "lower"]
+REPRESENTATIONS = ["BoW", "TF-IDF"]
+
+COLOR_MAP = {"Linear SVM": "#1f77b4", "LogReg": "#ff7f0e"}
+LINESTYLE_MAP = {"TF-IDF": "-", "BoW": "--"}
+
+
+def adjust_y_positions(ys: List[float], threshold: float = 0.0025) -> np.ndarray:
+    """Adjust overlapping y-coordinates to prevent text overlap."""
+    ys = np.array(ys)
+    indices = np.argsort(ys)
+    adjusted = ys.copy()
+
+    for _ in range(50):
+        for i in range(len(adjusted) - 1):
+            idx1, idx2 = indices[i], indices[i + 1]
+            diff = adjusted[idx2] - adjusted[idx1]
+            if diff < threshold:
+                push = (threshold - diff) / 2.0
+                adjusted[idx1] -= push
+                adjusted[idx2] += push
+    return adjusted
+
+
+def load_experiment_data(reports_dir: Path) -> pd.DataFrame:
+    """Load CSV reports and pivot them into a structure ready for plotting."""
+    records = []
+
+    # itertools.product replaces the 4 nested for-loops
+    combinations = itertools.product(
+        MODELS.items(), TEXT_VERSIONS, CASINGS, REPRESENTATIONS
+    )
+
+    for (model_key, model_label), text_ver, case, rep in combinations:
+        filepath = reports_dir / f"{text_ver}_{case}_{rep}_{model_key}.csv"
+
+        if filepath.exists():
+            df = pd.read_csv(filepath, index_col=0)
+            records.append({
+                "Pipeline": f"{model_label} ({rep})",
+                "Model": model_label,
+                "Representation": rep,
+                "Casing": case,
+                "Text Version": text_ver,
+                "F1": df.loc["macro avg", "f1-score"]
+            })
+
+    if not records:
+        return pd.DataFrame()
+
+    results_df = pd.DataFrame(records)
+    pivot_df = results_df.pivot(
+        index=["Pipeline", "Model", "Representation", "Casing"],
+        columns="Text Version",
+        values="F1"
+    ).reset_index().dropna(subset=["text_clean", "text_expanded"])
+
+    return pivot_df
+
+
+def create_slopegraph(df: pd.DataFrame):
+    """Generate and display the slopegraph from the pivoted dataframe."""
+    cased_df = df[df["Casing"] == "cased"].copy()
+    lower_df = df[df["Casing"] == "lower"].copy()
+
+    # Calculate global Y limits for shared axes
+    all_f1 = pd.concat([
+        cased_df["text_clean"], cased_df["text_expanded"],
+        lower_df["text_clean"], lower_df["text_expanded"]
+    ])
+    padding = 0.05 * (all_f1.max() - all_f1.min())
+    y_limits = (all_f1.min() - padding, all_f1.max() + padding)
+
+    # Plot setup
+    plt.rcParams['font.family'] = 'sans-serif'
+    fig, axes = plt.subplots(1, 2, figsize=(14, 6), sharey=True, facecolor='white')
+    titles = ["Cased", "Lower (uncased)"]
+    data_frames = [cased_df, lower_df]
+
+    for ax, ax_df, title in zip(axes, data_frames, titles):
+        _setup_axis(ax, title, y_limits)
+        _draw_slope_lines(ax, ax_df)
+
+    _add_legend_and_titles(fig)
+
+    plt.tight_layout(rect=[0, 0.05, 1, 0.92])
+    plt.show()
+    plt.close(fig)
+
+
+def _setup_axis(ax: plt.Axes, title: str, y_limits: tuple):
+    """Helper to format individual subplots."""
+    ax.set_facecolor('white')
+    ax.set_title(title, fontsize=13, fontweight='bold', pad=15)
+    ax.set_xlim(-0.3, 1.3)
+    ax.set_xticks([0, 1])
+    ax.set_xticklabels(["Clean Text", "Expanded Text"], fontsize=11, fontweight='bold', color="#444444")
+    ax.tick_params(axis='x', length=0, pad=10)
+    ax.tick_params(axis='y', left=False) 
+    ax.set_ylim(y_limits)
+    ax.yaxis.grid(True, linestyle='--', alpha=0.3)
+    ax.set_axisbelow(True)
+
+    for spine in ['top', 'right', 'left']:
+        ax.spines[spine].set_visible(False)
+    ax.spines['bottom'].set_color('#DDDDDD')
+
+    # Draw vertical guide lines
+    ax.axvline(0, color='#E0E0E0', lw=1.5, zorder=1)
+    ax.axvline(1, color='#E0E0E0', lw=1.5, zorder=1)
+
+
+def _draw_slope_lines(ax: plt.Axes, df: pd.DataFrame):
+    """Draw the lines, scatter points, and labels for a single subplot."""
+    clean_vals = df["text_clean"].tolist()
+    expanded_vals = df["text_expanded"].tolist()
+
+    # Calculate exact text positioning
+    clean_adj = adjust_y_positions(clean_vals)
+    expanded_adj = adjust_y_positions(expanded_vals)
+
+    for i, (_, row) in enumerate(df.iterrows()):
+        y_clean = row["text_clean"]
+        y_exp = row["text_expanded"]
+        c = COLOR_MAP[row["Model"]]
+        ls = LINESTYLE_MAP[row["Representation"]]
+
+        # Main line and markers
+        ax.plot([0, 1], [y_clean, y_exp], color=c, linestyle=ls, lw=2.5, alpha=0.85, zorder=2)
+        ax.scatter([0, 1], [y_clean, y_exp], color=c, s=70, edgecolor='white', linewidth=1.5, zorder=4)
+
+        # Left label (clean)
+        if abs(clean_adj[i] - y_clean) > 0.0001:
+            ax.plot([0, -0.05], [y_clean, clean_adj[i]], color=c, lw=1, alpha=0.4, zorder=1)
+        ax.text(-0.06, clean_adj[i], f"{y_clean:.4f}", ha='right', va='center',
+                fontsize=10, color='#333333', fontweight='500', zorder=5)
+
+        # Right label (expanded)
+        if abs(expanded_adj[i] - y_exp) > 0.0001:
+            ax.plot([1, 1.05], [y_exp, expanded_adj[i]], color=c, lw=1, alpha=0.4, zorder=1)
+        ax.text(1.06, expanded_adj[i], f"{y_exp:.4f}", ha='left', va='center',
+                fontsize=10, color='#333333', fontweight='500', zorder=5)
+
+
+def _add_legend_and_titles(fig: plt.Figure):
+    """Helper to add the global legend and figure titles."""
+    fig.axes[0].set_ylabel("Macro F1 Score", fontsize=12, labelpad=15, fontweight='bold', color="#444444")
+
+    legend_elements = [
+        Line2D([0], [0], color=COLOR_MAP['Linear SVM'], lw=3, label='Linear SVM'),
+        Line2D([0], [0], color=COLOR_MAP['LogReg'], lw=3, label='Logistic Regression'),
+        Line2D([], [], color='none', label='   '),  # Invisible spacer
+        Line2D([0], [0], color='#555555', lw=2.5, linestyle='-', label='TF-IDF'),
+        Line2D([0], [0], color='#555555', lw=2.5, linestyle='--', label='BoW')
+    ]
+
+    fig.legend(handles=legend_elements, loc='lower center', ncol=5, 
+               frameon=False, fontsize=11, bbox_to_anchor=(0.5, -0.02), columnspacing=1.5)
+
+    fig.suptitle("Effect of Text Expansion on Macro F1 Score", fontsize=16, fontweight='bold', y=0.98)
+    fig.text(0.5, 0.92,
+             "Tracking model performance shifts by algorithm (color) and feature representation (line style).",
+             ha='center', fontsize=12, color='#555555')
+
+
+if __name__ == "__main__":
+    target_dir = Path("results/val/run_basic/classification_reports")
+
+    if not target_dir.exists():
+        print(f"Could not find directory: {target_dir}")
+    else:
+        pivot_data = load_experiment_data(target_dir)
+        if pivot_data.empty:
+            print("No matching experiment files found!")
+        else:
+            create_slopegraph(pivot_data)
+
+!python -m scripts.run_on_preprocessing
+
+!python -m scripts.run_custom
+
+!python -m scripts.visualize_custom_filtering --column tokens_lower
+display(Image("results/figures/analysis/tokens_lower_wordclouds.png"))
+
+!python -m scripts.visualize_custom_filtering --column tokens_filtered
+display(Image("results/figures/analysis/tokens_filtered_wordclouds.png"))
+
+import pandas as pd
+import seaborn as sns
+import matplotlib.pyplot as plt
+from pathlib import Path
+import gc
+
+def plot_zscore_experiment_polished(reports_dir="results/val/run_custom/classification_reports"):
+    reports_path = Path(reports_dir)
+
+    if not reports_path.exists():
+        print(f"Could not find directory: {reports_path}")
+        return
+
+    # Configuration
+    token_columns = [
+        'tokens_cased', 'tokens_lower', 'tokens_letters',
+        'tokens_filtered', 'tokens_stemmed', 'tokens_lemmatized'
+    ]
+
+    models = {"linear_svm": "Linear SVM", "logreg": "Logistic Regression"}
+    variants = ["CustomBow", "CustomTfidf"]
+
+    z_scores = [0, 1, 2, 3, 4]
+    records = []
+
+    # Extract Data
+    for token_col in token_columns:
+        for variant in variants:
+            for z in z_scores:
+                for model_key, model_label in models.items():
+
+                    filename = f"{token_col}_{variant}_Z{z}_{model_key}.csv"
+                    filepath = reports_path / filename
+
+                    if filepath.exists():
+                        df = pd.read_csv(filepath, index_col=0)
+
+                        records.append({
+                            "Token Processing": token_col.replace('tokens_', '').title(),
+                            "Variant": variant,
+                            "Z-Score Threshold": float(z),
+                            "Model": model_label,
+                            "Macro F1-Score": df.loc["macro avg", "f1-score"]
+                        })
+
+    if not records:
+        print("No matching experiment files found!")
+        return
+
+    results_df = pd.DataFrame(records)
+
+    # Find best overall configuration for the printout
+    best_run = results_df.loc[results_df['Macro F1-Score'].idxmax()]
+
+    print("\nBEST CONFIGURATION")
+    print("-" * 40)
+    print(f"Top Model:           {best_run['Model']}")
+    print(f"Feature Variant:     {best_run['Variant']}")
+    print(f"Top Preprocessing:   {best_run['Token Processing']}")
+    print(f"Optimal Z-Score:     {best_run['Z-Score Threshold']}")
+    print(f"Peak Macro F1-Score: {best_run['Macro F1-Score']:.4f}")
+    print("-" * 40)
+
+    print("\nTop 5 Runs Overall:")
+    display(results_df.sort_values(by='Macro F1-Score', ascending=False).head(5))
+
+    plt.rcParams['font.family'] = 'sans-serif'
+
+    fig, axes = plt.subplots(
+        2, 2,
+        figsize=(16, 10),
+        sharey=True,
+        facecolor='#F8F9FA'
+    )
+
+    fig.patch.set_facecolor('#F8F9FA')
+
+    bold_palette = {
+        'Cased': '#2c3e50',      # Dark Navy
+        'Lower': '#e74c3c',      # Red
+        'Letters': '#27ae60',    # Green
+        'Filtered': '#8e44ad',   # Purple
+        'Stemmed': '#f39c12',    # Orange
+        'Lemmatized': '#00CCCC'  # Aqua
+    }
+
+    axes = axes.flatten()
+    plot_index = 0
+
+    # Draw Subplots
+    for variant in variants:
+        for model_key, model_label in models.items():
+
+            ax = axes[plot_index]
+            plot_index += 1
+
+            ax.set_facecolor('white')
+
+            model_df = results_df[
+                (results_df["Model"] == model_label) &
+                (results_df["Variant"] == variant)
+            ]
+
+            if not model_df.empty:
+                # Find the Z-score that produced the highest F1
+                best_z_for_subplot = model_df.loc[model_df['Macro F1-Score'].idxmax()]['Z-Score Threshold']
+                ax.axvline(best_z_for_subplot, color='#333333', linestyle=':', linewidth=2, zorder=1, alpha=0.6)
+                ax.axvspan(0, best_z_for_subplot, color='#2ecc71', alpha=0.05, zorder=0)
+
+                x_offset = 0.05 if best_z_for_subplot == 0 else -0.05
+                h_align = 'left' if best_z_for_subplot == 0 else 'right'
+
+                ax.text(
+                    best_z_for_subplot + x_offset,  
+                    0.05,
+                    f'Optimal (Z={int(best_z_for_subplot)})',
+                    color='#333333',
+                    fontsize=11,
+                    fontweight='bold',
+                    rotation=90,
+                    transform=ax.get_xaxis_transform(),
+                    ha=h_align,
+                    va='bottom'
+                )
+
+            sns.lineplot(
+                data=model_df,
+                x="Z-Score Threshold",
+                y="Macro F1-Score",
+                hue="Token Processing",
+                palette=bold_palette,
+                marker="o",
+                markersize=7,
+                linewidth=2.5,
+                ax=ax,
+                legend=(plot_index == 1),
+                zorder=3
+            )
+
+            # Titles & Axes Styling
+            ax.set_title(
+                f"{model_label} ({variant})",
+                fontsize=15,
+                fontweight='bold',
+                pad=15
+            )
+
+            ax.set_xlim(-0.2, 4.2)
+            ax.set_xticks([0, 1, 2, 3, 4])
+            ax.set_xticklabels(["0", "1", "2", "3", "4"], fontsize=11, fontweight='bold')
+            ax.set_xlabel("Z-Score Pruning Threshold", fontsize=12, fontweight='bold', labelpad=10)
+
+            for spine in ['top', 'right']:
+                ax.spines[spine].set_visible(False)
+
+            ax.spines['left'].set_color('#DDDDDD')
+            ax.spines['bottom'].set_color('#DDDDDD')
+            ax.grid(axis='y', linestyle='--', alpha=0.4)
+            ax.grid(axis='x', visible=False)
+
+    # Global labels
+    axes[0].set_ylabel("Macro F1-Score", fontsize=13, fontweight='bold')
+    axes[2].set_ylabel("Macro F1-Score", fontsize=13, fontweight='bold')
+
+    # Legend
+    handles, labels = axes[0].get_legend_handles_labels()
+    axes[0].get_legend().remove()
+
+    fig.legend(
+        handles,
+        labels,
+        loc='lower center',
+        ncol=6,
+        frameon=False,
+        fontsize=12,
+        bbox_to_anchor=(0.5, -0.02),
+        title="Tokenization Strategy",
+        title_fontproperties={'weight': 'bold'}
+    )
+
+    # Global Titles
+    fig.suptitle(
+        "Impact of Extreme Vocabulary Pruning on Performance",
+        fontsize=18,
+        fontweight='bold',
+        y=1.02
+    )
+
+    fig.text(
+        0.5,
+        0.96,
+        "Green shaded region represents the optimal threshold before performance degradation.",
+        ha='center',
+        fontsize=12,
+        color='#555555'
+    )
+
+    plt.tight_layout(rect=[0, 0.05, 1, 0.94])
+
+    output_dir = Path("results/figures")
+    output_dir.mkdir(parents=True, exist_ok=True)
+    out_path = output_dir / "zscore_threshold.png"
+
+    plt.savefig(out_path, dpi=200, bbox_inches='tight')
+    print(f"Saved polished plot to: {out_path}")
+
+    plt.show()
+
+    # Cleanup
+    plt.close(fig)
+    del records, results_df, fig, axes
+    gc.collect()
+
+if __name__ == "__main__":
+    plot_zscore_experiment_polished()
+
+!python -m scripts.visualize_ablation_study
+display(Image("results/figures/analysis/ablation_study.png"))
+
+!python -m scripts.run_n_grams
+
+import pandas as pd
+import seaborn as sns
+import matplotlib.pyplot as plt
+from pathlib import Path
+
+def plot_ngram_results_polished(reports_dir="results/val/run_n_grams/classification_reports"):
+    reports_path = Path(reports_dir)
+
+    ngram_ranges = ["1-1", "1-2", "1-3"]
+    models = {"linear_svm": "Linear SVM", "logreg": "Logistic Regression"}
+    token_col = "tokens_lower"
+    z_threshold = 2.0
+
+    records = []
+
+    # 1. Load data
+    for ng in ngram_ranges:
+        for m_key, m_label in models.items():
+            filename = f"ng{ng}_{m_key}.csv"
+            filepath = reports_path / filename
+
+            if filepath.exists():
+                df = pd.read_csv(filepath, index_col=0)
+                records.append({
+                    "N-Gram Range": f"1 to {ng.split('-')[1]}", 
+                    "Model": m_label,
+                    "Macro F1-Score": df.loc["macro avg", "f1-score"]
+                })
+
+    if not records:
+        print("No matching files found!")
+        return
+
+    results_df = pd.DataFrame(records)
+
+    # 2. Canvas Setup
+    plt.rcParams['font.family'] = 'sans-serif'
+    fig, ax = plt.subplots(figsize=(10, 6), facecolor='#F8F9FA')
+    ax.set_facecolor('white')
+
+    custom_palette = {"Linear SVM": "#2c3e50", "Logistic Regression": "#e74c3c"}
+
+    # 3. Draw Bar Plot (Grouped by N-Gram Range)
+    sns.barplot(
+        data=results_df, 
+        x="N-Gram Range", 
+        y="Macro F1-Score", 
+        hue="Model",
+        palette=custom_palette,
+        edgecolor='white',
+        linewidth=1.5,
+        ax=ax,
+        zorder=3,
+        alpha=0.9
+    )
+
+    # 4. Annotate Bars with exact values
+    for patch in ax.patches:
+        height = patch.get_height()
+        if height > 0: # Avoid annotating empty/ghost bars if any exist
+            # Check if this is the absolute best bar to bold it
+            is_best = (height == results_df['Macro F1-Score'].max())
+            weight = 'heavy' if is_best else 'bold'
+            color = '#111111' if is_best else '#444444'
+            prefix = "★ " if is_best else ""
+
+            ax.text(
+                patch.get_x() + patch.get_width() / 2, 
+                height - 0.002, # Tuck the text slightly inside the top of the bar
+                f"{prefix}{height:.4f}",
+                ha='center', 
+                va='top', 
+                fontsize=11, 
+                color='white', # White text inside the dark bars looks super clean
+                fontweight='bold',
+                zorder=5
+            )
+
+    # 5. Formatting & Cleanup
+    ax.set_title(
+        f"Impact of N-Gram Ranges on Model Performance (Z={z_threshold})", 
+        fontsize=16, fontweight='bold', pad=20
+    )
+    ax.set_ylabel("Macro F1-Score", fontsize=12, fontweight='bold', labelpad=10)
+    ax.set_xlabel("Vocabulary Depth (N-Grams)", fontsize=12, fontweight='bold', labelpad=10)
+
+    # Clean Spines
+    for spine in ['top', 'right']:
+        ax.spines[spine].set_visible(False)
+    ax.spines['left'].set_color('#DDDDDD')
+    ax.spines['bottom'].set_color('#DDDDDD')
+    
+    # Gridlines behind the bars
+    ax.grid(axis='y', linestyle='--', alpha=0.4, zorder=0)
+
+    # Set Y-axis to start at a reasonable baseline so differences are visible but not exaggerated
+    y_min = 0.88 
+    y_max = results_df["Macro F1-Score"].max() + 0.005
+    ax.set_ylim(y_min, y_max)
+
+    # Legend placement
+    ax.legend(
+        title="Algorithm", 
+        title_fontproperties={'weight': 'bold'},
+        loc='upper left', # Move it out of the way of the taller right-side bars
+        frameon=True,
+        edgecolor='#DDDDDD',
+        facecolor='white'
+    )
+
+    plt.tight_layout()
+
+    # 6. Save and show
+    out_dir = Path("results/figures/analysis")
+    out_dir.mkdir(parents=True, exist_ok=True)
+    out_path = out_dir / "ngram_experiment_bars.png"
+    
+    plt.savefig(out_path, dpi=200, bbox_inches='tight')
+    print(f"Saved polished grouped bar chart to: {out_path}")
+    
+    plt.show()
+
+if __name__ == "__main__":
+    plot_ngram_results_polished()
+
+!python -m scripts.visualize_certainty
+display(Image("results/figures/analysis/model_comparison_certainty_dist.png"))
 
 config_path = "configs/default.yaml"
 
@@ -34,72 +618,29 @@ with open(config_path) as f:
 
 print(f"Keys: {base_cfg}")
 
-print("--- Data Preprocessing ---")
-subprocess.run(["python", "-m", "src.utils.loader", "--config", config_path], check=True)
-
 # 2. Build Feature Factory
 !python -m scripts.build_features --config configs/default.yaml
 
-import pickle
-from src.utils.paths import DATA_DIR
+!python -m scripts.visualize_concepts --token_col tokens_lower --n_concepts 10000 --weights 0 10 --top_n 10
 
-def inspect_stop_words(ngram_key="1_3", display_limit=100):
-    """Loads and prints stop words, then safely drops them from memory."""
-    vocab_path = DATA_DIR / "vocab" / f"vocab_{ngram_key}.pkl"
-    
-    if not vocab_path.exists():
-        print(f"Vocab file not found at {vocab_path}. Run feature building first.")
-        return
-        
-    with open(vocab_path, "rb") as f:
-        vocab_data = pickle.load(f)
-        
-    stop_units = vocab_data.get("stop_units", [])
-    
-    print(f"Total dynamically generated stop units: {len(stop_units)}")
-    print("-" * 50)
-    print(stop_units[:display_limit])
+display(Image("results/figures/concepts/pos_wc_tokens_lower_k10000_w0.png"))
+display(Image("results/figures/concepts/pos_wc_tokens_lower_k10000_w10.png"))
+display(Image("results/figures/concepts/neg_wc_tokens_lower_k10000_w0.png"))
+display(Image("results/figures/concepts/neg_wc_tokens_lower_k10000_w10.png"))
 
-# Run it
-inspect_stop_words()
-
-print("\n--- Visualizing Unigrams (Baseline) ---")
-!python -m scripts.visualize_sentiment --nmin 1 --nmax 1 --n_concepts 0 --sentiment_weight 0
-display(Image("results/figures/vocabulary/ngram_1_1_k0_w0_importance.png"))
-!python -m scripts.visualize_sentiment --nmin 1 --nmax 3 --n_concepts 0 --sentiment_weight 0
-display(Image("results/figures/vocabulary/ngram_1_3_k0_w0_importance.png"))
-
-print("\n--- Visualizing Semantic Concepts (Clustered) ---")
-from IPython.display import Image, display
-
-print("\n=== COMPARISON: STANDARD vs. AUGMENTED CLUSTERING ===")
-for weight in [0, 30]:
-    print(f"\nAnalyzing Cluster Specialization for Weight {weight}...")
-    !python -m scripts.visualize_sentiment \
-        --nmin 1 --nmax 3 --n_concepts 5000 --sentiment_weight {weight} --top_n 5
-
-display(Image("results/figures/vocabulary/top_5_Positive_w0.png"))
-display(Image("results/figures/vocabulary/top_5_Positive_w30.png"))
-
-display(Image("results/figures/vocabulary/top_5_Negative_w0.png"))
-display(Image("results/figures/vocabulary/top_5_Negative_w30.png"))
-
-# 4. Run Grid Evaluation
 !python -m scripts.grid_search --config configs/default.yaml --workers 1
 
-# 3. Train BERT Baseline
-!python -m scripts.train_bert --config configs/default.yaml
-
-# 5. Find Optimal Threshold & Save Best Params
-!python -m scripts.analyse_results
-display(Image("results/figures/analysis/accuracy_coverage_tradeoff.png"))
-
-!python -m scripts.param_analysis
-display(Image("results/figures/analysis/zscore_full_trellis.png"))
+!python -m scripts.visualize_cluster_comparison
+display(Image("results/figures/analysis/cluster_comparison.png"))
 
 print("\n--- Model Comparison: Baseline vs Clustered Concepts ---")
 !python -m scripts.compare_models
 display(Image("results/figures/analysis/champion_confusion_matrices.png"))
+
+!python -m scripts.train_bert --config configs/default.yaml
+
+!python -m scripts.analyse_results
+display(Image("results/figures/analysis/accuracy_coverage_tradeoff.png"))
 
 print("--- Step 6: Train Specialist BERT (Transfer Learning) ---")
 !python -m scripts.train_specialist --config configs/default.yaml --best_params configs/best_params.yaml
@@ -111,6 +652,9 @@ print("--- Step 7: Run Ensemble (Cascade Evaluation) ---")
 display(Image("results/figures/thesis/thesis_final_results.png"))
 
 
+
+
+# ===== File: .virtual_documents/Experiment.ipynb =====
 
 
 # ===== File: configs/best_params.yaml =====
@@ -134,15 +678,6 @@ models:
 # ==========================================
 # STATIC PIPELINE SETTINGS
 # ==========================================
-data:
-    train_size: 0.5
-    test_size: 0.3
-    min_term_freq: 10
-    max_df_ratio: 0.4
-
-cascade:  
-    specialist_weight: 0.7       
-
 bert:
     sentence_model: "all-MiniLM-L6-v2"
     basic:
@@ -164,145 +699,117 @@ bert:
 # ==========================================
 grid_search:
     models: ["linear_svm", "logreg"]
-    ngram_range: [[1,1], [1,2], [1,3]]
-    n_concepts: [0, 1000, 5000, 7000]
-    z_threshold: [0, 1.0, 1.96, 2.576]
-    sentiment_weight: [0.0, 30.0]
-    C: [1.0]
+    n_concepts: [0, 500, 5000, 10000]
+    sentiment_weight: [0.0, 1.0, 10.0]
 
 # ===== File: scripts/analyse_results.py =====
-#!/usr/bin/env python3
+import argparse
 import pandas as pd
 import numpy as np
-import yaml
 import matplotlib.pyplot as plt
 import matplotlib.ticker as mtick
 import seaborn as sns
-from pathlib import Path
 
-from src.utils.paths import RESULTS_DIR, CONFIGS_DIR, FIGURES_DIR
+from src.utils.paths import RESULTS_DIR, FIGURES_DIR
 
-# Set a clean, academic theme
 sns.set_theme(style="whitegrid", context="paper", font_scale=1.2)
 
+
 def sweep_exact_cascade(svm_df, bert_preds, y_true):
-    """
-    Sweeps through certainty requirements to find the exact Local Accuracy 
-    AND the True Global Hybrid Accuracy for the whole system.
-    """
-    # FIX: Start exactly at 50% and go to exactly 100%
     certainty_thresholds = np.linspace(0.500, 1.0, 200)
     svm_probs = svm_df['probability'].values
     svm_preds = (svm_probs > 0.5).astype(int)
-    
+
     results = []
     for c in certainty_thresholds:
         lower_bound = 1.0 - c
-        
-        # FIX: Force 100% delegation at exactly 1.0 certainty
+
         if c >= 1.0:
             certain_mask = np.zeros_like(svm_probs, dtype=bool)
         else:
             certain_mask = (svm_probs >= c) | (svm_probs <= lower_bound)
-            
+
         delegated_mask = ~certain_mask
-        
         cov = certain_mask.mean()
         delegated = 1.0 - cov 
-        
-        # 1. LOCAL ACCURACY (What the SVM scores on its retained portion)
+
+        # LOCAL ACCURACY (What the SVM scores on its retained portion)
         if cov > 0:
             local_acc = (svm_preds[certain_mask] == y_true[certain_mask]).mean()
         else:
-            local_acc = 1.0 
-            
-        # 2. GLOBAL HYBRID ACCURACY (The true performance of the pipeline)
+            local_acc = 1.0
+
+        # GLOBAL HYBRID ACCURACY
         svm_correct = (svm_preds[certain_mask] == y_true[certain_mask]).sum()
         bert_correct = (bert_preds[delegated_mask] == y_true[delegated_mask]).sum()
         hybrid_acc = (svm_correct + bert_correct) / len(y_true)
-            
         results.append((c, cov, delegated, local_acc, hybrid_acc))
-        
+
     return pd.DataFrame(results, columns=['Certainty_Threshold', 'Coverage', 'Delegated', 'Local_Accuracy', 'Hybrid_Accuracy'])
 
-def main():
-    raw_dir = RESULTS_DIR / "val" / "raw_predictions"
+
+def main(experiments, bert_exp):
+    raw_base = RESULTS_DIR / "val"
     fig_dir = FIGURES_DIR / "analysis"
     fig_dir.mkdir(parents=True, exist_ok=True)
-    
-    if not raw_dir.exists():
-        print("❌ No raw predictions found. Run grid_search.py first.")
+
+    # Load Ground Truth and BERT Baseline exact predictions
+    bert_file = raw_base / bert_exp / "raw_predictions" / "bert_basic_baseline.csv"
+    if not bert_file.exists():
+        print(f"BERT baseline CSV not found at {bert_file}. Run train_bert.py first.")
         return
 
-    # 1. Load Ground Truth and BERT Baseline exact predictions
-    bert_file = raw_dir / "bert_basic_baseline.csv"
-    if not bert_file.exists():
-        print("❌ BERT baseline CSV not found. Run train_bert.py first.")
-        return
-        
     bert_df = pd.read_csv(bert_file)
     y_true = bert_df['true_label'].values
     bert_preds = (bert_df['probability'].values > 0.5).astype(int)
     bert_global_acc = (bert_preds == y_true).mean()
 
-    csv_files = [f for f in raw_dir.glob("*.csv") if f.name != "bert_basic_baseline.csv"]
-    
+    # Gather CSVs from the specified experiment folders
+    csv_files = []
+    for exp in experiments:
+        exp_dir = raw_base / exp / "raw_predictions"
+        if exp_dir.exists():
+            csv_files.extend([f for f in exp_dir.glob("*.csv") if f.name != "bert_basic_baseline.csv"])
+        else:
+            print(f"Warning: Directory {exp_dir} not found. Skipping.")
+
+    if not csv_files:
+        print("No model prediction CSVs found in the specified experiments!")
+        return
+
     all_results = []
-    print(f"\n🔍 Sweeping Certainty Thresholds for Exact Hybrid Optimization...")
-    
+    print(f"\nSweeping Certainty Thresholds for Exact Hybrid Optimization...")
+
     for f in csv_files:
         model_name = f.stem
         svm_df = pd.read_csv(f)
-        
+
         if len(svm_df) != len(y_true):
             print(f"Warning: {f.name} length mismatch. Skipping.")
             continue
-            
+
         metrics_df = sweep_exact_cascade(svm_df, bert_preds, y_true)
         metrics_df['Model'] = model_name
         all_results.append(metrics_df)
 
     curve_df = pd.concat(all_results, ignore_index=True)
 
-    # ==========================================
     # FIND OVERALL WINNER (Based on max Hybrid Accuracy)
-    # ==========================================
     best_row = curve_df.loc[curve_df['Hybrid_Accuracy'].idxmax()]
-    
+
     winner_name = best_row['Model']
     best_certainty = best_row['Certainty_Threshold']
     best_delegated = best_row['Delegated']
     best_hybrid_acc = best_row['Hybrid_Accuracy']
     lower_bound = 1.0 - best_certainty
 
-    print(f"\n🏆 CASCADE OPTIMIZATION WINNER: {winner_name}")
+    print(f"\nCASCADE OPTIMIZATION WINNER: {winner_name}")
     print(f"-> Peak Global System Accuracy: {best_hybrid_acc:.2%} (Beats Base BERT by {best_hybrid_acc - bert_global_acc:+.2%})")
     print(f"-> Required Model Certainty: {best_certainty:.1%} (Accepts probs >= {best_certainty:.3f} or <= {lower_bound:.3f})")
     print(f"-> Data Delegated to BERT: {best_delegated:.2%} (SVM handles {(1-best_delegated):.2%})")
 
-    # Save Best Config
-    parts = winner_name.split('_')
-    base_m = parts[0] + "_" + parts[1] if parts[0] == "linear" else parts[0]
-    ng_str = [p for p in parts if p.startswith('ng')][0].replace('ng', '').split('-')
-    k_val = int([p for p in parts if p.startswith('k')][0].replace('k', ''))
-    w_val = float([p for p in parts if p.startswith('w')][0].replace('w', ''))
-    z_val = float([p for p in parts if p.startswith('z')][0].replace('z', ''))
-
-    best_params = {
-        "model": base_m,
-        "features": {"ngram_range": [int(ng_str[0]), int(ng_str[1])], "n_concepts": k_val, 
-                     "z_threshold": z_val, "use_concepts": k_val > 0, "sentiment_weight": w_val},
-        "cascade": {"delegation_threshold": round(float(lower_bound), 3)},
-        "models": {base_m: {"C": 1.0}}
-    }
-    with open(CONFIGS_DIR / "best_params.yaml", "w") as f:
-        yaml.dump(best_params, f)
-
-    # ==========================================
-    # PLOTTING THE 3 GRAPHS
-    # ==========================================
+# PLOTTING GRAPHS
     top_svms = curve_df.groupby('Model')['Hybrid_Accuracy'].max().sort_values(ascending=False).head(4).index.tolist()
-    
     plot_df = curve_df[curve_df['Model'].isin(top_svms)].copy()
     plot_df['Model'] = plot_df['Model'].apply(lambda x: x.replace("linear_svm", "SVM").replace("logreg", "LR"))
     clean_top_svms = [m.replace("linear_svm", "SVM").replace("logreg", "LR") for m in top_svms]
@@ -314,7 +821,9 @@ def main():
     palette = {m: c for m, c in zip(clean_top_svms, colors)}
 
     # --- Graph 1: Local Accuracy vs Certainty Requirement ---
+    # ADDED: style="Model", alpha=0.8 to make overlapping lines distinct
     sns.lineplot(data=plot_df, x="Certainty_Threshold", y="Local_Accuracy", hue="Model", 
+                 style="Model", dashes=True, alpha=0.8,
                  palette=palette, ax=ax1, linewidth=2.5, legend=False)
     ax1.set_title("1. Local Accuracy (SVM on Retained Data)", fontsize=14)
     ax1.set_xlabel(r"Model Prediction Certainty (%)", fontsize=12)
@@ -326,7 +835,9 @@ def main():
     ax1.set_ylim(ymin, 1.0)
 
     # --- Graph 2: Deferral Curve (Data Delegated vs Certainty) ---
+    # ADDED: style="Model", alpha=0.8
     sns.lineplot(data=plot_df, x="Certainty_Threshold", y="Delegated", hue="Model", 
+                 style="Model", dashes=True, alpha=0.8,
                  palette=palette, ax=ax2, linewidth=2.5, legend=False)
     ax2.set_title("2. Workload Management (Deferral Curve)", fontsize=14)
     ax2.set_xlabel(r"Model Prediction Certainty (%)", fontsize=12)
@@ -337,27 +848,28 @@ def main():
     ax2.set_ylim(0.0, 1.0)
 
     # --- Graph 3: True Hybrid Optimization Score ---
+    # ADDED: style="Model", alpha=0.8
     sns.lineplot(data=plot_df, x="Delegated", y="Hybrid_Accuracy", hue="Model", 
+                 style="Model", dashes=True, alpha=0.8,
                  palette=palette, ax=ax3, linewidth=2.5)
-    
-    # Draw BERT's baseline as a flat line to beat
+
     ax3.axhline(bert_global_acc, color='black', linestyle='--', linewidth=2, label=f"BERT Global Baseline ({bert_global_acc:.1%})")
-    
-    # Mark the winning peak!
     ax3.plot(best_delegated, best_hybrid_acc, marker='*', markersize=18, color='gold', markeredgecolor='black', zorder=10, label="Optimal Peak")
-    
+
     ax3.set_title("3. Global System Optimization Score", fontsize=14)
     ax3.set_xlabel("Data Delegated to BERT (%)", fontsize=12)
     ax3.set_ylabel("Combined Cascade Accuracy (%)", fontsize=12)
     ax3.xaxis.set_major_formatter(mtick.PercentFormatter(1.0))
     ax3.yaxis.set_major_formatter(mtick.PercentFormatter(1.0))
-    ax3.legend(fontsize='11', loc='upper right')
-    ax3.set_xlim(0.0, 1.0)
     
+    # Push legend outside or adjust so styles are clearly visible
+    ax3.legend(fontsize='11', loc='upper right', bbox_to_anchor=(1.0, 0.95))
+    ax3.set_xlim(0.0, 1.0)
+
     plt.tight_layout()
     plot_path = fig_dir / "accuracy_coverage_tradeoff.png"
     plt.savefig(plot_path, dpi=150, bbox_inches='tight')
-    print(f"📊 Saved Trade-off graphs to: {plot_path}")
+    print(f"Saved Trade-off graphs to: {plot_path}")
 
     try:
         from IPython.display import display, Image
@@ -365,16 +877,23 @@ def main():
     except ImportError:
         pass
 
+
 if __name__ == "__main__":
-    main()
+    parser = argparse.ArgumentParser(description="Sweep cascade thresholds across multiple experiment runs.")
+    parser.add_argument("--experiments", nargs="+", default=["grid_search", "run_n_grams", "run_basic", "run_custom", "run_on_preprocessing"], 
+                        help="List of experiment folders to pull SVM/LogReg CSVs from (e.g. grid_search run_n_grams)")
+    parser.add_argument("--bert_exp", default="bert",
+                        help="The experiment folder containing your bert_basic_baseline.csv")
+
+    args = parser.parse_args()
+    main(args.experiments, args.bert_exp)
 
 # ===== File: scripts/build_features.py =====
-#!/usr/bin/env python3
 import argparse
 import yaml
-from tqdm import tqdm
 from src.utils.paths import PROJECT_ROOT
 from src.features import builder
+
 
 def main():
     parser = argparse.ArgumentParser()
@@ -383,46 +902,42 @@ def main():
 
     with open(PROJECT_ROOT / args.config, 'r') as f:
         cfg = yaml.safe_load(f)
+
+    # Get parameter spaces from config
     grid = cfg['grid_search']
+    n_concepts_list = grid['n_concepts']
+    sentiment_weights = grid['sentiment_weight']
 
-    print("--- PHASE 1: Building Base Vocabulary & Embeddings ---")
-    unique_ngrams = grid['ngram_range']
-    
-    for nr in tqdm(unique_ngrams, desc="Base Setup", dynamic_ncols=True):
-        builder.build_ngram_index(cfg, nr, splits=['train', 'val'])
-        builder.compute_and_cache_embeddings(cfg, nr)
+    print("=== PHASE 1: Build unit matrices ===")
+    builder.build_unit_matrices('tokens_lower', max_df=0.7)
 
-    print("\n--- PHASE 2: Extracting Concepts & Pre-building Matrices ---")
-    tasks = []
-    for nr in grid['ngram_range']:
-        for nc in grid['n_concepts']:
-            weights = [0.0] if nc == 0 else grid['sentiment_weight']
-            for w in weights:
-                # Deduplicate baseline tasks
-                if nc == 0 and w > 0:
-                    continue
-                tasks.append((tuple(nr), nc, w))
+    print("\n=== PHASE 2: Compute unit Z‑score indices ===")
+    builder.compute_unit_z_indices('tokens_lower', [2.0])
 
-    # Remove any stray duplicates
-    tasks = list(dict.fromkeys(tasks))
+    print("\n=== PHASE 3: Compute embeddings (needed for concepts) ===")
+    builder.compute_embeddings('tokens_lower')
 
-    with tqdm(total=len(tasks), desc="Processing Configurations", dynamic_ncols=True) as pbar:
-        for nr, nc, w in tasks:
-            pbar.set_description(f"ng{nr[0]}-{nr[1]} | k{nc} | w{int(w)}")
-            
-            if nc > 0:
-                # 1. Cluster embeddings into concepts
-                builder.run_extraction_logic(nr, nc, w)
-                
-                # 2. Pre-build concept matrices (resolves unseen validation words now)
-                builder.build_concept_matrices(cfg, nr, nc, w, splits=['train', 'val'])
-            
-            # 3. Compute log-odds stats (relies on the train matrix)
-            builder.run_stats_logic(cfg, nr, nc, w)
-            
-            pbar.update(1)
+    print("\n=== PHASE 4: Extract concepts for each (k, w) combination ===")
+    for nc in n_concepts_list:
+        if nc == 0:
+            continue
+        for w in sentiment_weights:
+            builder.extract_concepts('tokens_lower', nc, w)
 
-    print("\nFeature Factory Complete! Matrices cached. Ready for parallel grid search.")
+    print("\n=== PHASE 5: Build concept matrices ===")
+    for nc in n_concepts_list:
+        if nc == 0:
+            continue
+        for w in sentiment_weights:
+            builder.build_concept_matrices('tokens_lower', nc, w)
+
+    print("\n=== PHASE 6: Compute concept Z‑score indices ===")
+    for nc in n_concepts_list:
+        if nc == 0:
+            continue
+        for w in sentiment_weights:
+            builder.compute_concept_z_indices('tokens_lower', nc, w, [2.0])
+
 
 if __name__ == "__main__":
     main()
@@ -541,47 +1056,49 @@ if __name__ == "__main__":
 import argparse
 import yaml
 import itertools
-import numpy as np
-import pandas as pd
-from scipy.sparse import load_npz
 from sklearn.feature_extraction.text import TfidfTransformer
 import dask
 from dask.distributed import Client, LocalCluster, as_completed
 from tqdm import tqdm
 
 from src.models.classic import LinearSVMClassifier, LogisticRegressionClassifier
-from src.features.concept_remap import remap_sparse_matrix
-from src.utils.paths import PROJECT_ROOT, DATA_DIR
-from src.features.builder import load_representation
+from src.utils.paths import PROJECT_ROOT
+from src.features import builder
 
-def run_grid_iter(static_cfg, nr, nc, w, z, m):
-    # Construct a unique, descriptive name
-    run_id = f"{m}_ng{nr[0]}-{nr[1]}_k{nc}_w{int(w)}_z{z}"
-    
+
+def run_grid_iter(token_col, n_concepts, sentiment_weight, model_name, static_cfg):
+    run_id = f"{model_name}_k{n_concepts}_w{int(sentiment_weight)}"
+
     try:
-        X_train, y_train = load_representation(static_cfg, nr, nc, w, z, 'train')
-        X_val, y_val = load_representation(static_cfg, nr, nc, w, z, 'val')
-        
+        X_train, y_train = builder.load_representation(
+            token_col, n_concepts, sentiment_weight, 2, 'train'
+        )
+        X_val, y_val = builder.load_representation(
+            token_col, n_concepts, sentiment_weight, 2, 'val'
+        )
+
         tfidf = TfidfTransformer()
         X_train_tfidf = tfidf.fit_transform(X_train)
         X_val_tfidf = tfidf.transform(X_val)
-        
-        if m == 'linear_svm':
-            model = LinearSVMClassifier(C=static_cfg['grid_search']['C'][0], name=run_id)
+
+        if model_name == 'linear_svm':
+            model = LinearSVMClassifier(name=run_id)
         else:
-            model = LogisticRegressionClassifier(C=static_cfg['grid_search']['C'][0], name=run_id)
-            
+            model = LogisticRegressionClassifier(name=run_id)
+
         model.train(X_train_tfidf, y_train)
-        model.evaluate(X_val_tfidf, y_val, name="val")
-        
+        model.evaluate(X_val_tfidf, y_val, name="val/grid_search")
+
         return f"Done: {run_id}"
     except Exception as e:
         return f"Failed {run_id}: {e}"
+
 
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--config", required=True)
     parser.add_argument("--workers", type=int, default=1)
+    parser.add_argument("--token_col", default="tokens_lower", help="Token column to use")
     args = parser.parse_args()
 
     with open(PROJECT_ROOT / args.config, 'r') as f:
@@ -592,18 +1109,22 @@ def main():
     client = Client(cluster)
     print(f"Dask Dashboard available at: {client.dashboard_link}")
 
+    token_col = args.token_col
+
     delayed_tasks = []
-    for nr, nc, z, w, m in itertools.product(
-        grid['ngram_range'], grid['n_concepts'], grid['z_threshold'], 
-        grid['sentiment_weight'], grid['models']
+    for nc, w, m in itertools.product(
+        grid['n_concepts'], grid['sentiment_weight'], grid['models']
     ):
-        if nc == 0 and w > 0: continue # Deduplicate
-        delayed_tasks.append(dask.delayed(run_grid_iter)(static_cfg, nr, nc, w, z, m))
-    
+        if nc == 0 and w > 0:
+            continue
+        delayed_tasks.append(dask.delayed(run_grid_iter)(
+            token_col, nc, w, m, static_cfg
+        ))
+
     if delayed_tasks:
-        print(f"🚀 Starting Grid Search with {len(delayed_tasks)} iterations...")
+        print(f"Starting Grid Search with {len(delayed_tasks)} iterations...")
         futures = client.compute(delayed_tasks)
-        
+
         results = []
         for future in tqdm(as_completed(futures), total=len(futures), desc="Grid Search Progress"):
             try:
@@ -613,15 +1134,178 @@ def main():
                 results.append(f"Failed: {e}")
 
         failed = [r for r in results if r.startswith("Failed")]
-        print(f"\n✅ Completed: {len(results) - len(failed)}")
+        print(f"\nCompleted: {len(results) - len(failed)}")
         if failed:
-            print(f"❌ Failed: {len(failed)}")
+            print(f"Failed: {len(failed)}")
             for f in failed[:5]: print(f"  {f}")
 
     client.close()
 
+
 if __name__ == "__main__":
     main()
+
+# ===== File: scripts/loader.py =====
+import os
+import re
+import unicodedata
+from concurrent.futures import ProcessPoolExecutor
+from typing import List, Tuple, Dict, Any
+
+import contractions
+import nltk
+import pandas as pd
+import spacy
+import tensorflow_datasets as tfds
+from nltk.stem import PorterStemmer, WordNetLemmatizer
+from nltk.tokenize import word_tokenize
+from sklearn.model_selection import train_test_split
+from tqdm.auto import tqdm
+
+nltk.download('punkt', quiet=True)
+nltk.download('wordnet', quiet=True)
+nltk.download('omw-1.4', quiet=True)
+
+nlp = spacy.load("en_core_web_sm", disable=['parser', 'ner'])
+
+def get_ngrams(tokens: List[str], ngram_range: Tuple[int, int]) -> List[str]:
+    """Generate n-grams from a list of tokens."""
+    min_n, max_n = ngram_range
+    ngrams = []
+    for n in range(min_n, max_n + 1):
+        for i in range(len(tokens) - n + 1):
+            ngrams.append(' '.join(tokens[i:i+n]))
+    return ngrams
+
+
+TRANSLATE_TABLE = str.maketrans({
+    "`": "'", "´": "'", "’": "'", "‘": "'",
+    "“": '"', "”": '"', "„": '"',
+    "–": "-", "—": "-", "−": "-",
+    "\x96": "-", "\x97": "-",
+    "…": "..."
+})
+
+
+def normalize_text(text: str) -> str:
+    """Unify punctuation, normalise Unicode, strip HTML and extra spaces."""
+    text = unicodedata.normalize('NFKC', text)
+    text = text.translate(TRANSLATE_TABLE)
+    text = re.sub(r'<[^>]+>', ' ', text)         # remove HTML tags
+    text = re.sub(r'\s+', ' ', text).strip()
+    return text
+
+
+def clean_letters(tokens: List[str]) -> List[str]:
+    """Remove all non letter characters from tokens, discard if empty."""
+    cleaned = []
+    for t in tokens:
+        token_clean = re.sub(r'[^a-zA-Z]', '', t)
+        if token_clean:
+            cleaned.append(token_clean)
+    return cleaned
+
+
+def stem_tokens(tokens: List[str]) -> List[str]:
+    """Apply Porter stemming to each token."""
+    stemmer = PorterStemmer()
+    return [stemmer.stem(t) for t in tokens]
+
+
+def lemmatize_tokens(tokens: List[str]) -> List[str]:
+    """Apply WordNet lemmatization to each token."""
+    lemmatizer = WordNetLemmatizer()
+    return [lemmatizer.lemmatize(t) for t in tokens]
+
+
+def process_one(item: Tuple[bytes, int]) -> Dict[str, Any]:
+    """Clean a single review and produce all text representations."""
+    text_raw, label = item
+    if isinstance(text_raw, bytes):
+        text_raw = text_raw.decode('utf-8')
+
+    text_clean = normalize_text(text_raw)
+    text_expanded = contractions.fix(text_clean)
+
+    tokens_cased = word_tokenize(text_expanded)
+    tokens_lower = [w.lower() for w in tokens_cased]
+
+    doc = nlp(text_expanded)
+    tokens_filtered = [
+        token.text.lower() for token in doc
+        if (token.pos_ != 'AUX' or token.tag_ == 'MD')
+        and token.pos_ != 'DET'
+        and token.tag_ != 'POS'
+    ]
+
+    return {
+        'sentiment': int(label),
+        'text_raw': text_raw,
+        'text_clean': text_clean,
+        'text_expanded': text_expanded,
+        'tokens_cased': tokens_cased,
+        'tokens_lower': tokens_lower,
+        'tokens_letters': clean_letters(tokens_lower),
+        'tokens_stemmed': stem_tokens(tokens_lower),
+        'tokens_lemmatized': lemmatize_tokens(tokens_lower),
+        'tokens_filtered': tokens_filtered
+    }
+
+
+def load_and_process(n_jobs: int) -> Tuple[List[Dict], List[Dict], List[Dict]]:
+    print("Loading IMDb reviews...")
+    ds = tfds.load('imdb_reviews', split='train+test', as_supervised=True)
+    raw_data = list(tfds.as_numpy(ds))
+
+    # Deduplicate based on raw review text
+    seen = set()
+    unique_raw = []
+    for t, l in raw_data:
+        if t not in seen:
+            seen.add(t)
+            unique_raw.append((t, l))
+    print(f"Removed {len(raw_data)-len(unique_raw)} duplicates.")
+
+    print(f"Processing {len(unique_raw)} reviews...")
+    with ProcessPoolExecutor(max_workers=n_jobs) as executor:
+        processed = []
+        for result in tqdm(executor.map(process_one, unique_raw), total=len(unique_raw)):
+            processed.append(result)
+
+    labels = [item['sentiment'] for item in processed]
+
+    train, temp, _, temp_labels = train_test_split(
+        processed, labels, test_size=0.5,
+        random_state=42, stratify=labels
+    )
+
+    val, test = train_test_split(
+        temp, test_size=0.3,
+        random_state=42, stratify=temp_labels
+    )
+
+    print(f"Train: {len(train)}, Val: {len(val)}, Test: {len(test)}")
+    return train, val, test
+
+
+def save_as_parquet(train, val, test, out_dir):
+    """Convert lists to DataFrames and save as Parquet."""
+    os.makedirs(out_dir, exist_ok=True)
+
+    for name, data in zip(['train', 'val', 'test'], [train, val, test]):
+        df = pd.DataFrame(data)
+
+        df = df[['sentiment', 'text_raw', 'text_clean', 'text_expanded',
+                 'tokens_cased', "tokens_lower", 'tokens_filtered',
+                 'tokens_letters', 'tokens_stemmed', 'tokens_lemmatized']]
+
+        out_path = os.path.join(out_dir, f'{name}.parquet')
+        df.to_parquet(out_path, index=False)
+        print(f"Saved {name} set to {out_path}")
+
+
+if __name__ == '__main__':
+    save_as_parquet(*load_and_process(n_jobs=4), out_dir='data/preprocessed')
 
 # ===== File: scripts/param_analysis.py =====
 #!/usr/bin/env python3
@@ -775,6 +1459,195 @@ def main():
 if __name__ == "__main__":
     main()
 
+# ===== File: scripts/run_basic.py =====
+import pandas as pd
+import gc
+from sklearn.feature_extraction.text import CountVectorizer, TfidfTransformer
+from src.models.classic import LinearSVMClassifier, LogisticRegressionClassifier
+from tqdm.auto import tqdm
+
+
+def main():
+    train_df = pd.read_parquet("data/preprocessed/train.parquet")
+    val_df = pd.read_parquet("data/preprocessed/val.parquet")
+    y_train = train_df["sentiment"].values
+    y_val = val_df["sentiment"].values
+
+    models = ["linear_svm", "logreg"]
+    text_columns = ["text_clean", "text_expanded"]
+    casing_options = [True, False]
+
+    total_iters = len(text_columns) * len(casing_options) * 2 * len(models)
+
+    with tqdm(total=total_iters, desc="Training & evaluating", ncols=100) as pbar:
+
+        for text_col in text_columns:
+            for is_lower in casing_options:
+                # Create a label for saving the models/metrics cleanly
+                case_label = "lower" if is_lower else "cased"
+
+                vectorizer = CountVectorizer(
+                    ngram_range=(1, 3),
+                    min_df=10,
+                    max_df=0.7,
+                    lowercase=is_lower
+                )
+
+                # Extract features for the current text column and casing
+                X_train = vectorizer.fit_transform(train_df[text_col])
+                X_val = vectorizer.transform(val_df[text_col])
+
+                # --- BoW Phase ---
+                for model_name in models:
+                    if model_name == "linear_svm":
+                        clf = LinearSVMClassifier(name=f"{text_col}_{case_label}_BoW_{model_name}")
+                    else:
+                        clf = LogisticRegressionClassifier(name=f"{text_col}_{case_label}_BoW_{model_name}")
+
+                    clf.train(X_train, y_train)
+                    clf.evaluate(X_val, y_val, name="val/run_basic")
+                    pbar.update(1)
+
+                # --- TF-IDF Phase ---
+                tfidf = TfidfTransformer()
+                X_train = tfidf.fit_transform(X_train)
+                X_val = tfidf.transform(X_val)
+                gc.collect()
+
+                for model_name in models:
+                    if model_name == "linear_svm":
+                        clf = LinearSVMClassifier(name=f"{text_col}_{case_label}_TF-IDF_{model_name}")
+                    else:
+                        clf = LogisticRegressionClassifier(name=f"{text_col}_{case_label}_TF-IDF_{model_name}")
+
+                    clf.train(X_train, y_train)
+                    clf.evaluate(X_val, y_val, name="val/run_basic")
+                    pbar.update(1)
+
+                del X_train, X_val
+                gc.collect()
+
+
+if __name__ == "__main__":
+    main()
+
+# ===== File: scripts/run_custom.py =====
+import pandas as pd
+import gc
+from sklearn.feature_extraction.text import TfidfTransformer
+from src.models.classic import LinearSVMClassifier, LogisticRegressionClassifier
+from src.features.sentiment import SentimentFeatures
+from tqdm.auto import tqdm
+from src.features.vectorizer import build_count_matrix
+
+
+def main():
+    # Load datasets
+    train_df = pd.read_parquet("data/preprocessed/train.parquet")
+    val_df = pd.read_parquet("data/preprocessed/val.parquet")
+
+    y_train = train_df["sentiment"].values
+    y_val = val_df["sentiment"].values
+
+    # Tokenization variants
+    token_columns = [
+        "tokens_cased",
+        "tokens_lower",
+        "tokens_letters",
+        "tokens_filtered",
+        "tokens_stemmed",
+        "tokens_lemmatized"
+    ]
+
+    # Models to evaluate
+    models = ["linear_svm", "logreg"]
+    variants = ["CustomBow", "CustomTfidf"]
+
+    # Z-score thresholds for vocabulary pruning
+    z_scores = [0, 1, 2, 3, 4]
+
+    # Total iterations for progress bar
+    total_iters = len(token_columns) * len(z_scores) * len(models) * 2
+
+    with tqdm(total=total_iters, desc="Feature Variants", ncols=100) as pbar:
+
+        for token_col in token_columns:
+
+            # Build base Count matrix once per tokenization
+            X_train_base, X_val_base, _ = build_count_matrix(
+                train_df[token_col],
+                val_df[token_col],
+            )
+
+            # Fit sentiment feature statistics once
+            sf = SentimentFeatures()
+            sf.fit(X_train_base, y_train)
+
+            # Iterate through Z-score pruning thresholds
+            for z in z_scores:
+
+                z_keep_indices = list(sf.filter_by_zscore(z))
+
+                if not z_keep_indices:
+                    print(f"\nWarning: Z-score {z} pruned all features for {token_col}. Skipping.")
+                    pbar.update(len(models) * 2)
+                    continue
+
+                if len(z_keep_indices) < 2:
+                    print(f"\nWarning: Z-score {z} left too few features for {token_col}. Skipping.")
+                    pbar.update(len(models) * 2)
+                    continue
+
+                # Apply Z-score mask
+                X_train_filtered = X_train_base[:, z_keep_indices]
+                X_val_filtered = X_val_base[:, z_keep_indices]
+
+                # Train models on filtered BoW
+                for model_name in models:
+
+                    model_save_name = f"{token_col}_{variants[0]}_Z{z}_{model_name}"
+
+                    if model_name == "linear_svm":
+                        clf = LinearSVMClassifier(name=model_save_name)
+                    else:
+                        clf = LogisticRegressionClassifier(name=model_save_name)
+
+                    clf.train(X_train_filtered, y_train)
+                    clf.evaluate(X_val_filtered, y_val, name="val/run_custom")
+
+                    pbar.update(1)
+
+                # TF-IDF transformation
+                tfidf = TfidfTransformer()
+                X_train_tfidf = tfidf.fit_transform(X_train_filtered)
+                X_val_tfidf = tfidf.transform(X_val_filtered)
+
+                # Train models on filtered TF-IDF
+                for model_name in models:
+
+                    model_save_name = f"{token_col}_{variants[1]}_Z{z}_{model_name}"
+
+                    if model_name == "linear_svm":
+                        clf = LinearSVMClassifier(name=model_save_name)
+                    else:
+                        clf = LogisticRegressionClassifier(name=model_save_name)
+
+                    clf.train(X_train_tfidf, y_train)
+                    clf.evaluate(X_val_tfidf, y_val, name="val/run_custom")
+
+                    pbar.update(1)
+
+                del X_train_filtered, X_val_filtered
+                del X_train_tfidf, X_val_tfidf
+                gc.collect()
+
+            del X_train_base, X_val_base
+            gc.collect()
+
+
+if __name__ == "__main__":
+    main()
+
 # ===== File: scripts/run_ensemble.py =====
 #!/usr/bin/env python3
 import argparse
@@ -911,6 +1784,131 @@ def main():
 if __name__ == "__main__":
     main()
 
+# ===== File: scripts/run_n_grams.py =====
+import pandas as pd
+import gc
+from sklearn.feature_extraction.text import TfidfTransformer
+from src.models.classic import LinearSVMClassifier, LogisticRegressionClassifier
+from src.features.sentiment import SentimentFeatures
+from src.features.vectorizer import build_count_matrix
+from tqdm.auto import tqdm
+
+def run_ngram_experiment():
+    print("Loading data...")
+    train_df = pd.read_parquet("data/preprocessed/train.parquet")
+    val_df = pd.read_parquet("data/preprocessed/val.parquet")
+    y_train = train_df["sentiment"].values
+    y_val = val_df["sentiment"].values
+
+    # Experiment parameters
+    ngram_ranges = [(1, 1), (1, 2), (1, 3)]
+    models = ["linear_svm", "logreg"]
+    total_iters = len(ngram_ranges) * len(models)
+
+    with tqdm(total=total_iters, desc="Testing N-Gram Ranges", ncols=100) as pbar:
+        for ngram in ngram_ranges:
+
+            # Build Matrix
+            X_train, X_val, _ = build_count_matrix(
+                train_df['tokens_lower'], val_df['tokens_lower'],
+                ngram_range=ngram, max_df=0.7
+            )
+
+            # Apply Z-Score Pruning
+            sf = SentimentFeatures()
+            sf.fit(X_train, y_train.tolist())
+            z_keep_indices = list(sf.filter_by_zscore(2.0))
+
+            X_train = X_train[:, z_keep_indices]
+            X_val = X_val[:, z_keep_indices]
+
+            # TF-IDF Transformation
+            tfidf = TfidfTransformer()
+            X_train = tfidf.fit_transform(X_train)
+            X_val = tfidf.transform(X_val)
+
+            # Train & Evaluate
+            for model_key in models:
+                model_name = f"ng{ngram[0]}-{ngram[1]}_{model_key}"
+
+                if model_key == "linear_svm":
+                    clf = LinearSVMClassifier(name=model_name)
+                else:
+                    clf = LogisticRegressionClassifier(name=model_name)
+
+                clf.train(X_train, y_train)
+                clf.evaluate(X_val, y_val, name="val/run_n_grams")
+                pbar.update(1)
+
+            # Cleanup memory
+            del X_train, X_val
+            gc.collect()
+
+
+if __name__ == "__main__":
+    run_ngram_experiment()
+
+# ===== File: scripts/run_on_preprocessing.py =====
+import pandas as pd
+import gc
+from sklearn.feature_extraction.text import TfidfTransformer
+from src.models.classic import LinearSVMClassifier, LogisticRegressionClassifier
+from tqdm.auto import tqdm
+from src.features.vectorizer import build_count_matrix
+
+
+def main():
+    train_df = pd.read_parquet("data/preprocessed/train.parquet")
+    val_df = pd.read_parquet("data/preprocessed/val.parquet")
+    y_train = train_df["sentiment"].values
+    y_val = val_df["sentiment"].values
+
+    token_columns = [
+        'tokens_cased', 'tokens_lower', 'tokens_letters', 'tokens_filtered',
+        'tokens_stemmed', 'tokens_lemmatized'
+    ]
+    models = ["linear_svm", "logreg"]
+
+    # 2 represents BoW and TF-IDF phases
+    total_iters = len(token_columns) * 2 * len(models)
+
+    with tqdm(total=total_iters, desc="Training & evaluating", ncols=100) as pbar:
+        for token_col in token_columns:
+
+            X_train, X_val, _ = build_count_matrix(train_df[token_col], val_df[token_col])
+
+            for model_name in models:
+                if model_name == "linear_svm":
+                    clf = LinearSVMClassifier(name=f"{token_col}_BoW_{model_name}")
+                else:
+                    clf = LogisticRegressionClassifier(name=f"{token_col}_BoW_{model_name}")
+
+                clf.train(X_train, y_train)
+                clf.evaluate(X_val, y_val, name="val/run_on_preprocessing")
+                pbar.update(1)
+
+            tfidf = TfidfTransformer()
+            X_train = tfidf.fit_transform(X_train)
+            X_val = tfidf.transform(X_val)
+            gc.collect()
+
+            for model_name in models:
+                if model_name == "linear_svm":
+                    clf = LinearSVMClassifier(name=f"{token_col}_TF-IDF_{model_name}")
+                else:
+                    clf = LogisticRegressionClassifier(name=f"{token_col}_TF-IDF_{model_name}")
+
+                clf.train(X_train, y_train)
+                clf.evaluate(X_val, y_val, name="val/run_on_preprocessing")
+                pbar.update(1)
+
+            del X_train, X_val
+            gc.collect()
+
+
+if __name__ == "__main__":
+    main()
+
 # ===== File: scripts/train_bert.py =====
 #!/usr/bin/env python3
 import argparse
@@ -922,6 +1920,7 @@ from src.utils.paths import PROJECT_ROOT, DATA_DIR, MODELS_DIR
 import os
 
 os.environ["TF_CPP_MIN_LOG_LEVEL"] = "3"
+
 
 def main():
     parser = argparse.ArgumentParser()
@@ -936,20 +1935,19 @@ def main():
     df_train = pd.read_parquet(DATA_DIR / "preprocessed" / "train.parquet")
     df_val = pd.read_parquet(DATA_DIR / "preprocessed" / "val.parquet")
 
-    X_train_txt = df_train['clean_review'].tolist()
-    y_train = df_train['sentiment'].tolist()
-    X_val_txt = df_val['clean_review'].tolist()
+    X_train_txt = df_train['text_clean'].tolist()
+    y_train = df_train['sentiment'].values.astype(np.int32)
+    X_val_txt = df_val['text_clean'].tolist()
     y_val = df_val['sentiment'].values.astype(np.int32)
 
     bert_cfg = cfg['bert']['basic']
-    
-    # Init with a descriptive name. BaseModel uses this to save the raw_predictions CSV
+
     model = BERTClassifier(
-        model_name=bert_cfg['model_name'], 
-        max_len=bert_cfg['max_len'], 
-        name='bert_basic_baseline' 
+        model_name=bert_cfg['model_name'],
+        max_len=bert_cfg['max_len'],
+        name='bert_basic_baseline'
     )
-    
+
     model.train(
         X_train_txt, y_train, 
         epochs=bert_cfg['epochs'], 
@@ -958,13 +1956,11 @@ def main():
         patience=bert_cfg['patience']
     )
 
-    # Automatically saves to results/val/raw_predictions/bert_basic_baseline.csv
-    model.evaluate(X_val_txt, y_val, name="val")
-    
-    # FIX: Explicitly define the destination variable so the print statement works
+    model.evaluate(X_val_txt, y_val, name="val/bert")
     bert_dest = MODELS_DIR / "bert_basic"
     model.save(str(bert_dest))
     print(f"BERT Model saved to {bert_dest}")
+
 
 if __name__ == "__main__":
     main()
@@ -975,7 +1971,6 @@ import argparse
 import yaml
 import numpy as np
 import pandas as pd
-import joblib
 import logging
 from pathlib import Path
 from sklearn.feature_extraction.text import TfidfTransformer
@@ -1016,98 +2011,814 @@ def main():
         cfg['cascade'].update(best['cascade'])
 
     MODELS_DIR.mkdir(exist_ok=True)
-    (RESULTS_DIR / "test" / "raw_predictions").mkdir(parents=True, exist_ok=True)
+    raw_preds_dir = RESULTS_DIR / "test" / "raw_predictions"
+    raw_preds_dir.mkdir(parents=True, exist_ok=True)
 
-    nr = cfg['features']['ngram_range']
     nc = cfg['features']['n_concepts']
     w = cfg['features']['sentiment_weight']
     z = cfg['features']['z_threshold']
+    token_col = "tokens_lower" 
 
     print("Loading data...")
-    X_train_sp, y_train = load_representation(cfg, nr, nc, w, z, 'train')
-    X_val_sp, y_val = load_representation(cfg, nr, nc, w, z, 'val')
-    X_test_sp, y_test = load_representation(cfg, nr, nc, w, z, 'test')
+    # Load custom representations (Raw Sparse Matrices)
+    X_train_sp, y_train = load_representation(token_col, nc, w, z, 'train')
+    X_val_sp, y_val = load_representation(token_col, nc, w, z, 'val')
+    X_test_sp, y_test = load_representation(token_col, nc, w, z, 'test')
 
-    df_train = pd.read_parquet(DATA_DIR / "preprocessed" / "train.parquet")
+    # Load raw text for BERT
     df_val = pd.read_parquet(DATA_DIR / "preprocessed" / "val.parquet")
     df_test = pd.read_parquet(DATA_DIR / "preprocessed" / "test.parquet")
+    X_val_txt = df_val['text_clean'].tolist()
+    X_test_txt = df_test['text_clean'].tolist()
 
-    X_train_txt = df_train['clean_review'].tolist()
-    X_val_txt = df_val['clean_review'].tolist()
-    X_test_txt = df_test['clean_review'].tolist()
+    # Create STAGE-1 TF-IDF feature space (based on full Training data)
+    tfidf_base = TfidfTransformer()
+    X_train_tfidf = tfidf_base.fit_transform(X_train_sp)
+    X_val_tfidf = tfidf_base.transform(X_val_sp)
 
-    tfidf = TfidfTransformer()
-    X_train_tfidf = tfidf.fit_transform(X_train_sp)
-    X_val_tfidf = tfidf.transform(X_val_sp)
-    X_test_tfidf = tfidf.transform(X_test_sp)
-
-    # --- SVM ---
-    print("\nTraining SVM with best parameters...")
+    # ==========================================
+    # 1. TRAIN STAGE-1 BASE MODEL
+    # ==========================================
+    print("\nTraining Stage-1 Base Model on full Training Set...")
     if cfg['model'] == 'linear_svm':
-        svm = LinearSVMClassifier(C=cfg['models']['linear_svm']['C'], name='Base_SVM')
+        base_model = LinearSVMClassifier(C=cfg['models']['linear_svm']['C'], name='Base_SVM')
     else:
-        svm = LogisticRegressionClassifier(C=cfg['models']['logreg']['C'], name='Base_LogReg')
-    svm.train(X_train_tfidf, y_train)
+        base_model = LogisticRegressionClassifier(C=cfg['models']['logreg']['C'], name='Base_LogReg')
+    
+    base_model.train(X_train_tfidf, y_train)
 
-    svm_path = MODELS_DIR / "svm_base"
-    svm.save(str(svm_path))
-    print(f"SVM saved to {svm_path}.joblib")
-
-    # --- Mine hard samples from validation ---
+    # ==========================================
+    # 2. MINE HARD SAMPLES FROM VALIDATION
+    # ==========================================
     threshold = cfg['cascade']['delegation_threshold']
     lower = threshold
     upper = 1.0 - lower
 
-    probs_val = safe_binary_probs(svm.predict_proba(X_val_tfidf))
+    print("\nMining hard samples from the Validation set...")
+    probs_val = safe_binary_probs(base_model.predict_proba(X_val_tfidf))
     mask_uncertain = (probs_val >= lower) & (probs_val <= upper)
     hard_indices = np.where(mask_uncertain)[0]
-    print(f"Validation hard samples: {len(hard_indices)} ({len(hard_indices)/len(y_val):.2%})")
+    
+    print(f"Validation hard samples found: {len(hard_indices)} ({len(hard_indices)/len(y_val):.2%})")
 
+    # BUILD SPECIALIST TF-IDF SPACE
+    X_hard_sp = X_val_sp[hard_indices]
+
+    # NEW TF-IDF tuned to the vocabulary of the hard cases
+    print("Fitting new TF-IDF space exclusively on hard samples...")
+    tfidf_spec = TfidfTransformer()
+    X_hard_tfidf_spec = tfidf_spec.fit_transform(X_hard_sp)
+
+    # Transform the test set using this new specialist TF-IDF space
+    X_test_tfidf_spec = tfidf_spec.transform(X_test_sp)
+
+    # Slice text and arrays for BERT
     X_hard_txt = [X_val_txt[i] for i in hard_indices]
-    y_hard = [y_val[i] for i in hard_indices]
+    y_hard = np.array([y_val[i] for i in hard_indices], dtype=np.int32)
 
-    # --- Load Basic BERT ---
+    # --- Specialist SVM ---
+    print("\nTraining Specialist SVM on hard samples...")
+    svm_spec = LinearSVMClassifier(name='Spec_SVM')
+    svm_spec.train(X_hard_tfidf_spec, y_hard)
+
+    probs_svm_spec = safe_binary_probs(svm_spec.predict_proba(X_test_tfidf_spec))
+    pd.DataFrame({'true_label': y_test, 'probability': probs_svm_spec}).to_csv(
+        raw_preds_dir / "svm_specialist.csv", index=False
+    )
+    print(f"-> Specialist SVM Test Accuracy: {( (probs_svm_spec > 0.5).astype(int) == y_test ).mean():.4f}")
+
+    # --- Specialist Logistic Regression ---
+    print("\nTraining Specialist LogReg on hard samples...")
+    lr_spec = LogisticRegressionClassifier(name='Spec_LogReg')
+    lr_spec.train(X_hard_tfidf_spec, y_hard)
+    
+    probs_lr_spec = safe_binary_probs(lr_spec.predict_proba(X_test_tfidf_spec))
+    pd.DataFrame({'true_label': y_test, 'probability': probs_lr_spec}).to_csv(
+        raw_preds_dir / "logreg_specialist.csv", index=False
+    )
+    print(f"-> Specialist LogReg Test Accuracy: {( (probs_lr_spec > 0.5).astype(int) == y_test ).mean():.4f}")
+
+    # --- Specialist BERT ---
+    print("\nFine-tuning Specialist BERT on hard samples...")
     bert_basic_path = MODELS_DIR / "bert_basic"
     if not bert_basic_path.exists():
-        raise FileNotFoundError("Basic BERT model not found. Run scripts/train_bert.py first.")
-    bert_basic = BERTClassifier.load(str(bert_basic_path), name="BERT_Basic")
+        print("Skipping BERT: Basic BERT model not found.")
+    else:
+        bert_spec = BERTClassifier.load(str(bert_basic_path), name="BERT_Specialist")
+        bert_spec.freeze_backbone(num_layers_to_freeze=4)
 
-    # --- Train Specialist BERT ---
-    print("\nFine‑tuning specialist BERT on hard samples...")
-    bert_spec = BERTClassifier.load(str(bert_basic_path), name="BERT_Specialist")
-    bert_spec.freeze_backbone(num_layers_to_freeze=4)
+        spec_cfg = cfg['bert']['specialist']
+        bert_spec.train(
+            X_hard_txt, y_hard,
+            epochs=int(spec_cfg['epochs']),
+            batch_size=int(spec_cfg['batch_size']),
+            lr=float(spec_cfg['learning_rate']),
+            patience=int(spec_cfg['patience'])
+        )
 
-    spec_cfg = cfg['bert']['specialist']
-    epochs = int(spec_cfg['epochs'])
-    batch_size = int(spec_cfg['batch_size'])
-    lr = float(spec_cfg['learning_rate'])
-    patience = int(spec_cfg['patience'])
+        probs_bert_spec = safe_binary_probs(bert_spec.predict_proba(X_test_txt))
+        pd.DataFrame({'true_label': y_test, 'probability': probs_bert_spec}).to_csv(
+            raw_preds_dir / "bert_specialist.csv", index=False
+        )
+        print(f"-> Specialist BERT Test Accuracy: {( (probs_bert_spec > 0.5).astype(int) == y_test ).mean():.4f}")
 
-    bert_spec.train(
-        X_hard_txt, y_hard,
-        epochs=epochs,
-        batch_size=batch_size,
-        lr=lr,
-        patience=patience
+    print("\nAll specialists trained and test predictions saved!")
+
+if __name__ == "__main__":
+    main()
+
+# ===== File: scripts/visualize_ablation_study.py =====
+import gc
+import pandas as pd
+import seaborn as sns
+import matplotlib.pyplot as plt
+import matplotlib.lines as mlines
+from pathlib import Path
+
+
+def plot_ablation_study(base_dir="results/val", run_names=None):
+    
+    if run_names is None:
+        run_names = ["run_on_preprocessing", "run_custom", "run_basic"]
+
+    # Dynamically construct paths
+    base_path = Path(base_dir)
+    search_dirs = [base_path / run / "classification_reports" for run in run_names]
+    valid_dirs = [d for d in search_dirs if d.exists()]
+
+    if not valid_dirs:
+        print(f"Could not find any classification_reports in: {base_path}")
+        return
+
+    # Search valid directories for a specific filename
+    def find_file(filename):
+        for directory in valid_dirs:
+            file_path = directory / filename
+            if file_path.exists():
+                return file_path
+        return None
+
+    # Configuration
+    token_columns = [
+        'tokens_cased', 'tokens_lower', 'tokens_letters',
+        'tokens_filtered', 'tokens_stemmed', 'tokens_lemmatized'
+    ]
+
+    baseline_col = "text_expanded"
+    baseline_casing = "lower"
+    baseline_reps = ["BoW", "TF-IDF"]
+    representations = ["BoW", "TF-IDF", "CustomTfidf"]
+    models = ["linear_svm", "logreg"]
+    z_threshold = 2
+
+    records = []
+    baselines = {"Linear SVM": {}, "Logistic Regression": {}}
+
+    # Extract Data
+    for model in models:
+        model_label = "Linear SVM" if model == "linear_svm" else "Logistic Regression"
+
+        # Baselines
+        for rep in baseline_reps:
+            base_filename = f"{baseline_col}_{baseline_casing}_{rep}_{model}.csv"
+            base_file = find_file(base_filename)
+            if base_file:
+                base_df = pd.read_csv(base_file, index_col=0)
+                baselines[model_label][rep] = base_df.loc["macro avg", "f1-score"]
+
+        # Ablation study variants
+        for token_col in token_columns:
+            for rep in representations:
+                if rep == "CustomTfidf":
+                    filename = f"{token_col}_{rep}_Z{z_threshold}_{model}.csv"
+                else:
+                    filename = f"{token_col}_{rep}_{model}.csv"
+
+                filepath = find_file(filename)
+                if filepath:
+                    df = pd.read_csv(filepath, index_col=0)
+                    records.append({
+                        "Token Processing": token_col,
+                        "Representation": rep,
+                        "Model": model_label,
+                        "Macro F1-Score": df.loc["macro avg", "f1-score"]
+                    })
+
+    if not records:
+        print("No matching experiment CSVs found in the provided run folders!")
+        return
+
+    # Build DataFrame
+    results_df = pd.DataFrame(records).sort_values(by="Macro F1-Score", ascending=False)
+
+    # Create Plot
+    sns.set_theme(style="whitegrid", context="talk")
+    g = sns.catplot(
+        data=results_df, kind="bar",
+        x="Macro F1-Score", y="Token Processing",
+        hue="Representation", hue_order=["CustomTfidf", "TF-IDF", "BoW"],
+        col="Model", height=8, aspect=1.2,
+        palette="viridis", alpha=0.9
+    )
+    g.set_titles("{col_name}")
+
+    base_styles = {
+        "TF-IDF": {"color": "coral", "ls": "--"},
+        "BoW": {"color": "navy", "ls": ":"}
+    }
+
+    # Add Baselines
+    for ax in g.axes.flat:
+        title = ax.get_title()
+        if title in baselines:
+            for rep, score in baselines[title].items():
+                style = base_styles[rep]
+                ax.axvline(x=score, color=style["color"], linestyle=style["ls"], linewidth=2.5)
+
+    # --- HIGHLIGHT THE BEST BAR ---
+    for ax in g.axes.flat:
+        best_width = 0
+        best_patch = None
+
+        # 1. Iterate through every bar drawn on this specific subplot
+        for patch in ax.patches:
+            # get_width() on a horizontal bar chart returns the actual F1-score value
+            width = patch.get_width() 
+            if width > best_width:
+                best_width = width
+                best_patch = patch
+
+        # 2. Annotate the winning bar
+        if best_patch:
+            # Draw the F1-score text slightly to the right of the bar
+            ax.text(
+                best_width + 0.0005,  # X-position (push right slightly)
+                best_patch.get_y() + best_patch.get_height() / 2,  # Y-position (center vertically)
+                f"★ {best_width:.4f}", 
+                color='#333333',
+                fontsize=11,
+                fontweight='bold',
+                ha='left',
+                va='center'
+            )
+            
+            # Optional: Add a dark outline to the winning bar to make it pop visually
+            best_patch.set_edgecolor('#333333')
+            best_patch.set_linewidth(1.5)
+    # ------------------------------
+    
+    # Unified Legend
+    handles = list(g._legend_data.values())
+    labels = list(g._legend_data.keys())
+
+    for rep in ["TF-IDF", "BoW"]:
+        style = base_styles[rep]
+        line = mlines.Line2D([], [], color=style["color"], linestyle=style["ls"], linewidth=2.5)
+        handles.append(line)
+        labels.append(f"{rep} Baseline")
+
+    if g._legend:
+        g._legend.remove()
+
+    g.fig.legend(handles=handles, labels=labels, loc='center', 
+                 bbox_to_anchor=(1, 0.6), title="Representation & Baselines", frameon=True)
+
+    # Styling & Export
+    g.set_axis_labels("Macro F1-Score", "Preprocessing Step")
+    g.despine(left=True)
+    g.fig.suptitle("Ablation Study: Text Preprocessing vs. Model Performance", y=1.02, fontweight="bold")
+    g.set(xlim=(0.89, 0.92))
+
+    plt.tight_layout()
+
+    output_dir = Path("results/figures/analysis")
+    output_dir.mkdir(parents=True, exist_ok=True)
+    output_path = output_dir / "ablation_study.png"
+
+    plt.savefig(output_path, dpi=150, bbox_inches='tight')
+    print(f"Saved ablation plot to {output_path}")
+
+    # Cleanup
+    plt.close(g.fig)
+    del records, results_df, g, baselines, handles, labels
+    gc.collect()
+
+
+if __name__ == "__main__":
+    plot_ablation_study()
+
+# ===== File: scripts/visualize_certainty.py =====
+#!/usr/bin/env python3
+import argparse
+import pandas as pd
+import numpy as np
+import seaborn as sns
+import matplotlib.pyplot as plt
+import matplotlib.ticker as mtick
+import matplotlib.colors as mcolors
+from matplotlib.patches import Patch
+from src.utils.paths import RESULTS_DIR, FIGURES_DIR
+
+# Define the colors globally to ensure consistency across subplots
+correct_cmap = mcolors.LinearSegmentedColormap.from_list("red_green", ["#e74c3c", "#f1c40f", "#2ecc71"])
+tn_base_color = mcolors.to_hex(correct_cmap(0.25))
+tp_base_color = mcolors.to_hex(correct_cmap(0.75))
+error_green = '#00b894'
+error_red = '#d63031'
+
+custom_palette = {
+    'True Negative (Correct)': tn_base_color,
+    'True Positive (Correct)': tp_base_color,
+    'False Negative (Incorrect)': error_green,
+    'False Positive (Incorrect)': error_red,
+    'Unknown': '#95a5a6'
+}
+
+def process_and_plot_axis(ax, model_filename, title, experiment_name):
+    """Handles the data loading and plotting for a single subplot axis."""
+    # UPDATED: Dynamically inject the experiment_name into the path
+    raw_dir = RESULTS_DIR / "val" / experiment_name / "raw_predictions"
+    file_path = raw_dir / model_filename
+    
+    if not file_path.exists():
+        ax.text(0.5, 0.5, f"File not found:\n{file_path.name}", 
+                ha='center', va='center', fontsize=14, transform=ax.transAxes)
+        ax.set_title(title, fontsize=18, fontweight='bold')
+        return False
+
+    # Load the Prediction Data
+    df = pd.read_csv(file_path)
+    df['Outcome'] = 'Unknown'
+    
+    df.loc[(df['probability'] <= 0.5) & (df['true_label'] == 0), 'Outcome'] = 'True Negative (Correct)'
+    df.loc[(df['probability'] > 0.5)  & (df['true_label'] == 1), 'Outcome'] = 'True Positive (Correct)'
+    df.loc[(df['probability'] <= 0.5) & (df['true_label'] == 1), 'Outcome'] = 'False Negative (Incorrect)'
+    df.loc[(df['probability'] > 0.5)  & (df['true_label'] == 0), 'Outcome'] = 'False Positive (Incorrect)'
+    
+    # Draw the Stacked Histogram
+    hue_order = ['True Negative (Correct)', 'True Positive (Correct)', 'False Negative (Incorrect)', 'False Positive (Incorrect)']
+
+    sns.histplot(
+        data=df, x='probability', hue='Outcome', hue_order=hue_order,
+        bins=50, multiple="stack", palette=custom_palette,
+        edgecolor='white', linewidth=0.5, kde=False, ax=ax, zorder=2
     )
 
-    bert_spec_path = MODELS_DIR / "bert_specialist"
-    bert_spec.save(str(bert_spec_path))
-    print(f"Specialist BERT saved to {bert_spec_path}")
+    # Apply Gradient to Correct Predictions & Hatching to Misclassified
+    tn_rgb = mcolors.to_rgb(tn_base_color)
+    tp_rgb = mcolors.to_rgb(tp_base_color)
+    fn_rgb = mcolors.to_rgb(error_green)
+    fp_rgb = mcolors.to_rgb(error_red)
 
-    # --- Evaluate specialist on test set ---
-    print("\nEvaluating specialist on test set...")
-    probs_spec = safe_binary_probs(bert_spec.predict_proba(X_test_txt))
-    preds_spec = (probs_spec > 0.5).astype(int)
-    acc_spec = (preds_spec == y_test).mean()
-    print(f"Specialist test accuracy: {acc_spec:.4f}")
+    for patch in ax.patches:
+        if patch.get_width() == 0:
+            continue
 
-    eval_df = pd.DataFrame({
-        'true_label': y_test,
-        'probability': probs_spec
-    })
-    eval_df.to_csv(RESULTS_DIR / "test" / "raw_predictions" / "bert_specialist.csv", index=False)
-    print("Test predictions saved to results/test/raw_predictions/bert_specialist.csv")
+        facecolor = patch.get_facecolor()
+        is_tn = all(abs(facecolor[i] - tn_rgb[i]) < 0.05 for i in range(3))
+        is_tp = all(abs(facecolor[i] - tp_rgb[i]) < 0.05 for i in range(3))
+        is_fn = all(abs(facecolor[i] - fn_rgb[i]) < 0.05 for i in range(3))
+        is_fp = all(abs(facecolor[i] - fp_rgb[i]) < 0.05 for i in range(3))
+
+        if is_tn or is_tp:
+            x_center = patch.get_x() + patch.get_width() / 2.0
+            new_rgb = correct_cmap(np.clip(x_center, 0, 1))
+            patch.set_facecolor((*new_rgb[:3], facecolor[3]))
+
+        elif is_fn or is_fp:
+            patch.set_hatch('////')
+            patch.set_edgecolor((1.0, 1.0, 1.0, 0.5))
+            patch.set_linewidth(0.5)
+
+    # Add Decision Boundary & Annotations
+    ax.axvline(0.5, color='#333333', linestyle='--', linewidth=2.5, alpha=0.8, zorder=4)
+    ax.text(0.25, ax.get_ylim()[1]*0.95, 'Predicts NEGATIVE', ha='center', va='top', fontsize=14, color='#555555', fontweight='bold', alpha=0.7)
+    ax.text(0.75, ax.get_ylim()[1]*0.95, 'Predicts POSITIVE', ha='center', va='top', fontsize=14, color='#555555', fontweight='bold', alpha=0.7)
+
+    # Axis Formatting
+    ax.set_title(title, fontsize=18, fontweight='bold', pad=20)
+    ax.set_xlabel("Predicted Probability (Positive Class)", fontsize=14, fontweight='bold')
+    ax.xaxis.set_major_formatter(mtick.PercentFormatter(1.0))
+    ax.grid(axis='x', visible=False)
+
+    # We will remove individual legends and create one unified legend for the whole figure
+    if ax.get_legend() is not None:
+        ax.get_legend().remove()
+
+    return True
+
+def plot_model_comparison(svm_file, logreg_file, experiment_name):
+    sns.set_theme(style="whitegrid", context="talk")
+
+    # Create a 1x2 grid of subplots sharing the Y-axis
+    fig, axes = plt.subplots(1, 2, figsize=(20, 8), sharey=True)
+
+    # UPDATED: Pass experiment_name into the plotting functions
+    process_and_plot_axis(axes[0], svm_file, "Linear SVM (1-3 N-Grams, Z=2.0)", experiment_name)
+    process_and_plot_axis(axes[1], logreg_file, "Logistic Regression (1-3 N-Grams, Z=2.0)", experiment_name)
+
+    # Only the leftmost plot needs the Y-axis label
+    axes[0].set_ylabel("Number of Samples", fontsize=14, fontweight='bold')
+    if len(axes) > 1:
+        axes[1].set_ylabel("") # Clear just in case
+
+    # Create a unified legend for the entire figure
+    legend_elements = [
+        Patch(facecolor=tn_base_color, label='True Negative (Correct)'),
+        Patch(facecolor=error_green, hatch='////', edgecolor=(1.0, 1.0, 1.0, 0.5), label='False Negative (Incorrect)'),
+        Patch(facecolor=tp_base_color, label='True Positive (Correct)'),
+        Patch(facecolor=error_red, hatch='////', edgecolor=(1.0, 1.0, 1.0, 0.5), label='False Positive (Incorrect)')
+    ]
+
+    fig.legend(handles=legend_elements, loc='lower center', bbox_to_anchor=(0.5, -0.05), ncol=4, frameon=False)
+
+    sns.despine(left=True)
+    plt.tight_layout()
+    # Adjust layout to make room for the unified legend at the bottom
+    plt.subplots_adjust(bottom=0.15)
+
+    # Save the figure
+    out_dir = FIGURES_DIR / "analysis"
+    out_dir.mkdir(parents=True, exist_ok=True)
+    out_path = out_dir / "model_comparison_certainty_dist.png"
+
+    plt.savefig(out_path, dpi=200, bbox_inches='tight')
+    print(f"Saved comparison plot to: {out_path}")
+    plt.close(fig)
+
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--experiment", default="run_n_grams", help="Name of the experiment folder (e.g., run_n_grams)")
+    parser.add_argument("--svm_file", default="ng1-3_linear_svm.csv")
+    parser.add_argument("--logreg_file", default="ng1-3_logreg.csv")
+    args = parser.parse_args()
+    
+    plot_model_comparison(args.svm_file, args.logreg_file, args.experiment)
+
+# ===== File: scripts/visualize_cluster_comparison.py =====
+import pandas as pd
+import seaborn as sns
+import matplotlib.pyplot as plt
+import matplotlib.lines as mlines
+from pathlib import Path
+
+
+def plot_cluster_comparison_polished(reports_dir="results/val/grid_search/classification_reports"):
+    reports_path = Path(reports_dir)
+    if not reports_path.exists():
+        print(f"Could not find directory: {reports_path}")
+        return
+
+    z_fixed = 2.0
+
+    # 1. Load Baselines
+    baselines = {}
+    for model_key, label in [("linear_svm", "Linear SVM"), ("logreg", "Logistic Regression")]:
+
+        base_file = reports_path / f"{model_key}_k0_w0.csv"
+        if base_file.exists():
+            df = pd.read_csv(base_file, index_col=0)
+            baselines[label] = df.loc["macro avg", "f1-score"]
+        else:
+            print(f"Warning: Could not find baseline file {base_file.name}")
+
+    # 2. Load Grid Search Cluster Results
+    records = []
+    for file in reports_path.glob("*.csv"):
+        stem = file.stem
+        if "Custom" in stem or "baseline" in stem:
+            continue
+
+        parts = stem.split('_')
+        k_part = next((p for p in parts if p.startswith('k')), None)
+        w_part = next((p for p in parts if p.startswith('w')), None)
+
+        if not (k_part and w_part):
+            continue
+
+        try:
+            k = int(k_part[1:])
+            w = float(w_part[1:])
+
+            if k == 0:
+                continue
+
+            idx_k = parts.index(k_part)
+            model_str = '_'.join(parts[:idx_k])
+            model_label = "Linear SVM" if "svm" in model_str else "Logistic Regression"
+
+            df = pd.read_csv(file, index_col=0)
+            records.append({
+                "Number of Concepts (k)": f"k={k}",
+                "Sentiment Weight (w)": f"w={int(w) if w.is_integer() else w}",
+                "Model": model_label,
+                "Macro F1-Score": df.loc["macro avg", "f1-score"]
+            })
+        except Exception:
+            continue
+
+    if not records:
+        print("No cluster configuration files found to plot!")
+        return
+
+    results_df = pd.DataFrame(records)
+
+    # Sort for a clean Y-axis progression
+    results_df["k_sort"] = results_df["Number of Concepts (k)"].apply(lambda x: int(x.replace('k=', '')))
+    results_df = results_df.sort_values(by="k_sort").drop(columns=["k_sort"])
+
+    # Create the Ablation-style Plot
+    sns.set_theme(style="whitegrid", context="talk")
+
+    g = sns.catplot(
+        data=results_df,
+        kind="bar",
+        x="Macro F1-Score",
+        y="Number of Concepts (k)",
+        hue="Sentiment Weight (w)",
+        col="Model",
+        height=8,
+        aspect=1.2,
+        palette="viridis",
+        alpha=0.9
+    )
+
+    g.set_titles("{col_name}")
+
+    # Add Baseline Markers & Unified Legend
+    handles = list(g._legend_data.values()) if g._legend_data else []
+    labels = list(g._legend_data.keys()) if g._legend_data else []
+
+    baseline_added = False
+    for ax in g.axes.flat:
+        title = ax.get_title()
+        if title in baselines:
+            score = baselines[title]
+            ax.axvline(x=score, color="coral", linestyle="--", linewidth=2.5)
+            if not baseline_added:
+                line = mlines.Line2D([], [], color="coral", linestyle="--", linewidth=2.5)
+                handles.append(line)
+                labels.append(f"Z={z_fixed} Baseline (No Clusters)")
+                baseline_added = True
+
+    if g._legend:
+        g._legend.remove()
+
+    g.fig.legend(
+        handles=handles, labels=labels,
+        loc='center', bbox_to_anchor=(1, 0.6),
+        title="Weights & Baselines", frameon=True
+    )
+
+    # 5. Styling & Export
+    g.set_axis_labels("Macro F1-Score", "Number of Concepts (k)")
+    g.despine(left=True)
+    g.fig.suptitle("Grid Search: Clustered Concepts vs. Standard Processing", y=1.02, fontweight="bold")
+
+    # Dynamically set X-axis limits so the differences are visible
+    min_val = min(results_df["Macro F1-Score"].min(), min(baselines.values()) if baselines else 1)
+    max_val = max(results_df["Macro F1-Score"].max(), max(baselines.values()) if baselines else 0)
+    g.set(xlim=(min_val - 0.005, max_val + 0.005))
+
+    plt.tight_layout()
+
+    output_dir = Path("results/figures/analysis")
+    output_dir.mkdir(parents=True, exist_ok=True)
+    out_path = output_dir / "cluster_comparison.png"
+    plt.savefig(out_path, dpi=150, bbox_inches='tight')
+    print(f"Saved refined cluster plot to {out_path}")
+
+
+if __name__ == "__main__":
+    plot_cluster_comparison_polished()
+
+# ===== File: scripts/visualize_concepts.py =====
+"""
+Visualize concepts (clusters) for two sentiment weights, e.g., 0 and 10.
+Loads concept mapping and stats, displays top positive/negative clusters.
+"""
+import argparse
+import pickle
+import pandas as pd
+import matplotlib.pyplot as plt
+from wordcloud import WordCloud
+from src.utils.paths import DATA_DIR, FIGURES_DIR
+
+
+def load_concept_data(token_col, n_concepts, sentiment_weight):
+    """Load concept mapping and stats for a given configuration."""
+    # Concept mapping (unit_to_cluster)
+    concept_path = DATA_DIR / "concepts" / token_col / f"k{n_concepts}_w{int(sentiment_weight)}.pkl"
+    if not concept_path.exists():
+        raise FileNotFoundError(f"Concept file not found: {concept_path}")
+    with open(concept_path, "rb") as f:
+        concept_data = pickle.load(f)
+    unit_to_cluster = concept_data['unit_to_cluster']
+    n_concepts_actual = concept_data['n_concepts']
+
+    # Stats (logodds per class) – saved by builder.compute_concept_z_indices
+    stats_path = DATA_DIR / "stats" / token_col / "concepts" / f"k{n_concepts}_w{int(sentiment_weight)}.pkl"
+    if not stats_path.exists():
+        raise FileNotFoundError(f"Stats file not found: {stats_path}")
+    with open(stats_path, "rb") as f:
+        stats = pickle.load(f)   # dict {0: df, 1: df}
+
+    return unit_to_cluster, stats, n_concepts_actual
+
+
+def plot_top_concepts(unit_to_cluster, stats, sentiment_weight, top_n=15, save_path=None):
+    """Lollipop plot of top positive and negative concepts by Z-score."""
+    pos_df = stats[1].sort_values('zscore', ascending=False).head(top_n)
+    neg_df = stats[0].sort_values('zscore', ascending=False).head(top_n)
+
+    # Representative word for each concept (first word in cluster)
+    concept_repr = {}
+    for word, cid in unit_to_cluster.items():
+        if cid not in concept_repr:
+            concept_repr[cid] = word.replace(' ', '_')
+
+    pos_labels = [concept_repr.get(c, f"c{c}") for c in pos_df['concept']]
+    neg_labels = [concept_repr.get(c, f"c{c}") for c in neg_df['concept']]
+
+    plot_data = pd.DataFrame({
+        'Concept': pos_labels + neg_labels,
+        'Z-score': pos_df['zscore'].tolist() + [-x for x in neg_df['zscore'].tolist()],
+        'Sentiment': ['Positive'] * top_n + ['Negative'] * top_n
+    }).sort_values('Z-score')
+
+    plt.figure(figsize=(10, 8))
+    colors = {'Positive': '#2ecc71', 'Negative': '#e74c3c'}
+    for sent, color in colors.items():
+        subset = plot_data[plot_data['Sentiment'] == sent]
+        plt.hlines(y=subset['Concept'], xmin=0, xmax=subset['Z-score'],
+                   color=color, alpha=0.5, linewidth=2)
+        plt.scatter(subset['Z-score'], subset['Concept'],
+                    color=color, s=80, label=sent, edgecolors='white', zorder=3)
+
+    plt.axvline(0, color='black', linewidth=0.8, alpha=0.5)
+    plt.title(f"Top {top_n} Discriminative Concepts (weight = {sentiment_weight})", fontsize=14)
+    plt.xlabel("Sentiment Strength (Z-score)")
+    plt.ylabel("Concept Representative")
+    plt.legend()
+    plt.tight_layout()
+    if save_path:
+        plt.savefig(save_path, dpi=150)
+        print(f"Saved lollipop plot to {save_path}")
+
+
+def plot_cluster_wordclouds(unit_to_cluster, stats, sentiment_weight, class_id=1, top_n=5, max_words=50, save_path=None):
+    """Word clouds for top N clusters of a given class (positive=1, negative=0)."""
+    # Group words by cluster
+    cluster_to_words = {}
+    for word, cid in unit_to_cluster.items():
+        cluster_to_words.setdefault(cid, []).append(word.replace(' ', '_'))
+
+    class_df = stats[class_id].sort_values('zscore', ascending=False).head(top_n)
+    top_clusters = class_df['concept'].tolist()
+
+    fig, axes = plt.subplots(1, top_n, figsize=(5*top_n, 5))
+    if top_n == 1:
+        axes = [axes]
+    label = "Positive" if class_id == 1 else "Negative"
+    fig.suptitle(f"Top {top_n} {label} Clusters (weight={sentiment_weight})", fontsize=16)
+
+    for i, cid in enumerate(top_clusters):
+        words = cluster_to_words.get(cid, ["empty"])
+        freq = {w: 1 for w in words}   # equal weight; could use counts if available
+        wc = WordCloud(width=400, height=400, background_color='white',
+                       colormap='Greens' if class_id == 1 else 'Reds',
+                       max_words=max_words).generate_from_frequencies(freq)
+        axes[i].imshow(wc, interpolation='bilinear')
+        axes[i].set_title(f"Cluster {cid}\nZ={class_df.iloc[i]['zscore']:.2f}", fontsize=12)
+        axes[i].axis('off')
+
+    plt.tight_layout()
+    if save_path:
+        plt.savefig(save_path, dpi=150)
+        print(f"Saved word cloud grid to {save_path}")
+
+
+def main():
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--token_col', default='tokens_lower', help='Token column name')
+    parser.add_argument('--n_concepts', type=int, default=5000, help='Number of concepts')
+    parser.add_argument('--weights', nargs=2, type=float, default=[0.0, 10.0],
+                        help='Two sentiment weights to compare')
+    parser.add_argument('--top_n', type=int, default=10, help='Number of top concepts to display')
+    args = parser.parse_args()
+
+    for w in args.weights:
+        print(f"\n=== Processing weight = {w} ===")
+        unit_to_cluster, stats, n_actual = load_concept_data(args.token_col, args.n_concepts, w)
+        print(f"Loaded {len(unit_to_cluster)} units mapped to {n_actual} concepts.")
+
+        # Lollipop plot
+        lollipop_path = FIGURES_DIR / "concepts" / f"lollipop_{args.token_col}_k{args.n_concepts}_w{int(w)}.png"
+        lollipop_path.parent.mkdir(parents=True, exist_ok=True)
+        plot_top_concepts(unit_to_cluster, stats, w, top_n=args.top_n, save_path=lollipop_path)
+
+        # Word clouds for positive
+        pos_wc_path = FIGURES_DIR / "concepts" / f"pos_wc_{args.token_col}_k{args.n_concepts}_w{int(w)}.png"
+        plot_cluster_wordclouds(unit_to_cluster, stats, w, class_id=1, top_n=5,
+                                save_path=pos_wc_path)
+
+        # Word clouds for negative
+        neg_wc_path = FIGURES_DIR / "concepts" / f"neg_wc_{args.token_col}_k{args.n_concepts}_w{int(w)}.png"
+        plot_cluster_wordclouds(unit_to_cluster, stats, w, class_id=0, top_n=5,
+                                save_path=neg_wc_path)
+
+
+if __name__ == "__main__":
+    main()
+
+# ===== File: scripts/visualize_custom_filtering.py =====
+import argparse
+import pandas as pd
+import numpy as np
+import matplotlib.pyplot as plt
+from wordcloud import WordCloud
+
+from src.features.sentiment import SentimentFeatures
+from src.utils.paths import FIGURES_DIR
+from src.features.vectorizer import build_count_matrix
+from src.features.selection import compute_global_mask, compute_class_mask
+
+
+def main():
+    # --- SETUP ARGUMENT PARSER ---
+    parser = argparse.ArgumentParser(description="Generate WordClouds for specific token columns.")
+    parser.add_argument(
+        "--column", 
+        type=str, 
+        default="tokens_lower", 
+        help="The dataframe column containing the tokens to visualize (e.g., tokens_lower, tokens_filtered)"
+    )
+    args = parser.parse_args()
+    target_col = args.column
+
+    print("Loading data for visualization...")
+    train_df = pd.read_parquet("data/preprocessed/train.parquet")
+    
+    if target_col not in train_df.columns:
+        raise ValueError(f"Column '{target_col}' not found in the dataset. Available columns: {list(train_df.columns)}")
+        
+    y_train = train_df["sentiment"].values
+
+    print(f"Vectorizing text for '{target_col}' (max_df=0.7)...")
+    X_train, _, count_vect = build_count_matrix(train_df[target_col], None, max_df=0.7)
+    vocab = count_vect.get_feature_names_out()
+
+    print("Calculating Z-scores on the Custom matrix...")
+    sf = SentimentFeatures()
+    sf.fit(X_train, y_train.tolist())
+
+    df_scores = sf.logodds_per_class[1].copy()
+    df_scores['word'] = [vocab[i] for i in df_scores['concept']]
+
+    z_threshold = 2
+
+    # --- SPLIT INTO TRASHED AND KEPT ---
+    trashed_df = df_scores[df_scores['zscore'].abs() <= z_threshold].copy()
+    trashed_df['abs_z'] = trashed_df['zscore'].abs()
+    trashed_df = trashed_df.sort_values('abs_z', ascending=True)
+
+    kept_pos = df_scores[df_scores['zscore'] > z_threshold].sort_values('zscore', ascending=False)
+    kept_neg = df_scores[df_scores['zscore'] < -z_threshold].sort_values('zscore', ascending=True)
+
+    # --- GENERATE VISUALIZATIONS ---
+    print("\nGenerating WordClouds (with punctuation preserved)...")
+    fig, axes = plt.subplots(1, 3, figsize=(20, 6))
+    fig.suptitle(f"Sentiment Analysis: {target_col}", fontsize=20, fontweight='bold', y=1.05)
+
+    # Panel 1: Trashed (Greys) - using \S+ to keep punctuation
+    trashed_text = " ".join([w.replace(" ", "_") for w in trashed_df['word'].head(150)])
+    wc_trash = WordCloud(background_color='white', colormap='Greys', width=400, height=400, regexp=r"\S+").generate(trashed_text)
+    axes[0].imshow(wc_trash, interpolation='bilinear')
+    axes[0].set_title(f"Trashed Words (Neutral Noise)\nTotal Discarded: {len(trashed_df)}", fontsize=16, fontweight='bold')
+    axes[0].axis('off')
+
+    # Panel 2: Kept Positive (Greens)
+    pos_text = " ".join([w.replace(" ", "_") for w in kept_pos['word'].head(150)])
+    wc_pos = WordCloud(background_color='white', colormap='Greens', width=400, height=400, regexp=r"\S+").generate(pos_text)
+    axes[1].imshow(wc_pos, interpolation='bilinear')
+    axes[1].set_title(f"Kept Positive Words\nTotal Kept: {len(kept_pos)}", fontsize=16, fontweight='bold')
+    axes[1].axis('off')
+
+    # Panel 3: Kept Negative (Reds)
+    neg_text = " ".join([w.replace(" ", "_") for w in kept_neg['word'].head(150)])
+    wc_neg = WordCloud(background_color='white', colormap='Reds', width=400, height=400, regexp=r"\S+").generate(neg_text)
+    axes[2].imshow(wc_neg, interpolation='bilinear')
+    axes[2].set_title(f"Kept Negative Words\nTotal Kept: {len(kept_neg)}", fontsize=16, fontweight='bold')
+    axes[2].axis('off')
+
+    plt.tight_layout()
+    
+    # Update the save path to include the target column name dynamically
+    out_path = FIGURES_DIR / "analysis" / f"{target_col}_wordclouds.png"
+    out_path.parent.mkdir(parents=True, exist_ok=True)
+    plt.savefig(out_path, dpi=150, bbox_inches='tight')
+    print(f"\nSaved comparison image to {out_path}")
+
 
 if __name__ == "__main__":
     main()
@@ -1335,26 +3046,22 @@ if __name__ == "__main__":
     main()
 
 # ===== File: src/features/builder.py =====
-# src/features/builder.py
 import pickle
 import numpy as np
 import pandas as pd
-from pathlib import Path
-from collections import Counter, defaultdict
 from scipy.sparse import csr_matrix, coo_matrix, save_npz, load_npz
 import torch
 from sentence_transformers import SentenceTransformer
 import faiss
-faiss.verbose = False
 from vaderSentiment.vaderSentiment import SentimentIntensityAnalyzer
 
-from src.utils.loader import DataLoader
-from src.features.sentiment import SentimentFeatures
-from src.features.concept_remap import remap_sparse_matrix
 from src.utils.paths import DATA_DIR
+from src.features.vectorizer import build_count_matrix
+from src.features.sentiment import SentimentFeatures
 
 _SENTENCE_MODEL = None
 _ANALYZER = None
+
 
 def _get_sentence_model(model_name: str = 'all-MiniLM-L6-v2'):
     global _SENTENCE_MODEL
@@ -1363,105 +3070,100 @@ def _get_sentence_model(model_name: str = 'all-MiniLM-L6-v2'):
         _SENTENCE_MODEL = SentenceTransformer(model_name).to(device)
     return _SENTENCE_MODEL
 
+
 def _get_analyzer():
     global _ANALYZER
     if _ANALYZER is None:
         _ANALYZER = SentimentIntensityAnalyzer()
     return _ANALYZER
 
-def build_ngram_index(cfg, ngram_range, splits=None):
-    """
-    Build vocabulary and count matrices for specified splits.
-    If splits is None, builds all three (train, val, test).
-    """
-    if splits is None:
-        splits = ['train', 'val', 'test']
-        
-    nmin, nmax = ngram_range
-    key = f"{nmin}_{nmax}"
-    vocab_path = DATA_DIR / "vocab" / f"vocab_{key}.pkl"
-    cache_dir = DATA_DIR / "cache_matrices"
+
+def build_unit_matrices(token_col, ngram_range=(1,3), min_df=10, max_df=0.7, force=False):
+    cache_dir = DATA_DIR / "cache_matrices" / token_col
     cache_dir.mkdir(parents=True, exist_ok=True)
 
-    # --- 1. JIT VOCABULARY BUILDING ---
-    if not vocab_path.exists():
-        print(f"Vocab missing for {key}. Building from train split...")
-        try:
-            train_df = pd.read_parquet(DATA_DIR / "preprocessed" / "train.parquet")
-        except FileNotFoundError:
-            raise ValueError("Train split (train.parquet) must be available to build vocabulary.")
+    train_path = cache_dir / "train.npz"
+    val_path = cache_dir / "val.npz"
+    test_path = cache_dir / "test.npz"
+    vocab_path = cache_dir / "vocab.pkl"
 
-        min_freq = cfg['data']['min_term_freq']
-        max_df_ratio = cfg['data']['max_df_ratio']
+    print(f"Building unit matrices for '{token_col}' ...")
+    train_df = pd.read_parquet(DATA_DIR / "preprocessed" / "train.parquet")
+    val_df = pd.read_parquet(DATA_DIR / "preprocessed" / "val.parquet")
+    test_df = pd.read_parquet(DATA_DIR / "preprocessed" / "test.parquet")
 
-        df_by_label = defaultdict(Counter)
-        for _, row in train_df.iterrows():
-            units = set(DataLoader.get_ngrams(row["clean_bow"], ngram_range))
-            df_by_label[row["sentiment"]].update(units)
+    # Prepare token lists (each is a list of tokens)
+    train_tokens = train_df[token_col].tolist()
+    val_tokens = val_df[token_col].tolist()
+    test_tokens = test_df[token_col].tolist()
 
-        n_docs_label = Counter(train_df["sentiment"])
-        stop_sets = []
-        for label in [0, 1]:
-            thresh = n_docs_label[label] * max_df_ratio
-            stop_sets.append({u for u, cnt in df_by_label[label].items() if cnt > thresh})
-        stop_units = set.intersection(*stop_sets) if stop_sets else set()
+    # Build matrices for train and val simultaneously
+    X_train, X_val, vectorizer = build_count_matrix(
+        train_tokens, val_tokens,
+        min_df=min_df,
+        max_df=max_df,
+        ngram_range=ngram_range
+    )
 
-        tf_counts = Counter()
-        for _, row in train_df.iterrows():
-            units = DataLoader.get_ngrams(row["clean_bow"], ngram_range)
-            tf_counts.update([u for u in units if u not in stop_units])
+    # Build test matrix using the same vectorizer
+    test_reviews = [" ".join(tokens) for tokens in test_tokens]
+    X_test = vectorizer.transform(test_reviews)
 
-        vocab = sorted([u for u, cnt in tf_counts.items() if cnt >= min_freq])
-        unit_to_id = {u: i for i, u in enumerate(vocab)}
+    # Save matrices
+    save_npz(train_path, X_train)
+    save_npz(val_path, X_val)
+    save_npz(test_path, X_test)
 
-        DATA_DIR.joinpath("vocab").mkdir(parents=True, exist_ok=True)
-        with open(vocab_path, "wb") as f:
-            pickle.dump({"vocab": vocab, "unit_to_id": unit_to_id, "stop_units": list(stop_units)}, f)
+    # Save vocabulary (feature names)
+    with open(vocab_path, "wb") as f:
+        pickle.dump(vectorizer.get_feature_names_out(), f)
 
-    # --- 2. JIT SPLIT MATRIX BUILDING ---
-    with open(vocab_path, "rb") as f:
-        vocab_data = pickle.load(f)
-        
-    unit_to_id = vocab_data['unit_to_id']
-    stop_units = set(vocab_data['stop_units'])
-    vocab_len = len(vocab_data['vocab'])
-
-    for sp in splits:
-        cache_file = cache_dir / f"X_{sp}_{key}.npz"
-        if not cache_file.exists():
-            print(f"Cache missing for {sp} split. Building matrix...")
-            df = pd.read_parquet(DATA_DIR / "preprocessed" / f"{sp}.parquet")
-            
-            rows, cols, data = [], [], []
-            for doc_id, (_, row) in enumerate(df.iterrows()):
-                units = DataLoader.get_ngrams(row["clean_bow"], ngram_range)
-                for u in units:
-                    if u in stop_units:
-                        continue
-                    uid = unit_to_id.get(u)
-                    if uid is not None:
-                        rows.append(doc_id)
-                        cols.append(uid)
-                        data.append(1)
-                        
-            X = csr_matrix((data, (rows, cols)), shape=(len(df), vocab_len), dtype=np.float32)
-            save_npz(cache_file, X)
+    print(f"Unit matrices for '{token_col}' saved.")
+    return {
+        'train': train_path,
+        'val': val_path,
+        'test': test_path,
+        'vocab': vocab_path,
+    }
 
 
-def compute_and_cache_embeddings(cfg, ngram_range):
-    """Compute SBERT embeddings + VADER sentiment scores for all units (always needed if clustering)."""
-    nmin, nmax = ngram_range
-    key = f"{nmin}_{nmax}"
-    cache_path = DATA_DIR / "cache_matrices" / f"emb_{key}.npz"
-    if cache_path.exists():
+def compute_unit_z_indices(token_col, z_scores, force=False):
+    cache_dir = DATA_DIR / "cache_matrices" / token_col / "unit_z_indices"
+    cache_dir.mkdir(parents=True, exist_ok=True)
+
+    # Load train matrix
+    train_path = DATA_DIR / "cache_matrices" / token_col / "train.npz"
+    if not train_path.exists():
+        raise FileNotFoundError(f"Train matrix for '{token_col}' not found.")
+    X_train = load_npz(train_path)
+    y_train = pd.read_parquet(DATA_DIR / "preprocessed" / "train.parquet")['sentiment'].values
+
+    sf = SentimentFeatures()
+    sf.fit(X_train, y_train.tolist())
+
+    for z in z_scores:
+        keep_set = sf.filter_by_zscore(z)
+        keep_indices = sorted(keep_set)
+        out_path = cache_dir / f"z_{z}.pkl"
+        with open(out_path, "wb") as f:
+            pickle.dump(keep_indices, f)
+        print(f"   Unit Z={z}: kept {len(keep_indices)} features.")
+
+
+def compute_embeddings(token_col, ngram_range=(1,3), model_name='all-MiniLM-L6-v2'):
+    cache_dir = DATA_DIR / "cache_matrices" / token_col
+    cache_dir.mkdir(parents=True, exist_ok=True)
+    emb_path = cache_dir / "embeddings.npz"
+    if emb_path.exists():
         return
-        
-    with open(DATA_DIR / "vocab" / f"vocab_{key}.pkl", "rb") as f:
-        vocab_data = pickle.load(f)
-    units = vocab_data['vocab']
+
+    vocab_path = cache_dir / "vocab.pkl"
+    if not vocab_path.exists():
+        raise FileNotFoundError(f"Vocabulary for '{token_col}' not found.")
+    with open(vocab_path, "rb") as f:
+        units = pickle.load(f)
 
     device = 'cuda' if torch.cuda.is_available() else 'cpu'
-    model_name = cfg['bert']['sentence_model']
     model = SentenceTransformer(model_name).to(device)
     embeddings = model.encode(units, batch_size=256, convert_to_tensor=True,
                               device=device, show_progress_bar=False)
@@ -1471,32 +3173,34 @@ def compute_and_cache_embeddings(cfg, ngram_range):
     sentiment_scores = np.array([analyzer.polarity_scores(u)['compound'] for u in units],
                                 dtype=np.float32).reshape(-1, 1)
 
-    np.savez_compressed(cache_path, embeddings=embeddings, sentiment_scores=sentiment_scores)
+    np.savez_compressed(emb_path, embeddings=embeddings, sentiment_scores=sentiment_scores)
+    print(f"Embeddings for '{token_col}' saved.")
 
 
-def run_extraction_logic(ngram_range, n_concepts, sentiment_weight):
-    """Cluster units into concepts (if n_concepts>0) and save centroids."""
-    if n_concepts == 0:
-        return
-    nmin, nmax = ngram_range
-    key = f"{nmin}_{nmax}"
-    out_dir = DATA_DIR / "concepts"
+def extract_concepts(token_col, n_concepts, sentiment_weight, force=False):
+    out_dir = DATA_DIR / "concepts" / token_col
     out_dir.mkdir(parents=True, exist_ok=True)
-    out_path = out_dir / f"concepts_{key}_k{n_concepts}_w{int(sentiment_weight)}.pkl"
-    if out_path.exists():
-        return
+    out_path = out_dir / f"k{n_concepts}_w{int(sentiment_weight)}.pkl"
 
-    with open(DATA_DIR / "vocab" / f"vocab_{key}.pkl", "rb") as f:
-        vocab_data = pickle.load(f)
-    units = vocab_data['vocab']
+    # Load units and embeddings
+    vocab_path = DATA_DIR / "cache_matrices" / token_col / "vocab.pkl"
+    if not vocab_path.exists():
+        raise FileNotFoundError(f"Vocabulary for '{token_col}' not found.")
+    with open(vocab_path, "rb") as f:
+        units = pickle.load(f)
 
-    data = np.load(DATA_DIR / "cache_matrices" / f"emb_{key}.npz")
+    emb_path = DATA_DIR / "cache_matrices" / token_col / "embeddings.npz"
+    if not emb_path.exists():
+        raise FileNotFoundError(f"Embeddings for '{token_col}' not found.")
+    data = np.load(emb_path)
+
+    # Augment embeddings with weighted sentiment
     aug_embeddings = np.hstack([
         data['embeddings'],
         data['sentiment_scores'] * float(sentiment_weight)
     ]).astype(np.float32)
     aug_embeddings = aug_embeddings / np.linalg.norm(aug_embeddings, axis=1, keepdims=True)
-    
+
     actual_k = min(n_concepts, len(units))
     kmeans = faiss.Kmeans(aug_embeddings.shape[1], actual_k, niter=20,
                           verbose=False, gpu=torch.cuda.is_available())
@@ -1505,266 +3209,161 @@ def run_extraction_logic(ngram_range, n_concepts, sentiment_weight):
 
     centroids = kmeans.centroids
     centroids = centroids / np.linalg.norm(centroids, axis=1, keepdims=True)
-    
-    # Save both mapping and centroids
+
     with open(out_path, "wb") as f:
         pickle.dump({
             'unit_to_cluster': dict(zip(units, labels.flatten().tolist())),
             'centroids': centroids,
             'sentiment_weight': sentiment_weight,
-            'ngram_range': ngram_range,
             'n_concepts': actual_k
         }, f)
-        
+    print(f"Concepts for '{token_col}' k={n_concepts} w={sentiment_weight} saved.")
 
-def run_stats_logic(cfg, ngram_range, n_concepts, sentiment_weight):
-    """Compute log‑odds statistics for the representation (requires train matrix)."""
-    nmin, nmax = ngram_range
-    key = f"{nmin}_{nmax}"
-    repr_key = f"{key}_k{n_concepts}_w{int(sentiment_weight)}" if n_concepts > 0 else f"{key}_raw"
-    out_dir = DATA_DIR / "stats"
-    out_dir.mkdir(parents=True, exist_ok=True)
-    out_path = out_dir / f"stats_{repr_key}.pkl"
-    if out_path.exists():
+
+def build_concept_matrices(token_col, n_concepts, sentiment_weight, force=False):
+    concept_dir = DATA_DIR / "cache_matrices" / token_col / "concepts"
+    concept_dir.mkdir(parents=True, exist_ok=True)
+    concept_key = f"k{n_concepts}_w{int(sentiment_weight)}"
+    out_train = concept_dir / f"{concept_key}_train.npz"
+    out_val = concept_dir / f"{concept_key}_val.npz"
+    out_test = concept_dir / f"{concept_key}_test.npz"
+
+    # Load unit‑to‑concept mapping
+    map_path = DATA_DIR / "concepts" / token_col / f"k{n_concepts}_w{int(sentiment_weight)}.pkl"
+    if not map_path.exists():
+        raise FileNotFoundError(f"Concept mapping for '{token_col}' {concept_key} not found.")
+    with open(map_path, "rb") as f:
+        map_data = pickle.load(f)
+    unit_to_cluster = map_data['unit_to_cluster']
+    n_concepts_actual = map_data['n_concepts']
+
+    # Build mapping from unit index to concept index
+    # Load vocabulary to get unit index
+    vocab_path = DATA_DIR / "cache_matrices" / token_col / "vocab.pkl"
+    with open(vocab_path, "rb") as f:
+        units = pickle.load(f)
+    unit_to_idx = {u: i for i, u in enumerate(units)}
+    idx_to_cluster = {}
+    for u, cid in unit_to_cluster.items():
+        idx = unit_to_idx.get(u)
+        if idx is not None:
+            idx_to_cluster[idx] = cid
+
+    # Helper to remap a unit matrix to concept matrix
+    def remap_unit_matrix(unit_mat_path, out_path, n_docs):
+        unit_mat = load_npz(unit_mat_path)
+        # Convert to COO for easy manipulation
+        coo = unit_mat.tocoo()
+        rows = coo.row
+        cols = coo.col
+        data = coo.data
+        # Map unit columns to concept columns
+        new_cols = np.array([idx_to_cluster.get(c, -1) for c in cols], dtype=np.int32)
+        mask = new_cols != -1
+        rows = rows[mask]
+        new_cols = new_cols[mask]
+        data = data[mask]
+        if len(rows) == 0:
+            concept_mat = csr_matrix((n_docs, 0), dtype=np.float32)
+        else:
+            concept_mat = coo_matrix((data, (rows, new_cols)),
+                                     shape=(n_docs, n_concepts_actual)).tocsr()
+        save_npz(out_path, concept_mat)
+
+    # Get number of documents per split
+    n_train = len(pd.read_parquet(DATA_DIR / "preprocessed" / "train.parquet"))
+    n_val   = len(pd.read_parquet(DATA_DIR / "preprocessed" / "val.parquet"))
+    n_test  = len(pd.read_parquet(DATA_DIR / "preprocessed" / "test.parquet"))
+
+    unit_train = DATA_DIR / "cache_matrices" / token_col / "train.npz"
+    unit_val   = DATA_DIR / "cache_matrices" / token_col / "val.npz"
+    unit_test  = DATA_DIR / "cache_matrices" / token_col / "test.npz"
+
+    remap_unit_matrix(unit_train, out_train, n_train)
+    remap_unit_matrix(unit_val,   out_val,   n_val)
+    remap_unit_matrix(unit_test,  out_test,  n_test)
+
+    print(f"Concept matrices for '{token_col}' {concept_key} saved.")
+
+
+def compute_concept_z_indices(token_col, n_concepts, sentiment_weight, z_scores, force=False):
+    concept_dir = DATA_DIR / "cache_matrices" / token_col / "concepts"
+    concept_key = f"k{n_concepts}_w{int(sentiment_weight)}"
+    indices_dir = concept_dir / "z_indices"
+    indices_dir.mkdir(parents=True, exist_ok=True)
+
+    stats_dir = DATA_DIR / "stats" / token_col / "concepts"
+    stats_dir.mkdir(parents=True, exist_ok=True)
+    stats_path = stats_dir / f"{concept_key}.pkl"
+
+    # Check if everything already exists
+    indices_exist = all((indices_dir / f"{concept_key}_z{z}.pkl").exists() for z in z_scores)
+    stats_exist = stats_path.exists()
+    if not force and indices_exist and stats_exist:
+        print(f"✅ Concept Z‑score indices and stats for '{token_col}' {concept_key} already exist.")
         return
 
-    # Ensure train matrix exists for this ngram_range
-    train_cache = DATA_DIR / "cache_matrices" / f"X_train_{key}.npz"
-    if not train_cache.exists():
-        build_ngram_index(cfg, ngram_range, splits=['train'])
-
-    X_train = load_npz(train_cache)
+    # Load concept train matrix
+    train_path = concept_dir / f"{concept_key}_train.npz"
+    if not train_path.exists():
+        raise FileNotFoundError(f"Concept train matrix for '{token_col}' {concept_key} not found.")
+    X_train = load_npz(train_path)
     y_train = pd.read_parquet(DATA_DIR / "preprocessed" / "train.parquet")['sentiment'].values
-
-    if n_concepts > 0:
-        with open(DATA_DIR / "concepts" / f"concepts_{key}_k{n_concepts}_w{int(sentiment_weight)}.pkl", "rb") as f:
-            c_data = pickle.load(f)
-        with open(DATA_DIR / "vocab" / f"vocab_{key}.pkl", "rb") as f:
-            v_data = pickle.load(f)
-        id_to_cluster = {v_data['unit_to_id'][u]: cid for u, cid in c_data['unit_to_cluster'].items()}
-        X_train = remap_sparse_matrix(X_train, id_to_cluster, n_concepts)
 
     sf = SentimentFeatures()
     sf.fit(X_train, y_train.tolist())
-    with open(out_path, "wb") as f:
+
+    # Save keep indices for each z
+    for z in z_scores:
+        keep_set = sf.filter_by_zscore(z)
+        keep_indices = sorted(keep_set)
+        out_path = indices_dir / f"{concept_key}_z{z}.pkl"
+        with open(out_path, "wb") as f:
+            pickle.dump(keep_indices, f)
+        print(f"   Concept Z={z}: kept {len(keep_indices)} features.")
+
+    # Save full stats
+    with open(stats_path, "wb") as f:
         pickle.dump(sf.logodds_per_class, f)
+    print(f"   Saved full stats to {stats_path}")
 
 
-def ensure_representation(cfg, ngram_range, n_concepts, sentiment_weight, splits=None):
-    """
-    Ensure that all required files for a given representation exist for the specified splits.
-    If splits is None, builds all three splits.
-    """
-    if splits is None:
-        splits = ['train', 'val', 'test']
-    build_ngram_index(cfg, ngram_range, splits)
-    compute_and_cache_embeddings(cfg, ngram_range)
-    if n_concepts > 0:
-        run_extraction_logic(ngram_range, n_concepts, sentiment_weight)
-    run_stats_logic(cfg, ngram_range, n_concepts, sentiment_weight)
-
-
-def map_unseen_units(unseen_units, concept_data_path, model_name='all-MiniLM-L6-v2', batch_size=256):
-    """
-    Map a list of unit strings (unseen during training) to concept IDs using saved centroids.
-    Returns dict {unit: concept_id}.
-    """
-    # Load centroids and metadata
-    with open(concept_data_path, 'rb') as f:
-        data = pickle.load(f)
-    centroids = data['centroids']
-    sentiment_weight = data['sentiment_weight']
-
-    # Get models
-    model = _get_sentence_model(model_name)
-    analyzer = _get_analyzer()
-
-    # Compute embeddings for unseen units (batched on GPU)
-    embeddings = model.encode(unseen_units, batch_size=batch_size, convert_to_tensor=True,
-                              device=model.device, show_progress_bar=False)
-    embeddings = torch.nn.functional.normalize(embeddings, p=2, dim=1).cpu().numpy()
-
-    sent_scores = np.array([analyzer.polarity_scores(u)['compound'] for u in unseen_units], dtype=np.float32).reshape(-1, 1)
-    embeddings = np.hstack([embeddings, sent_scores * sentiment_weight])
-    embeddings = embeddings / np.linalg.norm(embeddings, axis=1, keepdims=True)
-    
-    # Build FAISS index on centroids (done once per call, not per word)
-    index = faiss.IndexFlatL2(centroids.shape[1])
-    index.add(centroids.astype(np.float32))
-    distances, labels = index.search(embeddings.astype(np.float32), 1)
-
-    # Similarity threshold (cosine from L2 on normalized vectors)
-    SIM_THRESHOLD = 0.6
-    similarities = 1 - distances.flatten() / 2
-    mapping = {}
-    for u, l, sim in zip(unseen_units, labels.flatten(), similarities):
-        if sim >= SIM_THRESHOLD:
-            mapping[u] = int(l)
-    return mapping
-
-
-def build_concept_matrices(cfg, ngram_range, n_concepts, sentiment_weight, splits=None):
-    """
-    Build and save concept-level sparse matrices for the requested splits.
-    If splits is None, builds for all three (train, val, test).
-    Matrices are saved in data/concept_matrices/.
-    """
-    if splits is None:
-        splits = ['train', 'val', 'test']
-
-    nmin, nmax = ngram_range
-    key = f"{nmin}_{nmax}"
-    concept_file = DATA_DIR / "concepts" / f"concepts_{key}_k{n_concepts}_w{int(sentiment_weight)}.pkl"
-    if not concept_file.exists():
-        raise FileNotFoundError(f"Concept file not found: {concept_file}. Run run_extraction_logic first.")
-
-    # Load concept data (centroids + training mapping)
-    with open(concept_file, 'rb') as f:
-        cdata = pickle.load(f)
-    unit_to_cluster_train = cdata['unit_to_cluster']   # mapping for training units only
-    centroids = cdata['centroids']
-    actual_n_concepts = centroids.shape[0]
-
-    # Load vocabulary (unit_to_id)
-    vocab_file = DATA_DIR / "vocab" / f"vocab_{key}.pkl"
-    with open(vocab_file, 'rb') as f:
-        vdata = pickle.load(f)
-    unit_to_id = vdata['unit_to_id']
-    id_to_unit = {idx: unit for unit, idx in unit_to_id.items()}
-
-    # Cache for mapping of unseen units (per configuration, reused across splits)
-    mapping_cache = {}
-
-    # Preload sentence transformer model name and frequency threshold from cfg
-    model_name = cfg['bert']['sentence_model']
-    min_freq = cfg['data']['min_term_freq']
-
-    for split in splits:
-        out_dir = DATA_DIR / "concept_matrices"
-        out_dir.mkdir(parents=True, exist_ok=True)
-        out_file = out_dir / f"{split}_{key}_k{n_concepts}_w{int(sentiment_weight)}.npz"
-        
-        if out_file.exists():
-            print(f"Concept matrix for {split} already exists: {out_file}")
-            continue
-            
-        print(f"Building concept matrix for {split} (k={n_concepts}, w={sentiment_weight})...")
-        df = pd.read_parquet(DATA_DIR / "preprocessed" / f"{split}.parquet")
-
-        if split == 'train':
-            # Use the unit matrix and remap via training mapping
-            unit_mat = load_npz(DATA_DIR / "cache_matrices" / f"X_train_{key}.npz")
-            id_to_cluster = {}
-            for uid in range(unit_mat.shape[1]):
-                unit = id_to_unit.get(uid)
-                if unit is not None and unit in unit_to_cluster_train:
-                    id_to_cluster[uid] = unit_to_cluster_train[unit]
-                    
-            if not id_to_cluster:
-                X_concept = csr_matrix((len(df), 0), dtype=np.float32)
-            else:
-                valid_uids = sorted(id_to_cluster.keys())
-                remap = np.array([id_to_cluster[uid] for uid in valid_uids])
-                X_unit_subset = unit_mat[:, valid_uids]
-                coo = X_unit_subset.tocoo()
-                rows, cols, data = coo.row, remap[coo.col], coo.data
-                df_agg = pd.DataFrame({'row': rows, 'col': cols, 'data': data}).groupby(['row', 'col'], as_index=False).sum()
-                X_concept = csr_matrix((df_agg['data'].values,
-                                        (df_agg['row'].values, df_agg['col'].values)),
-                                       shape=(len(df), actual_n_concepts))
-        else:
-            # ===== OPTIMIZED 3-PASS SYSTEM FOR VAL/TEST =====
-            
-            # Pass 1: Count frequencies of all units in this split
-            split_counts = Counter()
-            for _, row in df.iterrows():
-                units = DataLoader.get_ngrams(row["clean_bow"], ngram_range)
-                split_counts.update(units)
-                
-            # Filter for unseen units that meet the minimum frequency threshold
-            unseen_set = set()
-            for u, count in split_counts.items():
-                if count >= min_freq:
-                    uid = unit_to_id.get(u)
-                    # If unit is completely new, OR in vocab but wasn't clustered
-                    if uid is None or id_to_unit.get(uid) not in unit_to_cluster_train:
-                        if u not in mapping_cache:
-                            unseen_set.add(u)
-
-            # Pass 2: Batch-map ONLY the frequent unseen units
-            if unseen_set:
-                unseen_list = list(unseen_set)
-                print(f"Batch mapping {len(unseen_list)} frequent new units for {split} (dropped rare units)...")
-                new_mappings = map_unseen_units(unseen_list, concept_file, model_name=model_name)
-                
-                for u in unseen_list:
-                    mapping_cache[u] = new_mappings.get(u, -1)
-
-            # Pass 3: Build the sparse matrix
-            rows, cols, data = [], [], []
-            for doc_id, (_, row) in enumerate(df.iterrows()):
-                units = DataLoader.get_ngrams(row["clean_bow"], ngram_range)
-                for u in units:
-                    uid = unit_to_id.get(u)
-                    
-                    # If it's a known training unit, we always use it
-                    if uid is not None and id_to_unit.get(uid) in unit_to_cluster_train:
-                        cid = unit_to_cluster_train[id_to_unit[uid]]
-                    else:
-                        # Otherwise, check the cache (returns -1 if it was rare/ignored or below similarity threshold)
-                        cid = mapping_cache.get(u, -1)
-
-                    if cid != -1:
-                        rows.append(doc_id)
-                        cols.append(cid)
-                        data.append(1)
-
-            if len(rows) == 0:
-                X_concept = csr_matrix((len(df), 0), dtype=np.float32)
-            else:
-                X_concept = coo_matrix((data, (rows, cols)),
-                                       shape=(len(df), actual_n_concepts)).tocsr()
-
-        save_npz(out_file, X_concept)
-        print(f"Saved concept matrix to {out_file}")
-
-
-def load_representation(cfg, ngram_range, n_concepts, sentiment_weight, z_threshold, split):
-    """
-    Load the sparse count matrix for a given split after ensuring it exists.
-    Applies Z‑score filtering if z_threshold > 0.
-    Returns (X_sparse, y_array).
-    """
-    key = f"{ngram_range[0]}_{ngram_range[1]}"
+def load_representation(token_col, n_concepts, sentiment_weight, z_threshold, split):
     y = pd.read_parquet(DATA_DIR / "preprocessed" / f"{split}.parquet")['sentiment'].values
 
     if n_concepts == 0:
-        # Original unit-level representation
-        build_ngram_index(cfg, ngram_range, splits=[split])
-        X = load_npz(DATA_DIR / "cache_matrices" / f"X_{split}_{key}.npz")
-        n_features = X.shape[1]
-        repr_key = f"{key}_raw"
-    else:
-        # Concept-level representation – use precomputed matrices
-        concept_dir = DATA_DIR / "concept_matrices"
-        concept_file = concept_dir / f"{split}_{key}_k{n_concepts}_w{int(sentiment_weight)}.npz"
-        if not concept_file.exists():
-            # Build concept matrices for all splits if missing (this will be done only once)
-            build_concept_matrices(cfg, ngram_range, n_concepts, sentiment_weight, splits=[split])
-        X = load_npz(concept_file)
-        n_features = X.shape[1]
-        repr_key = f"{key}_k{n_concepts}_w{int(sentiment_weight)}"
+        # Unit level
+        unit_path = DATA_DIR / "cache_matrices" / token_col / f"{split}.npz"
+        if not unit_path.exists():
+            raise FileNotFoundError(f"Unit matrix for '{token_col}' split {split} not found.")
+        X = load_npz(unit_path)
 
-    # Z-score filtering
-    if z_threshold > 0:
-        stats_path = DATA_DIR / "stats" / f"stats_{repr_key}.pkl"
-        with open(stats_path, "rb") as f:
-            stats = pickle.load(f)
-        important_pos = set(stats[1][stats[1]['zscore'] > z_threshold]['concept'])
-        important_neg = set(stats[0][stats[0]['zscore'] > z_threshold]['concept'])
-        important = important_pos | important_neg
-        mask = np.array([i in important for i in range(n_features)])
-        X = X[:, mask]
+        # Load unit Z‑score indices
+        indices_dir = DATA_DIR / "cache_matrices" / token_col / "unit_z_indices"
+        indices_path = indices_dir / f"z_{z_threshold}.pkl"
+        if not indices_path.exists():
+            raise FileNotFoundError(f"Unit Z‑score indices for z={z_threshold} not found.")
+        with open(indices_path, "rb") as f:
+            keep_indices = pickle.load(f)
+        X = X[:, keep_indices]
+
+    else:
+        # Concept level
+        concept_dir = DATA_DIR / "cache_matrices" / token_col / "concepts"
+        concept_key = f"k{n_concepts}_w{int(sentiment_weight)}"
+        mat_path = concept_dir / f"{concept_key}_{split}.npz"
+        if not mat_path.exists():
+            raise FileNotFoundError(f"Concept matrix for '{token_col}' {concept_key} split {split} not found.")
+        X = load_npz(mat_path)
+
+        # Load concept Z‑score indices
+        indices_dir = concept_dir / "z_indices"
+        indices_path = indices_dir / f"{concept_key}_z{z_threshold}.pkl"
+        if not indices_path.exists():
+            raise FileNotFoundError(f"Concept Z‑score indices for {concept_key} z={z_threshold} not found.")
+        with open(indices_path, "rb") as f:
+            keep_indices = pickle.load(f)
+        X = X[:, keep_indices]
 
     return X, y
 
@@ -1981,46 +3580,52 @@ class ConceptExtractor:
                 result[u] = int(l)
         return result
 
+# ===== File: src/features/selection.py =====
+import numpy as np
+
+
+def compute_global_mask(X_train, max_df_ratio=0.7):
+    """Return indices of features with document frequency <= max_df_ratio."""
+    doc_freqs = np.array((X_train > 0).sum(axis=0)).flatten()
+    max_count = max_df_ratio * X_train.shape[0]
+    return np.where(doc_freqs <= max_count)[0]
+
+
+def compute_class_mask(X_train, y_train, max_df_ratio=0.7):
+    """
+    Return indices of features that satisfy class‑specific max_df:
+        df_pos <= max_df_ratio * n_pos  OR  df_neg <= max_df_ratio * n_neg
+    """
+    mask_pos = (y_train == 1)
+    mask_neg = (y_train == 0)
+    df_pos = np.array((X_train[mask_pos] > 0).sum(axis=0)).flatten()
+    df_neg = np.array((X_train[mask_neg] > 0).sum(axis=0)).flatten()
+    max_pos = max_df_ratio * mask_pos.sum()
+    max_neg = max_df_ratio * mask_neg.sum()
+    return np.where((df_pos <= max_pos) | (df_neg <= max_neg))[0]
+
 # ===== File: src/features/sentiment.py =====
-# src/features/sentiment.py
 import numpy as np
 import pandas as pd
-from scipy.sparse import coo_matrix, csr_matrix
-import itertools
-from typing import List, Union, Optional
+from scipy.sparse import csr_matrix
+from typing import List
 
 
 class SentimentFeatures:
     """
-    Compute log‑odds and Z‑scores for each feature (concept or unit).
-    Can accept both list‑of‑lists (backward compatibility) and CSR matrix.
+    Compute log-odds and Z-scores for each feature (concept or unit)
+    using a pre-computed sparse CSR matrix.
     """
+
     def __init__(self, alpha: float = 0.01):
         self.alpha = alpha
         self.logodds_per_class = {}   # dict {0: df, 1: df}
-        self.concept_list = None     # list of feature IDs (columns)
+        self.concept_list = None      # list of feature IDs (columns)
         self._feature_to_idx = None
 
-    def fit(self,
-            X: Union[List[List[int]], csr_matrix],
-            y: List[int],
-            feature_names: Optional[List[int]] = None):
-        """
-        Fit sentiment statistics.
-        If X is CSR matrix: shape (n_docs, n_features)
-        If X is list of lists: each inner list contains feature IDs (may have duplicates)
-        feature_names: only needed if X is list-of-lists (to define column order)
-        """
-        if isinstance(X, csr_matrix):
-            self._fit_sparse(X, y)
-        else:
-            self._fit_list(X, y, feature_names)
-        return self
-
-    def _fit_sparse(self, X: csr_matrix, y: List[int]):
-        """Fast path: directly use CSR matrix."""
+    def fit(self, X: csr_matrix, y: List[int]):
         n_docs, n_features = X.shape
-        self.concept_list = list(range(n_features))   # assume column indices are feature IDs
+        self.concept_list = list(range(n_features))   # column indices are IDs
         self._feature_to_idx = {f: i for i, f in enumerate(self.concept_list)}
 
         y_arr = np.array(y)
@@ -2040,34 +3645,42 @@ class SentimentFeatures:
                 "zscore": z_scores
             })
 
-    def _fit_list(self, X: List[List[int]], y: List[int], feature_names: Optional[List[int]] = None):
-        """Original list‑of‑lists implementation."""
-        unique_concepts = sorted(set(itertools.chain.from_iterable(X)))
-        if feature_names is not None:
-            # Use provided order (important for consistency)
-            unique_concepts = feature_names
-        self.concept_list = unique_concepts
-        self._feature_to_idx = {c: i for i, c in enumerate(unique_concepts)}
-
-        # Build sparse matrix
-        rows, cols, data = [], [], []
-        for doc_id, concepts in enumerate(X):
-            for c in concepts:
-                if c in self._feature_to_idx:
-                    rows.append(doc_id)
-                    cols.append(self._feature_to_idx[c])
-                    data.append(1)   # each occurrence counts
-        X_mat = coo_matrix((data, (rows, cols)),
-                           shape=(len(X), len(unique_concepts))).tocsr()
-        self._fit_sparse(X_mat, y)
+        return self
 
     def filter_by_zscore(self, threshold: float) -> set:
         """
-        Return set of concept IDs whose Z‑score > threshold for either class.
+        Return set of concept IDs whose Z-score > threshold for either class.
         """
         pos_set = set(self.logodds_per_class[1][self.logodds_per_class[1]['zscore'] > threshold]['concept'])
         neg_set = set(self.logodds_per_class[0][self.logodds_per_class[0]['zscore'] > threshold]['concept'])
         return pos_set | neg_set
+
+# ===== File: src/features/vectorizer.py =====
+from sklearn.feature_extraction.text import CountVectorizer
+
+
+def space_tokenizer(text):
+    """Split text exactly by spaces (bypass sklearn's regex)."""
+    return text.split(' ')
+
+
+def build_count_matrix(train_tokens, val_tokens, min_df=10, max_df=1.0, ngram_range=(1,3)):
+
+    train_reviews = [" ".join(tokens) for tokens in train_tokens]
+    val_reviews = None if val_tokens is None else [" ".join(tokens) for tokens in val_tokens]
+
+    vectorizer = CountVectorizer(
+        lowercase=False,
+        tokenizer=space_tokenizer,
+        token_pattern=None,
+        ngram_range=ngram_range,
+        min_df=min_df,
+        max_df=max_df
+    )
+
+    X_train = vectorizer.fit_transform(train_reviews)
+    X_val = None if val_tokens is None else vectorizer.transform(val_reviews)
+    return X_train, X_val, vectorizer
 
 # ===== File: src/models/base_model.py =====
 import pandas as pd
@@ -2113,7 +3726,7 @@ class BaseModel:
     def evaluate(self, X_test, y_test, name: str = "val"):
         probs = self.predict_proba(X_test)
         preds = self.predict_label(X_test)
-        
+
         # --- PATHS ---
         data_dir = RESULTS_DIR / name / "raw_predictions"
         report_dir = RESULTS_DIR / name / "classification_reports"
@@ -2137,11 +3750,12 @@ from sklearn.calibration import CalibratedClassifierCV
 from src.models.base_model import BaseModel
 from sklearn.svm import SVC
 
+
 class LinearSVMClassifier(BaseModel):
     """LinearSVC with probability calibration."""
+
     def __init__(self, C=1.0, name="linear_svm"):
         super().__init__(name)
-        # LinearSVC by default doesn't return probabilities, so we use CalibratedClassifierCV
         self.base_model = LinearSVC(C=C, max_iter=10000, random_state=42)
         self.model = CalibratedClassifierCV(self.base_model)
 
@@ -2151,9 +3765,11 @@ class LinearSVMClassifier(BaseModel):
     def predict_proba(self, X):
         # Returning probability for the positive class (index 1)
         return self.model.predict_proba(X)[:, 1]
-    
+
+
 class RbfSVMClassifier(BaseModel):
     """SVC with RBF kernel wrapped with probability calibration."""
+
     def __init__(self, C=1.0, gamma='scale', name="rbf_svm"):
         super().__init__(name)
         self.svm = SVC(C=C, kernel='rbf', gamma=gamma, probability=False, random_state=42, verbose=True)
@@ -2166,8 +3782,10 @@ class RbfSVMClassifier(BaseModel):
         # Returning probability for the positive class (index 1)
         return self.model.predict_proba(X)[:, 1]
 
+
 class LogisticRegressionClassifier(BaseModel):
     """Standardowa Regresja Logistyczna."""
+
     def __init__(self, C=1.0, name="logreg"):
         super().__init__(name)
         self.model = LogisticRegression(C=C, max_iter=1000, solver='lbfgs', random_state=42)
@@ -2385,153 +4003,6 @@ class EnsembleClassifier(BaseModel):
         """Returns 0 or 1 based on final blended probabilities."""
         probs = self.predict_proba(X_sets)
         return (probs > 0.5).astype(int)
-
-# ===== File: src/utils/loader.py =====
-import os
-import warnings
-import logging
-import json
-import re
-import unicodedata
-import contractions
-from concurrent.futures import ProcessPoolExecutor
-from pathlib import Path
-from typing import List, Dict, Tuple, Optional
-import pandas as pd
-import argparse
-import yaml
-
-os.environ["TF_CPP_MIN_LOG_LEVEL"] = "3"
-warnings.filterwarnings("ignore", category=FutureWarning, message=".*np.object.*")
-logging.getLogger("absl").setLevel(logging.ERROR)
-
-import tensorflow_datasets as tfds
-from sklearn.model_selection import train_test_split
-from tqdm.auto import tqdm
-
-from src.utils.visualizer import ModelVisualizer
-from src.utils.paths import DATA_DIR
-
-class DataLoader:
-    TRANSLATE_TABLE = str.maketrans({
-        "`": "'", "´": "'", "’": "'", "‘": "'",
-        "“": '"', "”": '"', "„": '"',
-        "–": "-", "—": "-", "−": "-",
-        "\x96": "-", "\x97": "-",
-        "…": "..."
-    })
-
-    @classmethod
-    def process_single_item(cls, item: Tuple[bytes, int]) -> Dict:
-        """Clean and tokenise a single review."""
-        text_raw, label = item
-        text_raw = text_raw.decode("utf-8") if isinstance(text_raw, bytes) else text_raw
-
-        text = unicodedata.normalize('NFKC', text_raw)
-        text = text.translate(cls.TRANSLATE_TABLE)
-        text = re.sub(r'<[^>]+>', ' ', text)
-        clean_bert = re.sub(r'\s+', ' ', text).strip()
-        clean_bow = contractions.fix(clean_bert.lower())
-
-        return {
-            "review": text_raw,
-            "clean_review": clean_bert,
-            "clean_bow": clean_bow,
-            "sentiment": int(label)
-        }
-
-    @staticmethod
-    def get_ngrams(text: str, ngram_range: Tuple[int, int] = (1, 3)) -> List[str]:
-        """Extract n‑grams (word‑level) from pre‑tokenised BoW text."""
-        tokens = re.findall(r'\w+|[^\w\s]', text)
-        min_n, max_n = ngram_range
-        units = []
-        for n in range(min_n, max_n + 1):
-            if n == 1:
-                units.extend(tokens)
-            else:
-                grams = zip(*[tokens[i:] for i in range(n)])
-                units.extend([" ".join(g) for g in grams])
-        return units
-
-    @classmethod
-    def load_imdb(cls, n_jobs: int = 4, train_size: float = 0.6, test_size: float = 0.8) -> Tuple[List[Dict], List[Dict], List[Dict]]:
-        """
-        Load IMDb reviews, clean, deduplicate, split.
-        Returns (train, val, test) as lists of dicts.
-        """
-        save_dir = str(DATA_DIR / "IMDb")
-
-        print("Loading IMDb reviews...")
-        ds = tfds.load('imdb_reviews', split='train+test', as_supervised=True)
-        raw_data = list(tfds.as_numpy(ds))
-
-        seen = set()
-        unique_raw = []
-        for t, l in raw_data:
-            if t not in seen:
-                seen.add(t)
-                unique_raw.append((t, l))
-
-        print(f"Found {len(raw_data)-len(unique_raw)} duplicates.")
-        print(f"Cleaning {len(unique_raw)} reviews...")
-        with ProcessPoolExecutor(max_workers=n_jobs) as executor:
-            processed = list(tqdm(executor.map(cls.process_single_item, unique_raw), total=len(unique_raw)))
-
-        labels = [item['sentiment'] for item in processed]
-        train, temp_data, _, temp_labels = train_test_split(
-            processed, labels, test_size=1 - train_size, random_state=42, stratify=labels
-        )
-        val, test = train_test_split(
-            temp_data, test_size=test_size, random_state=42, stratify=temp_labels
-        )
-
-        print(f"Loaded dataset with {len(train)} train, {len(val)} val and {len(test)} test samples.")
-
-        os.makedirs(save_dir, exist_ok=True)
-        for name, dataset in zip(["train", "val", "test"], [train, val, test]):
-            path = os.path.join(save_dir, f"{name}.json")
-            with open(path, "w", encoding="utf-8") as f:
-                json.dump(dataset, f, ensure_ascii=False, indent=2)
-
-        print(f"Loading done. JSON files saved to {save_dir}")
-
-        return train, val, test
-
-def main(config_path: str):
-    with open(config_path, 'r') as f:
-        cfg = yaml.safe_load(f)
-
-    train, val, test = DataLoader.load_imdb(
-        train_size=cfg['data']['train_size'],
-        test_size=cfg['data']['test_size']
-    )
-
-    def to_df(data):
-        df = pd.DataFrame(data)
-        if 'review' in df.columns:
-            df.drop(columns=['review'], inplace=True)
-        return df
-
-    train_df = to_df(train)
-    val_df   = to_df(val)
-    test_df  = to_df(test)
-
-    # Save as Parquet
-    out_dir = DATA_DIR / "preprocessed"
-    out_dir.mkdir(parents=True, exist_ok=True)
-
-    train_df.to_parquet(out_dir / "train.parquet")
-    val_df.to_parquet(out_dir / "val.parquet")
-    test_df.to_parquet(out_dir / "test.parquet")
-
-    print(f"Preprocessing done. Parquet files saved to {out_dir}")
-
-if __name__ == "__main__":
-    parser = argparse.ArgumentParser()
-    parser.add_argument("--config", default="configs/default.yaml")
-    args = parser.parse_args()
-    main(args.config)
 
 # ===== File: src/utils/metrics.py =====
 import pandas as pd

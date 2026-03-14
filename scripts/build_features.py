@@ -1,9 +1,8 @@
-#!/usr/bin/env python3
 import argparse
 import yaml
-from tqdm import tqdm
 from src.utils.paths import PROJECT_ROOT
 from src.features import builder
+
 
 def main():
     parser = argparse.ArgumentParser()
@@ -12,46 +11,42 @@ def main():
 
     with open(PROJECT_ROOT / args.config, 'r') as f:
         cfg = yaml.safe_load(f)
+
+    # Get parameter spaces from config
     grid = cfg['grid_search']
+    n_concepts_list = grid['n_concepts']
+    sentiment_weights = grid['sentiment_weight']
 
-    print("--- PHASE 1: Building Base Vocabulary & Embeddings ---")
-    unique_ngrams = grid['ngram_range']
-    
-    for nr in tqdm(unique_ngrams, desc="Base Setup", dynamic_ncols=True):
-        builder.build_ngram_index(cfg, nr, splits=['train', 'val'])
-        builder.compute_and_cache_embeddings(cfg, nr)
+    print("=== PHASE 1: Build unit matrices ===")
+    builder.build_unit_matrices('tokens_lower', max_df=0.7)
 
-    print("\n--- PHASE 2: Extracting Concepts & Pre-building Matrices ---")
-    tasks = []
-    for nr in grid['ngram_range']:
-        for nc in grid['n_concepts']:
-            weights = [0.0] if nc == 0 else grid['sentiment_weight']
-            for w in weights:
-                # Deduplicate baseline tasks
-                if nc == 0 and w > 0:
-                    continue
-                tasks.append((tuple(nr), nc, w))
+    print("\n=== PHASE 2: Compute unit Z‑score indices ===")
+    builder.compute_unit_z_indices('tokens_lower', [2.0])
 
-    # Remove any stray duplicates
-    tasks = list(dict.fromkeys(tasks))
+    print("\n=== PHASE 3: Compute embeddings (needed for concepts) ===")
+    builder.compute_embeddings('tokens_lower')
 
-    with tqdm(total=len(tasks), desc="Processing Configurations", dynamic_ncols=True) as pbar:
-        for nr, nc, w in tasks:
-            pbar.set_description(f"ng{nr[0]}-{nr[1]} | k{nc} | w{int(w)}")
-            
-            if nc > 0:
-                # 1. Cluster embeddings into concepts
-                builder.run_extraction_logic(nr, nc, w)
-                
-                # 2. Pre-build concept matrices (resolves unseen validation words now)
-                builder.build_concept_matrices(cfg, nr, nc, w, splits=['train', 'val'])
-            
-            # 3. Compute log-odds stats (relies on the train matrix)
-            builder.run_stats_logic(cfg, nr, nc, w)
-            
-            pbar.update(1)
+    print("\n=== PHASE 4: Extract concepts for each (k, w) combination ===")
+    for nc in n_concepts_list:
+        if nc == 0:
+            continue
+        for w in sentiment_weights:
+            builder.extract_concepts('tokens_lower', nc, w)
 
-    print("\nFeature Factory Complete! Matrices cached. Ready for parallel grid search.")
+    print("\n=== PHASE 5: Build concept matrices ===")
+    for nc in n_concepts_list:
+        if nc == 0:
+            continue
+        for w in sentiment_weights:
+            builder.build_concept_matrices('tokens_lower', nc, w)
+
+    print("\n=== PHASE 6: Compute concept Z‑score indices ===")
+    for nc in n_concepts_list:
+        if nc == 0:
+            continue
+        for w in sentiment_weights:
+            builder.compute_concept_z_indices('tokens_lower', nc, w, [2.0])
+
 
 if __name__ == "__main__":
     main()

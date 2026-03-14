@@ -1,0 +1,15 @@
+bert:
+    sentence_model: "all-MiniLM-L6-v2"
+    basic:
+        model_name: "distilbert-base-uncased-finetuned-sst-2-english"
+        epochs: 3
+        batch_size: 16
+        max_len: 256
+        learning_rate: 2e-5
+        patience: 2
+    specialist:
+        epochs: 10
+        batch_size: 16
+        learning_rate: 2e-6
+        num_layers_to_freeze: 5 
+        patience: 3

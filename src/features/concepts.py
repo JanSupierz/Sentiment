@@ -1,9 +1,8 @@
-# src/features/concepts.py
 import numpy as np
 import torch
 import faiss
 from sentence_transformers import SentenceTransformer
-from typing import Dict, List, Any, Optional, Union
+from typing import Dict, List, Any, Optional
 from sklearn.feature_selection import SelectKBest, f_regression
 
 
@@ -11,14 +10,10 @@ class ConceptExtractor:
     def __init__(self, model_name: str = 'all-MiniLM-L6-v2'):
         self.device = 'cuda' if torch.cuda.is_available() else 'cpu'
         self.model = SentenceTransformer(model_name).to(self.device)
-        self.selected_dims = None   # for supervised dimension reduction
-        self._embeddings_cache = None   # optional: store precomputed embeddings
+        self.selected_dims = None
+        self._embeddings_cache = None
 
     def set_precomputed_embeddings(self, embeddings: np.ndarray, units: List[str]):
-        """
-        Inject precomputed embeddings (e.g., from cache) to avoid recomputation.
-        Embeddings must be normalized and in the same order as `units`.
-        """
         self._embeddings_cache = (units, embeddings)
 
     def train_concepts(self,
@@ -28,10 +23,7 @@ class ConceptExtractor:
                        n_clusters: int = 5000,
                        batch_size: int = 128,
                        printing: bool = True) -> Dict[str, Any]:
-        """
-        Cluster units into concepts.
-        If embeddings have been precomputed (via set_precomputed_embeddings), they are used.
-        """
+        
         unique_units = sorted(list(dict.fromkeys(units)))
         n_clusters = min(n_clusters, len(unique_units))
 

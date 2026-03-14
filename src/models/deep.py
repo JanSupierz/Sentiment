@@ -1,4 +1,3 @@
-# src/models/deep.py
 import os
 os.environ["TF_USE_LEGACY_KERAS"] = "1"   # ensure compatibility with transformers
 os.environ["TF_CPP_MIN_LOG_LEVEL"] = "3"
@@ -7,7 +6,7 @@ import tensorflow as tf
 import numpy as np
 from transformers import DistilBertTokenizer, TFAutoModelForSequenceClassification
 from sklearn.model_selection import train_test_split
-import tf_keras as tfk   # use separate keras package if needed
+import tf_keras as tfk 
 from src.models.base_model import BaseModel
 
 
@@ -52,8 +51,6 @@ class BERTClassifier(BaseModel):
         for layer in self.model.layers[0].transformer.layer[:num_layers_to_freeze]:
             layer.trainable = False
 
-# Inside src/models/deep.py, update your train() definition:
-
     def train(self, X_text, y, epochs=3, batch_size=16, validation_split=0.2, lr=None, patience=3):
         if lr:
             self._compile_model(lr)
@@ -86,14 +83,14 @@ class BERTClassifier(BaseModel):
         # --- DYNAMIC CALLBACKS ---
         callbacks = [
             tfk.callbacks.EarlyStopping(
-                monitor="val_loss", 
-                patience=patience,               # Uses the argument
+                monitor="val_loss",
+                patience=patience,
                 restore_best_weights=True
             ),
             tfk.callbacks.ReduceLROnPlateau(
-                monitor="val_loss", 
-                factor=0.5,                      # Gentler drop 
-                patience=max(1, patience - 1),   # Drop LR just before stopping
+                monitor="val_loss",
+                factor=0.5,
+                patience=max(1, patience - 1),
                 min_lr=1e-7
             ),
         ]
