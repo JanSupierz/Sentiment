@@ -612,7 +612,7 @@ Lexicon-based approaches represent a fundamental alternative to supervised machi
 Lexicon-based methods are divided into two main categories: dictionary-based and corpus-based approaches \cite{ravi2015survey,azzeddine2018sentiment, nursal2025battle}. 
 
 \begin{itemize}	
-\item \textbf{Dictionary-based approaches} utilise existing lexical databases containing opinion words along with their sentiment strengths \cite{azzeddine2018sentiment}. Popular sentiment lexicons in this category include SentiWordNet, WordNet-Affect, and VADER \cite{nursal2025battle}. The dictionary-based method is generally more practical as it does not require a comprehensive corpus covering all possible words \cite{nursal2025battle}.
+\item \textbf{Dictionary-based approaches} utilise existing lexical databases containing opinion words along with their sentiment strengths \cite{azzeddine2018sentiment}. Popular sentiment lexicons in this category include SentiWordNet \cite{sentiwordnet2010}, WordNet-Affect \cite{strapparava2004wordnet}, and VADER \cite{hutto2015vader} as stated in \cite{nursal2025battle}. The dictionary-based method is generally more practical as it does not require a comprehensive corpus covering all possible words \cite{nursal2025battle}.
 
 \item \textbf{Corpus-based approaches}, by contrast, rely on the probability of sentiment words co-occurring with positive or negative seed words within large text collections \cite{azzeddine2018sentiment}. This method is particularly useful for discovering new sentiment words from domain-specific corpora or for creating entirely new sentiment lexicons \cite{nursal2025battle}. However, its effectiveness depends on the availability of a sufficiently large and representative corpus \cite{nursal2025battle}.
 \end{itemize}
@@ -625,7 +625,7 @@ PMI measures the statistical dependence between a phrase and reference words (ty
 
 \subsubsection{Major Sentiment Lexicons}
 
-Tools such as \textsc{WordNet-Affect} \cite{wordnet-affect} and \textsc{SentiWordNet} \cite{sentiwordnet2010} provide foundational lexical resources for sentiment analysis \cite{nursal2025battle}.
+Tools such as \textsc{WordNet-Affect} and \textsc{SentiWordNet} provide foundational lexical resources for sentiment analysis \cite{nursal2025battle}.
 
 \begin{itemize}	
 \item \textbf{WordNet} organises nouns, verbs, adjectives, and adverbs into synsets (sets of cognitive synonyms), each representing a distinct concept \cite{nursal2025battle}. WordNet 3.0 contains over 117,000 synsets, with semantic relations connecting them \cite{nursal2025battle}. WordNet is an example of a well-known semantic network where definitional networks focus on IsA relationships between a concept and a newly defined sub-type, supporting the rule of inheritance for copying properties defined for a super-type to all its sub-types \cite{CHATURVEDI201865}.
