@@ -537,11 +537,11 @@ escapeinside={@*}{*@},%
 
 \section{Introduction to Sentiment Analysis}
 
-Sentiment analysis (or opinion mining) is an umbrella term for the computational study of people's opinions, sentiments, emotions, and attitudes expressed in written language \cite{bib:Liu2012sentiment}. The term includes field names and slightly different tasks associated with them: sentiment analysis, opinion mining, opinion extraction, sentiment mining, subjectivity analysis, affect analysis, emotion analysis, review mining, etc. \cite{bib:Liu2012sentiment} However, the main terms in academia remain both: sentiment analysis and opinion mining \cite{bib:Liu2012sentiment}. 
+Sentiment analysis (or opinion mining) is an umbrella term for the computational study of people's opinions, sentiments, emotions, and attitudes expressed in written language \cite{Liu2012sentiment}. The term includes field names and slightly different tasks associated with them: sentiment analysis, opinion mining, opinion extraction, sentiment mining, subjectivity analysis, affect analysis, emotion analysis, review mining, etc. \cite{Liu2012sentiment} However, the main terms in academia remain both: sentiment analysis and opinion mining \cite{Liu2012sentiment}. 
 
 With the explosive growth of user-generated content on social media, review platforms, and forums, automated sentiment detection has become a crucial tool for businesses, governments, and researchers \cite{sharma2025review}. Applications range from brand monitoring and customer feedback analysis to political trend prediction and mental health assessment \cite{sharma2025review}. These applications span business intelligence, recommendation systems, review summarization, and government intelligence, demonstrating the field's broad impact \cite{behdenna2018document}.
 
-Despite its importance, sentiment analysis faces several fundamental challenges \cite{sharma2025review}. Language is inherently ambiguous: the same word can convey different sentiments depending on context. Sarcasm, irony, and domain-specific expressions further complicate the task. Models often struggle with multiple languages \cite{sharma2025review}. Moreover, vocabulary evolves rapidly; new words, slang, and abbreviations appear constantly, especially in social media \cite{sharma2025review}. Any practical system must therefore be robust to such linguistic shifts \cite{sharma2025review}.
+Despite its importance, sentiment analysis faces several fundamental challenges. Language is inherently ambiguous: the same word can convey different sentiments depending on context \cite{behdenna2018document, sharma2025review}. Sarcasm, irony, and domain-specific expressions further complicate the task \cite{sharma2025review}. Models often struggle with multiple languages \cite{sharma2025review}. Moreover, vocabulary evolves rapidly; new words, slang, and abbreviations appear constantly, especially in social media \cite{sharma2025review}. Any practical system must therefore be robust to such linguistic shifts \cite{sharma2025review}.
 
 \subsection{Sentiment Analysis Tasks}
 
@@ -550,34 +550,33 @@ Sentiment analysis covers a range of tasks that differ in granularity, objective
 \begin{itemize}
 	\item \textbf{Document-level sentiment analysis (DLSA)} aims to determine the overall opinion of an entire document \cite{behdenna2018document}, typically classifying it as positive, negative, or neutral \cite{sharma2025review}. This formulation assumes that the document has a coherent opinion about a single entity or topic \cite{sharma2025review}, which is very common in product or movie reviews.
 	
-	\item \textbf{Sentence-level sentiment analysis (SLSA)} operates at a finer granularity. It often involves two stages: first, identifying whether a sentence is subjective or objective, and second, assigning a sentiment label to subjective sentences \cite{behdenna2018document, sharma2025review}. This approach is useful when documents contain both factual statements and opinions \cite{sharma2025review}. However, the problem holds that objective sentences might carry sentiment \cite{behdenna2018document}.
+	\item \textbf{Sentence-level sentiment analysis (SLSA)} operates at a finer granularity \cite{behdenna2018document}. It often involves two stages: first, identifying whether a sentence is subjective or objective, and second, assigning a sentiment label to subjective sentences \cite{behdenna2018document, sharma2025review}. This approach is useful when documents contain both factual statements and opinions \cite{sharma2025review}. However, the problem holds that objective sentences might carry sentiment \cite{behdenna2018document}.
 	
 	\item \textbf{Aspect-based sentiment analysis (ABSA)} focuses on identifying sentiments expressed towards specific aspects or attributes of an entity \cite{sharma2025review}. And is characterized by extracting a polarity and the target of opinion \cite{behdenna2018document}. For example, in a restaurant review, the sentiment towards ``food'' may differ from that towards ``service''. ABSA therefore requires both: aspect extraction and sentiment classification at the aspect level \cite{sharma2025review}.
 	
 	\item \textbf{Aspect extraction (AE)} is a related task that involves detecting the entities, phrases, or nouns that are targets of opinions \cite{sharma2025review}.
 	
-	\item \textbf{Emotion detection (ED)} extends polarity classification by identifying fine-grained emotional states such as joy, anger, sadness, or fear. Compared to binary or ternary sentiment classification, emotion detection requires more expressive representations and often relies on specialised lexical resources or deep neural architectures \cite{sharma2025review}.
+	\item \textbf{Emotion detection (ED)} extends polarity classification by identifying fine-grained emotional states such as joy, anger, sadness, or frustration \cite{sharma2025review}. Compared to binary or ternary sentiment classification, emotion detection requires more expressive representations and often relies on specialised lexical resources or machine learning algorithms \cite{sharma2025review}.
 	
-	\item \textbf{Multi-domain sentiment classification} addresses the problem of transferring models across domains (areas of focus) (e.g., from movie reviews to product reviews). Since vocabulary and linguistic patterns vary between domains, domain adaptation and transfer learning techniques are commonly employed.
+	\item \textbf{Multi-domain sentiment classification} addresses the problem of transferring models across areas of focus \cite{sharma2025review}. An example could be transferring from movie reviews to product reviews. Since vocabulary and linguistic patterns vary between domains, domain adaptation and transfer learning techniques are commonly employed \cite{sharma2025review}.
 	
-	\item \textbf{Multilingual sentiment analysis} aims to analyse sentiment across multiple languages. This task may involve language-specific resources such as sentiment lexicons, or large translated collections of text (corpora). Language detectors can be used as an alternative approach.
+	\item \textbf{Multilingual sentiment analysis} aims to analyse sentiment across multiple languages \cite{sharma2025review}. This task may involve external language-specific resources such as sentiment lexicons, or large translated collections of text (corpora) \cite{sharma2025review}. Language detectors can be used as an alternative approach \cite{sharma2025review}.
 	
-	\item \textbf{Multimodal sentiment analysis (MMSA)} integrates information from multiple modalities, such as text, audio, and visual signals.
+	\item \textbf{Multimodal sentiment analysis (MMSA)} integrates information from multiple channels, such as text, audio, and visual signals \cite{sharma2025review}.
+	This goes beyond normal word analysis, allowing more advanced goals categorized as: analysing spoken reviews and vlogs, analysing images and social media tags, and analysing human–machine interactions \cite{sharma2025review}.
 	
-	\item \textbf{Opinion spam detection (OSD)} focuses on identifying deceptive or fabricated opinions, such as fake reviews intended to manipulate public perception. Or social media posts that try to promote a particular person or service.
+	\item \textbf{Opinion spam detection (OSD)} focuses on identifying deceptive or fabricated opinions that aim to mislead online-users or sentiment analysis tools \cite{sharma2025review}. Such opinions may include: fake reviews intended to manipulate public perception, or social media posts that try to promote a particular person or service \cite{sharma2025review}.
 \end{itemize}
 
 \section{Sentiment Analysis Methods}
 
-Early sentiment analysis methods can be divided into two main categories: lexicon-based and machine learning based.
+Early sentiment analysis methods can be divided into two main categories: lexicon-based and machine learning based \cite{sharma2025review}.
 
 \subsection{Lexicon-Based Methods}
 
-Lexicon-based approaches rely on pre-compiled dictionaries of words annotated with sentiment scores (e.g., positive, negative, neutral). Tools such as \textsc{WordNet-Affect} \cite{bib:wordnet-affect} and \textsc{SentiWordNet} \cite{bib:sentiwordnet2010} provide such lexical resources. A popular rule-based tool is \textsc{VADER} (Valence Aware Dictionary and sEntiment Reasoner) \cite{bib:hutto2015vader}, which not only uses a sentiment lexicon but also accounts for grammatical and syntactical cues like intensifiers, negations, and punctuation. VADER is particularly effective for social media text and requires no training data.
+Lexicon-based approaches rely on pre-compiled dictionaries of words annotated with sentiment scores (e.g., positive, negative, neutral) \cite{sharma2025review}. Tools such as \textsc{WordNet-Affect} \cite{wordnet-affect} and \textsc{SentiWordNet} \cite{sentiwordnet2010} provide such lexical resources \cite{nursal2025battle}. A popular rule-based tool is \textsc{VADER} (Valence Aware Dictionary and sEntiment Reasoner) \cite{hutto2015vader}, which not only uses a sentiment lexicon but also accounts for grammatical and syntactical cues like intensifiers, negations, and punctuation \cite{nursal2025battle}. VADER is particularly effective for social media text as it incorporates acronyms such as ``LOL'', emojis, and other commonly used expressions \cite{nursal2025battle}.
 
-The main advantage of lexicon-based methods is their simplicity and speed. However, they are limited to the words present in the lexicon, cannot capture word order, and often fail when words are used in novel contexts. 
-
-These methods remain in active use; for example, a recent study compared several lexicon-based approaches for sentiment analysis \cite{bib:nursal2025battle}.
+The main advantage of lexicon-based methods is that they require few efforts in the manual data annotation task and they do not require training datasets \cite{nursal2025battle}. However, they are limited to the words present in the lexicon, and cannot capture the context \cite{sharma2025review}.
 
 \subsection{Classic Machine Learning Models}
 
@@ -587,7 +586,7 @@ Classifiers such as Naïve Bayes, Logistic Regression, and Support Vector Machin
 
 \section{Deep Learning for Sentiment Analysis}
 
-Neural networks revolutionised natural language processing. Word embeddings such as \textsc{Word2Vec} \cite{[]} and \textsc{GloVe} \cite{bib:pennington2014glove} map words to dense continuous vectors that capture semantic similarity. Recurrent neural networks (RNNs) and convolutional neural networks (CNNs) can model sequences of words, while long short-term memory (LSTM) networks address the vanishing gradient problem, allowing the model to retain long-range dependencies \cite{[]}.
+Neural networks revolutionised natural language processing. Word embeddings such as \textsc{Word2Vec} \cite{[]} and \textsc{GloVe} \cite{pennington2014glove} map words to dense continuous vectors that capture semantic similarity. Recurrent neural networks (RNNs) and convolutional neural networks (CNNs) can model sequences of words, while long short-term memory (LSTM) networks address the vanishing gradient problem, allowing the model to retain long-range dependencies \cite{[]}.
 
 The most significant breakthrough came with the Transformer architecture \cite{[]} and its pre-trained variants like \textsc{BERT} (Bidirectional Encoder Representations from Transformers) \cite{[]}. BERT is pre-trained on a large corpus using masked language modelling and next-sentence prediction, then fine-tuned on downstream tasks. For sentiment analysis, fine-tuned BERT models achieve state-of-the-art results; for instance, DistilBERT \cite{[]} (a distilled version of BERT) attains around 91\% accuracy on the Stanford Sentiment Treebank (SST-2) while being smaller and faster.
 
