@@ -1,4 +1,4 @@
-% !TeX spellcheck = en_GB
+% !TeX spellcheck = en_US
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %                                        %
 %     Master thesis LaTeX template       %
@@ -388,7 +388,7 @@ escapeinside={@*}{*@},%
 
 
 \begin{document}
-%\kslistofremarks
+\kslistofremarks
 
 \frontmatter
 
@@ -543,12 +543,16 @@ A foundational formalization was proposed by \cite{Liu2012sentiment}, who recogn
 \[
 (e_i, a_{ij}, s_{ijkl}, h_k, t_l)
 \]
+\ksremark{Wzory wycentrowane między akapitami zawsze numerujemy. Oczywiście \LaTeX\ robi to automatycznie:}
+\begin{equation}
+	(e_i, a_{ij}, s_{ijkl}, h_k, t_l),
+\end{equation}
 where:
 \begin{itemize}
-	\item $e_i$ is the name of an entity (e.g., a product, service, organization, or individual),
-	\item $a_{ij}$ is an aspect of $e_i$ (a specific feature or attribute of that entity),
-	\item $s_{ijkl}$ is the sentiment expressed toward aspect $a_{ij}$ of entity $e_i$,
-	\item $h_k$ is the opinion holder (the person or organization expressing the opinion), and
+	\item $e_i$ is the name of an \ksremark{$i$-th?} entity (e.g., a product, service, organization, or individual),
+	\item $a_{ij}$ is an \ksremark{$j$-th?} aspect of $e_i$ (a specific feature or attribute of that entity),
+	\item $s_{ijkl}$ is the sentiment expressed toward aspect $a_{ij}$ of entity $e_i$, \ksremark{Co tutaj oznaczają $k$ i $l$?}
+	\item $h_k$ is the \ksremark{$k$-th?} opinion holder (the person or organization expressing the opinion), and
 	\item $t_l$ is the time when the opinion is expressed by $h_k$.
 \end{itemize}
 
@@ -589,7 +593,7 @@ Despite its importance and wide-ranging applications, sentiment analysis faces s
 \begin{itemize}	
 	\item \textbf{Contextual Polarity Ambiguity} is the core difficulty: the same sentiment-bearing word can have different polarities depending on the context in which it appears \cite{behdenna2018document}. A word that is positive in one domain may be neutral or even negative in another, requiring models to capture subtle contextual signals \cite{sharma2025review}.
 	
-	\item \textbf{Sarcasm and Irony Detection} present particularly difficult challenges, as the literal meaning of an utterance contradicts its intended sentiment \cite{behdenna2018document, sharma2025review}. When someone says something positive but actually means something negative, or vice versa, purely lexical approaches inevitably fail \cite{behdenna2018document}. A significant portion of recent research has emphasized the need for improved models capable of classifying sarcasm and irony \cite{sharma2025review}.
+	\item \textbf{Sarcasm and Irony Detection} presents particularly difficult challenges, as the literal meaning of an utterance contradicts its intended sentiment \cite{behdenna2018document, sharma2025review}. When someone says something positive but actually means something negative, or vice versa, purely lexical approaches inevitably fail \cite{behdenna2018document}. A significant portion of recent research has emphasized the need for improved models capable of classifying sarcasm and irony \cite{sharma2025review}.
 	
 	\item \textbf{Negation Handling} is critical because the presence of negation words can reverse the polarity of an opinion \cite{behdenna2018document}.
 	
@@ -599,15 +603,15 @@ Despite its importance and wide-ranging applications, sentiment analysis faces s
 	
 \end{itemize}
 
-\subsection{Sentiment Analysis Methods}
+\section{Sentiment Analysis Methods}
 
 Sentiment analysis methods can be broadly divided into two main categories: traditional approaches and machine learning approaches \cite{sharma2025review}. Within machine learning, a further distinction exists between classic supervised approaches and modern deep learning techniques \cite{behdenna2018document}. A detailed explanation of each method can be found in the following sections.
 
-\section{Lexicon-Based Methods}
+\subsection{Lexicon-Based Methods}
 
 Lexicon-based approaches represent a fundamental alternative to supervised machine learning, operating without requiring labelled training data \cite{azzeddine2018sentiment}. These methods rely on pre-compiled dictionaries of words annotated with sentiment scores (e.g., positive, negative, neutral) and are often considered a form of unsupervised sentiment analysis \cite{azzeddine2018sentiment}. The core assumption is that the collective polarity of a sentence or document can be derived from the polarities of its individual words and phrases \cite{azzeddine2018sentiment}.
 
-\subsection{Dictionary-Based versus Corpus-Based Approaches}
+\subsubsection{Dictionary-Based versus Corpus-Based Approaches}
 
 Lexicon-based methods are divided into two main categories: dictionary-based and corpus-based approaches \cite{ravi2015survey,azzeddine2018sentiment, nursal2025battle}. 
 
@@ -617,13 +621,13 @@ Lexicon-based methods are divided into two main categories: dictionary-based and
 \item \textbf{Corpus-based approaches}, by contrast, rely on the probability of sentiment words co-occurring with positive or negative seed words within large text collections \cite{azzeddine2018sentiment}. This method is particularly useful for discovering new sentiment words from domain-specific corpora or for creating entirely new sentiment lexicons \cite{nursal2025battle}. However, its effectiveness depends on the availability of a sufficiently large and representative corpus \cite{nursal2025battle}.
 \end{itemize}
 
-\subsection{Semantic Orientation and PMI}
-
+\subsubsection{Semantic Orientation and PMI}
+\ksremark{W tytule sekcji damy pełną wersję zamiast skrótu PMI.}
 A pioneering unsupervised algorithm was proposed by Turney \cite{azzeddine2018sentiment, behdenna2018document}, who introduced a method based on semantic orientation (SO). The algorithm proceeds in three steps: first, extracting two consecutive words whose part-of-speech tags follow a specific patterns; second, estimating the polarity of adjectives and adverbs using pointwise mutual information (PMI); and third, aggregating individual polarities to classify the entire review \cite{azzeddine2018sentiment}.
 
-PMI measures the statistical dependence between a phrase and reference words (typically ``excellent'' and ``poor'') based on their co-occurrence in a corpus or across the web \cite{azzeddine2018sentiment}. A sentence receives positive SO when it has stronger associations with ``excellent'' and negative SO when associated with ``poor'' \cite{behdenna2018document}. Rothfels and Tibshirani extended this approach by using two seed reference sets rather than single words, improving domain adaptability  \cite{behdenna2018document}.
+PMI measures the statistical dependence between a phrase and reference words (typically ``excellent'' and ``poor'') based on their co-occurrence in a corpus or across the web~\cite{azzeddine2018sentiment}. A sentence receives positive SO when it has stronger associations with ``excellent'' and negative SO when associated with ``poor'' \cite{behdenna2018document}. Rothfels and Tibshirani extended this approach by using two seed reference sets rather than single words, improving domain adaptability  \cite{behdenna2018document}.
 
-\subsection{Sentiment Lexicons}
+\subsubsection{Sentiment Lexicons}
 
 Tools such as \textsc{WordNet-Affect} and \textsc{SentiWordNet} provide foundational lexical resources for sentiment analysis \cite{nursal2025battle}.
 
@@ -637,7 +641,7 @@ Tools such as \textsc{WordNet-Affect} and \textsc{SentiWordNet} provide foundati
 \item \textbf{TextBlob} provides another accessible lexicon-based tool, offering simple polarity scoring with preprocessing capabilities through the Natural Language Toolkit (NLTK) \cite{nursal2025battle}.
 \end{itemize}
 
-\subsection{Empirical Comparisons}
+\subsubsection{Empirical Comparisons}
 
 Comparative studies have evaluated these lexicons across various domains. Nursal et al. \cite{nursal2025battle} compared WordNet, SentiWordNet, TextBlob, and VADER on Malaysian high-rise property reviews, using human-annotated data as a baseline. Their findings revealed that all four lexicons identified a higher proportion of positive reviews than negative or neutral ones. WordNet recorded the highest number of positive sentiments, followed closely by SentiWordNet and VADER \cite{nursal2025battle}. For negative sentiment detection, VADER proved most effective, while for neutral sentiment, VADER again detected the highest number of reviews \cite{nursal2025battle}.
 
@@ -645,31 +649,31 @@ In terms of classification accuracy against human annotation, VADER achieved the
 
 However, misclassifications occurred due to several factors: limited vocabulary coverage, difficulty detecting sarcasm, word ambiguity, and challenges with misspelled or abbreviated terms \cite{nursal2025battle}.
 
-\subsection{Handling Sentiment Shifters and Composition}
+\subsubsection{Handling Sentiment Shifters and Composition}
 
 Effective lexicon-based systems must account for sentiment shifters—linguistic elements that alter the polarity of words \cite{azzeddine2018sentiment, behdenna2018document}. Negations (e.g., ``not good'') reverse semantic polarity, while intensifiers (e.g., ``very good'') modify the degree of sentiment \cite{azzeddine2018sentiment}. Sophisticated approaches incorporate three pillars: a sentiment lexicon containing words, phrases, idioms, and composition rules; a set of rules for handling shifters and contrastive clauses (e.g., ``but''); and sentiment aggregation functions derived from parse trees \cite{azzeddine2018sentiment}.
 
-\subsection{Preprocessing Considerations}
+\subsubsection{Preprocessing Considerations}
 
 Preprocessing requirements vary across lexicons. While VADER can handle capitalization, punctuation, and colloquial expressions with minimal preprocessing, tools such as TextBlob, SentiWordNet, and WordNet require rigorous cleaning \cite{nursal2025battle}. Typical preprocessing steps include tokenisation, lowercase conversion, spell-checking, stemming, stopword removal, part-of-speech tagging, lemmatisation, and noise removal \cite{nursal2025battle}. Normalisation of abbreviations and acronyms is particularly important for social media text, as inconsistent vocabulary can degrade accuracy \cite{nursal2025battle}.
 
-\subsection{Advantages and Limitations}
+\subsubsection{Advantages and Limitations}
 
-The main advantage of lexicon-based methods is that they require minimal effort for manual data annotation and do not need training datasets, making them readily applicable across domains \cite{nursal2025battle}. They are particularly competitive when labelled data is scarce \cite{azzeddine2018sentiment}. However, these approaches are inherently limited to the words present in the lexicon and often cannot capture contextual nuances \cite{sharma2025review}. Domain dependency remains a challenge, as sentiment lexicons developed for one domain may perform poorly in another \cite{behdenna2018document}. Additionally, lexicon-based methods struggle with sarcasm, ambiguity, and the evolving nature of language, particularly on social media platforms \cite{nursal2025battle}.
+The main advantage of lexicon-based methods is that they require minimal effort for manual data annotation and do not need training datasets, making them readily applicable across domains \cite{nursal2025battle}. They are particularly competitive when labelled data is scarce~\cite{azzeddine2018sentiment}. However, these approaches are inherently limited to the words present in the lexicon and often cannot capture contextual nuances \cite{sharma2025review}. Domain dependency remains a challenge, as sentiment lexicons developed for one domain may perform poorly in another \cite{behdenna2018document}. Additionally, lexicon-based methods struggle with sarcasm, ambiguity, and the evolving nature of language, particularly on social media platforms \cite{nursal2025battle}.
 
-\section{Classic Machine Learning Models}
+\subsection{Classic Machine Learning Models}
 
 With the availability of labelled datasets, supervised machine learning became the dominant paradigm for both coarse-grained and fine-grained sentiment analysis \cite{azzeddine2018sentiment}. Unlike lexicon-based methods, supervised approaches require annotated training data but can learn complex patterns from feature representations.
 
-\subsection{Feature Engineering}
+\subsubsection{Feature Engineering}
 
-Generally text is first converted into a numerical representation, typically a \textit{bag-of-words} (BoW) model where each document is represented by a vector of word frequencies. Variants include \textit{n-grams} (contiguous sequences of words) and \textit{TF-IDF} (term frequency–inverse document frequency) weighting, which down-weights common words \cite{behdenna2018document}. 
+Generally text is first converted into a numerical representation, typically a \textit{bag-of-words} (BoW) model where each document is represented by a vector of word frequencies. Variants include \textit{n-grams} (contiguous sequences of words) and \textit{TF-IDF} \ksremark{uwaga edycyjna: Wyżej mamy skróty metod pisane pismem prostym, a nie kursywą. Warto by wybrać i utrzymywać jeden sposób.} (term frequency–inverse document frequency) weighting, which down-weights common words \cite{behdenna2018document}. 
 
 Beyond these basic features, supervised approaches commonly employ syntactic features such as part-of-speech tags and dependency relations, as well as semantic features including sentiment words, phrases, and sentiment shifters \cite{azzeddine2018sentiment}. Feature engineering is the key to building effective sentiment analysis classifiers \cite{azzeddine2018sentiment}.
 
-Sentence-level analysis is important because it permits a fine-grained view of different opinions expressed \cite{CHATURVEDI201865}. Sentence-level features can be in the form of n-grams, POS tags, or location based features \cite{CHATURVEDI201865}. Studies examining the different types of sentence features and their comparative effectiveness in determining sentiment analysis concluded that features such as length or rhetorical segments in text have little effect in accuracy and could sometimes decrease sentiment accuracy; similarly, bi-grams performed well without the need for POS features \cite{CHATURVEDI201865}.
+Sentence-level analysis is important because it permits a fine-grained view of different opinions expressed \cite{CHATURVEDI201865}. Sentence-level features can be in the form of n-grams \ksremark{$n$-grams}, POS tags, or location based features \cite{CHATURVEDI201865}. Studies examining the different types of sentence features and their comparative effectiveness in determining sentiment analysis concluded that features such as length or rhetorical segments in text have little effect in accuracy and could sometimes decrease sentiment accuracy; similarly, bi-grams performed well without the need for POS features \cite{CHATURVEDI201865}.
 
-\subsection{Classification Algorithms}
+\subsubsection{Classification Algorithms}
 
 Classifiers such as Naïve Bayes (NB), Logistic Regression, and Support Vector Machines (SVM) are then trained on these feature vectors. SVM and NB, in particular, have been shown to be the most effective classifiers for sentiment analysis tasks \cite{behdenna2018document}. Extracted features are used to train state-of-the-art classifiers such as SVM and NB that assume that the class of a particular feature is independent of the class of other features given the training data \cite{CHATURVEDI201865}.
 
@@ -679,12 +683,12 @@ Classifiers such as Naïve Bayes (NB), Logistic Regression, and Support Vector M
 \item \textbf{Naïve Bayes (NB)} offers simplicity and efficiency, often achieving competitive results despite its strong independence assumptions \cite{behdenna2018document}. 
 \end{itemize}
 
-\subsection{Empirical Findings}
+\subsubsection{Empirical Findings}
 
 \begin{itemize}
-\item Pang was the first to apply machine learning to movie review classification, showing that binary feature representation outperforms frequency-based representations \cite{behdenna2018document}. 
+\item Pang was the first to apply machine learning to movie review classification, showing that binary feature representation outperforms frequency-based representations \cite{behdenna2018document}. \ksremark{Czy mamy dostęp do pracy Panga?}
 
-\item Pak and Paroubek proposed sub-graph representations from syntactic dependency trees, showing that such structured features avoid information loss associated with pure n-gram models and improve SVM performance on French reviews \cite{behdenna2018document}.
+\item Pak and Paroubek proposed sub-graph representations from syntactic dependency trees, showing that such structured features avoid information loss associated with pure n-gram models and improve SVM performance on French reviews \cite{behdenna2018document}. \ksremark{tutaj i niżej – analogicznie}
 
 \item For Arabic sentiment analysis, Rushdi Saleh et al. introduced the OCA corpus of movie reviews and evaluated NB and SVM classifiers \cite{behdenna2018document}. 
 
@@ -697,7 +701,7 @@ Classifiers such as Naïve Bayes (NB), Logistic Regression, and Support Vector M
 \item For dialectal Arabic tweets, replacing dialectal words with Modern Standard Arabic equivalents improved classifier accuracy by up to 3\% \cite{behdenna2018document}.
 \end{itemize}
 
-\subsection{Coarse-Grained versus Fine-Grained Supervised Learning}
+\subsubsection{Coarse-Grained versus Fine-Grained Supervised Learning}
 
 A critical distinction exists between supervised learning applied at coarse granularities (document and sentence level) versus fine-grained aspect-based analysis \cite{azzeddine2018sentiment}. 
 
@@ -709,17 +713,21 @@ A critical distinction exists between supervised learning applied at coarse gran
 	\item Additionally, aspect-level supervised learning demands annotated datasets containing labeled aspects and non-aspects, which are more costly to produce than document-level polarity labels \cite{azzeddine2018sentiment}.
 \end{itemize}
 
-\section{Deep Learning for Sentiment Analysis}
+\subsection{Deep Learning for Sentiment Analysis}
 
 Deep learning has revolutionized sentiment analysis by offering several advantages over traditional machine learning approaches \cite{sharma2025review}. Unlike methods that rely on manually crafted features, deep learning models can automatically discover and learn relevant representations directly from the data, eliminating time-consuming and potentially error-prone feature engineering \cite{sharma2025review}. They have the ability to adapt to new data, it leads to more robust and generalizable models \cite{sharma2025review}. This automatic feature learning capability is particularly beneficial for large-scale sentiment analysis tasks involving social media posts or customer reviews, where deep learning algorithms excel at processing vast amounts of data due to their parallel processing capabilities \cite{sharma2025review}.
 
 Studies have consistently shown that deep learning models achieve superior accuracy compared to traditional methods such as SVM and Naïve Bayes \cite{behdenna2018document, sharma2025review}. Furthermore, deep learning offers versatility across various sentiment analysis tasks, from basic polarity classification to aspect-based analysis and emotion detection \cite{sharma2025review}.
 
-\subsection{Word Embeddings}
+\ksremark{A jakie są wady tego podejścia?}
+
+\ksremark{dotąd}
+
+\subsubsection{Word Embeddings}
 
 A fundamental shift in neural natural language processing came with the introduction of word embeddings \cite{desantis2023conceptual}. Unlike sparse bag-of-words representations, embeddings map words to dense continuous vectors that capture semantic similarity \cite{desantis2023conceptual}. Two widely used embedding models are \textsc{Word2Vec} and \textsc{GloVe} \cite{pennington2014glove, desantis2023conceptual}. These pre-trained representations allow models to use semantic knowledge learned from massive corpora, providing a richer input representation than traditional feature engineering \cite{desantis2023conceptual, sharma2025review, behdenna2018document}.
 
-\subsection{Convolutional Neural Networks (CNNs)}
+\subsubsection{Convolutional Neural Networks (CNNs)}
 
 Convolutional neural networks, originally developed for computer vision, were successfully adapted to natural language processing tasks by Collobert and Weston in 2008 \cite{sharma2025review}. A CNN architecture for text typically consists of three main layers: an input layer that receives tokenized text, a feature extraction layer comprising convolutional and pooling operations, and a classification layer with fully connected networks \cite{sharma2025review}.
 
@@ -727,13 +735,13 @@ For sentiment analysis, CNNs excel at learning contextual features through filte
 
 However, CNNs have limitations when dealing with long-term dependencies in text data, often requiring deep architectures that become computationally expensive \cite{sharma2025review}.
 
-\subsection{Recurrent Neural Networks (RNNs)}
+\subsubsection{Recurrent Neural Networks (RNNs)}
 
 Recurrent neural networks depart from feed-forward architectures by incorporating a memory element that retains information from previous computations \cite{sharma2025review}. This makes them naturally suited for sequential data such as text, as they can model sequences of varying lengths and capture long-range dependencies \cite{sharma2025review}.
 
 However, standard RNNs suffer from vanishing and exploding gradient problems when processing long sequences, which hinders their ability to learn effectively from extended dependencies \cite{sharma2025review}. Despite these limitations, RNNs have demonstrated exceptional performance in sentiment analysis tasks, with experimental results continuing to support their effectiveness \cite{sharma2025review}.
 
-\subsection{Long Short-Term Memory (LSTM) and Gated Recurrent Unit (GRU)}
+\subsubsection{Long Short-Term Memory (LSTM) and Gated Recurrent Unit (GRU)}
 
 To address the vanishing gradient problem, Hochreiter and Schmidhuber (1997) proposed the long short-term memory (LSTM) network \cite{sharma2025review}. LSTMs incorporate a gating mechanism that allows memory cells to store information for longer durations and retrieve past computational results as needed \cite{sharma2025review}. The architecture employs three gates: an input gate controlling what information is stored, a forget gate determining what to discard, and an output gate regulating information passed to the next step \cite{sharma2025review}. Bidirectional LSTMs (BiLSTMs) process information in both directions, which is particularly valuable for identifying aspects and entities contributing to overall sentiment \cite{sharma2025review}.
 
@@ -741,7 +749,7 @@ The gated recurrent unit (GRU) offers a simpler alternative with only two gates:
 
 Tang et al. introduced neural network models combining convolutional and recurrent architectures for document-level sentiment classification \cite{behdenna2018document}. Their approach first learns sentence representations using either CNN or LSTM, then encodes the semantics and relations using gated RNNs \cite{behdenna2018document}. Experiments on IMDB and Yelp datasets showed that LSTM outperforms multi-filtered CNN for sentence representation \cite{behdenna2018document}.
 
-\subsection{Transformer Architecture and BERT}
+\subsubsection{Transformer Architecture and BERT}
 
 The most significant breakthrough in deep learning for NLP came with the Transformer architecture and its pre-trained variants \cite{vaswani2017attention}. BERT (Bidirectional Encoder Representations from Transformers), developed by Google in 2018, revolutionized language understanding through its bidirectional architecture that considers both preceding and following words in context \cite{sharma2025review}.
 
@@ -749,7 +757,7 @@ BERT leverages a self-attention mechanism to capture relationships between words
 
 For sentiment analysis, fine-tuned BERT models achieve state-of-the-art results \cite{joshy2022analyzing}. DistilBERT, a distilled version of BERT that is smaller, faster, and retains most of BERT's language understanding capabilities, has been shown to perform well on sentiment analysis tasks \cite{joshy2022analyzing}.
 
-\subsection{Emerging Architectures: LLMs and GNNs}
+\subsubsection{Emerging Architectures: LLMs and GNNs}
 
 \begin{itemize}
 	\item \textbf{Large Language Models (LLMs)} are trained on massive and diverse text corpora, enabling them to understand complex language patterns, context, and even cultural references crucial for accurate sentiment analysis \cite{sharma2025review}. LLMs excel at tasks like sarcasm detection, where literal meaning differs from underlying sentiment, and can be fine-tuned for specific domains with minimal resources \cite{sharma2025review}.
@@ -757,7 +765,7 @@ For sentiment analysis, fine-tuned BERT models achieve state-of-the-art results 
 	\item \textbf{Graph Neural Networks (GNNs)} represent another emerging direction, designed to work with data represented as graphs where nodes represent entities (such as words) and edges represent relationships \cite{sharma2025review}. GNNs capture complex interdependencies between words, making them particularly valuable for aspect-based sentiment analysis where sentiment toward different aspects must be identified \cite{sharma2025review}. They can also integrate external knowledge bases such as sentiment lexicons and word ontologies, achieving more nuanced understanding \cite{sharma2025review}.
 \end{itemize}
 
-\subsection{Strengths and Limitations}
+\subsubsection{Strengths and Limitations}
 
 Deep learning offers powerful capabilities for sentiment analysis, achieving state-of-the-art performance across multiple tasks. However, these gains come with important trade-offs. A few statements can be made:
 
