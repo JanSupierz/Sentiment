@@ -721,19 +721,19 @@ Studies have consistently shown that deep learning models achieve superior accur
 
 \ksremark{A jakie są wady tego podejścia?}
 
-\ksremark{dotąd}
-
 \subsubsection{Word Embeddings}
 
 A fundamental shift in neural natural language processing came with the introduction of word embeddings \cite{desantis2023conceptual}. Unlike sparse bag-of-words representations, embeddings map words to dense continuous vectors that capture semantic similarity \cite{desantis2023conceptual}. Two widely used embedding models are \textsc{Word2Vec} and \textsc{GloVe} \cite{pennington2014glove, desantis2023conceptual}. These pre-trained representations allow models to use semantic knowledge learned from massive corpora, providing a richer input representation than traditional feature engineering \cite{desantis2023conceptual, sharma2025review, behdenna2018document}.
 
 \subsubsection{Convolutional Neural Networks (CNNs)}
-
-Convolutional neural networks, originally developed for computer vision, were successfully adapted to natural language processing tasks by Collobert and Weston in 2008 \cite{sharma2025review}. A CNN architecture for text typically consists of three main layers: an input layer that receives tokenized text, a feature extraction layer comprising convolutional and pooling operations, and a classification layer with fully connected networks \cite{sharma2025review}.
+\ksremark{w tytule podrozdziału bez skrótu}
+Convolutional neural networks \ksremark{(CNN)}, originally developed for computer vision, were successfully adapted to natural language processing tasks by Collobert and Weston in 2008 \cite{sharma2025review}. A CNN architecture for text typically consists of three main layers: an input layer that receives tokenized text, a feature extraction layer comprising convolutional and pooling operations, and a classification layer with fully connected networks \cite{sharma2025review}.
 
 For sentiment analysis, CNNs excel at learning contextual features through filters that capture local patterns such as key phrases and n-gram indicators of sentiment \cite{sharma2025review}. One advantage of CNNs is their efficiency: compared to fully connected networks, they have fewer parameters, leading to faster training times \cite{sharma2025review}. Paredes-Valverde et al. proposed a deep learning approach combining pre-processing, word embeddings, and a CNN model, demonstrating that CNN outperformed traditional SVM and Naïve Bayes classifiers \cite{behdenna2018document}.
 
 However, CNNs have limitations when dealing with long-term dependencies in text data, often requiring deep architectures that become computationally expensive \cite{sharma2025review}.
+
+\ksremark{dotąd}
 
 \subsubsection{Recurrent Neural Networks (RNNs)}
 
