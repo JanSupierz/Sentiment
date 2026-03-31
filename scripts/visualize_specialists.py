@@ -10,17 +10,15 @@ from matplotlib.patches import Patch
 
 from src.utils.paths import PROJECT_ROOT, RESULTS_DIR, FIGURES_DIR
 
-correct_cmap = mcolors.LinearSegmentedColormap.from_list("red_green", ["#e74c3c", "#f1c40f", "#2ecc71"])
-tn_base_color = mcolors.to_hex(correct_cmap(0.25))
-tp_base_color = mcolors.to_hex(correct_cmap(0.75))
-error_green = '#00b894'
-error_red = '#d63031'
+# 1. Standardized Palette from your nice visualization
+CORRECT_NAVY = '#000080'
+ERROR_GREEN = '#00b894'
+ERROR_RED = '#d63031'
 
-custom_palette = {
-    'True Negative (Correct)': tn_base_color,
-    'True Positive (Correct)': tp_base_color,
-    'False Negative (Incorrect)': error_green,
-    'False Positive (Incorrect)': error_red,
+CUSTOM_PALETTE = {
+    'Correctly Classified': CORRECT_NAVY,
+    'False Negative': ERROR_GREEN,
+    'False Positive': ERROR_RED,
     'Unknown': '#95a5a6'
 }
 
@@ -28,56 +26,65 @@ custom_palette = {
 def plot_axis_from_df(ax, df, title):
     """Handles plotting for a single subplot axis directly from a DataFrame."""
     df = df.copy()
-    df['Outcome'] = 'Unknown'
+    
+    # 2. Map Outcomes using the unified 3-category logic
+    conditions = [
+        (df['probability'] <= 0.5) & (df['true_label'] == 0), # True Negative
+        (df['probability'] > 0.5)  & (df['true_label'] == 1), # True Positive
+        (df['probability'] <= 0.5) & (df['true_label'] == 1), # False Negative
+        (df['probability'] > 0.5)  & (df['true_label'] == 0)  # False Positive
+    ]
 
-    # Map Outcomes
-    df.loc[(df['probability'] <= 0.5) & (df['true_label'] == 0), 'Outcome'] = 'True Negative (Correct)'
-    df.loc[(df['probability'] > 0.5)  & (df['true_label'] == 1), 'Outcome'] = 'True Positive (Correct)'
-    df.loc[(df['probability'] <= 0.5) & (df['true_label'] == 1), 'Outcome'] = 'False Negative (Incorrect)'
-    df.loc[(df['probability'] > 0.5)  & (df['true_label'] == 0), 'Outcome'] = 'False Positive (Incorrect)'
+    choices = [
+        'Correctly Classified',
+        'Correctly Classified',
+        'False Negative',
+        'False Positive'
+    ]
+    df['Outcome'] = np.select(conditions, choices, default='Unknown')
 
     # Calculate local accuracy on this specific subset
-    correct_mask = df['Outcome'].str.contains('Correct')
+    correct_mask = df['Outcome'] == 'Correctly Classified'
     accuracy = correct_mask.mean()
     full_title = f"{title}\nAccuracy on subset: {accuracy:.1%}"
 
     # Draw the Stacked Histogram
-    hue_order = ['True Negative (Correct)', 'True Positive (Correct)', 'False Negative (Incorrect)', 'False Positive (Incorrect)']
+    hue_order = [
+        'Correctly Classified', 
+        'False Negative', 
+        'False Positive'
+    ]
 
     sns.histplot(
         data=df, x='probability', hue='Outcome', hue_order=hue_order,
-        bins=40, multiple="stack", palette=custom_palette,
+        bins=40, multiple="stack", palette=CUSTOM_PALETTE,
         edgecolor='white', linewidth=0.5, kde=False, ax=ax, zorder=2
     )
 
-    # Apply Gradient to Correct Predictions & Hatching to Misclassified
-    tn_rgb = mcolors.to_rgb(tn_base_color)
-    tp_rgb = mcolors.to_rgb(tp_base_color)
-    fn_rgb = mcolors.to_rgb(error_green)
-    fp_rgb = mcolors.to_rgb(error_red)
+    # 3. Apply Hatching to Misclassified (Removed gradient logic)
+    fn_rgb = mcolors.to_rgb(ERROR_GREEN)
+    fp_rgb = mcolors.to_rgb(ERROR_RED)
 
     for patch in ax.patches:
         if patch.get_width() == 0:
             continue
 
         facecolor = patch.get_facecolor()
-        is_tn = all(abs(facecolor[i] - tn_rgb[i]) < 0.05 for i in range(3))
-        is_tp = all(abs(facecolor[i] - tp_rgb[i]) < 0.05 for i in range(3))
-        is_fn = all(abs(facecolor[i] - fn_rgb[i]) < 0.05 for i in range(3))
-        is_fp = all(abs(facecolor[i] - fp_rgb[i]) < 0.05 for i in range(3))
+        
+        is_fn = np.allclose(facecolor[:3], fn_rgb, atol=0.05)
+        is_fp = np.allclose(facecolor[:3], fp_rgb, atol=0.05)
 
-        if is_tn or is_tp:
-            x_center = patch.get_x() + patch.get_width() / 2.0
-            new_rgb = correct_cmap(np.clip(x_center, 0, 1))
-            patch.set_facecolor((*new_rgb[:3], facecolor[3]))
-
-        elif is_fn or is_fp:
+        if is_fn or is_fp:
             patch.set_hatch('////')
             patch.set_edgecolor((1.0, 1.0, 1.0, 0.5))
             patch.set_linewidth(0.5)
 
     # Add Decision Boundary
     ax.axvline(0.5, color='#333333', linestyle='--', linewidth=2.5, alpha=0.8, zorder=4)
+    
+    # Add Predicts Labels
+    ax.text(0.25, ax.get_ylim()[1]*0.95, 'Predicts NEGATIVE', ha='center', va='top', fontsize=12, color='#555555', fontweight='bold', alpha=0.7)
+    ax.text(0.75, ax.get_ylim()[1]*0.95, 'Predicts POSITIVE', ha='center', va='top', fontsize=12, color='#555555', fontweight='bold', alpha=0.7)
 
     # Axis Formatting
     ax.set_title(full_title, fontsize=16, fontweight='bold', pad=15)
@@ -138,7 +145,7 @@ def main():
 
     fig.suptitle(f"Model Behaviors on the Hardest {mask_hard.mean():.1%} of Data\n"
                  f"(Samples where Base Probability was between {lower:.2f} and {upper:.2f})", 
-                 fontsize=20, fontweight='bold', y=1.05)
+                 fontsize=20, fontweight='bold', y=1.08)
 
     plot_axis_from_df(axes[0], hard_base, "1. Original Base Model")
     plot_axis_from_df(axes[1], hard_svm_spec, "2. SVM Specialist")
@@ -149,15 +156,14 @@ def main():
     for ax in axes[1:]:
         ax.set_ylabel("")
 
-    # Create a unified legend for the entire figure
+    # 4. Create a unified 3-column legend for the entire figure
     legend_elements = [
-        Patch(facecolor=tn_base_color, label='True Negative (Correct)'),
-        Patch(facecolor=error_green, hatch='////', edgecolor=(1.0, 1.0, 1.0, 0.5), label='False Negative (Incorrect)'),
-        Patch(facecolor=tp_base_color, label='True Positive (Correct)'),
-        Patch(facecolor=error_red, hatch='////', edgecolor=(1.0, 1.0, 1.0, 0.5), label='False Positive (Incorrect)')
+        Patch(facecolor=CORRECT_NAVY, label='Correctly Classified'),
+        Patch(facecolor=ERROR_GREEN, hatch='////', edgecolor=(1.0, 1.0, 1.0, 0.5), label='False Negative'),
+        Patch(facecolor=ERROR_RED, hatch='////', edgecolor=(1.0, 1.0, 1.0, 0.5), label='False Positive')
     ]
 
-    fig.legend(handles=legend_elements, loc='lower center', bbox_to_anchor=(0.5, -0.05), ncol=4, frameon=False)
+    fig.legend(handles=legend_elements, loc='lower center', bbox_to_anchor=(0.5, -0.05), ncol=3, frameon=False)
 
     sns.despine(left=True)
     plt.tight_layout()

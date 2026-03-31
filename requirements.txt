@@ -31,3 +31,5 @@ tensorflow-datasets>=4.8
 bokeh>=3.1.0
 vaderSentiment
 spacy
+
+statsmodels
