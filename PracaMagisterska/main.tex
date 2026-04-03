@@ -736,24 +736,24 @@ However, CNNs have limitations when dealing with long-term dependencies in text 
 \ksremark{dotąd}
 
 \subsubsection{Recurrent Neural Networks (RNNs)}
-
-Recurrent neural networks depart from feed-forward architectures by incorporating a memory element that retains information from previous computations \cite{sharma2025review}. This makes them naturally suited for sequential data such as text, as they can model sequences of varying lengths and capture long-range dependencies \cite{sharma2025review}.
+\ksremark{w tytule podrozdziału bez skrótu}
+Recurrent neural networks \ksremark{(RNNs)} depart from feed-forward architectures by incorporating a memory element that retains information from previous computations \cite{sharma2025review}. This makes them naturally suited for sequential data such as text, as they can model sequences of varying lengths and capture long-range dependencies \cite{sharma2025review}.
 
 However, standard RNNs suffer from vanishing and exploding gradient problems when processing long sequences, which hinders their ability to learn effectively from extended dependencies \cite{sharma2025review}. Despite these limitations, RNNs have demonstrated exceptional performance in sentiment analysis tasks, with experimental results continuing to support their effectiveness \cite{sharma2025review}.
 
 \subsubsection{Long Short-Term Memory (LSTM) and Gated Recurrent Unit (GRU)}
-
-To address the vanishing gradient problem, Hochreiter and Schmidhuber (1997) proposed the long short-term memory (LSTM) network \cite{sharma2025review}. LSTMs incorporate a gating mechanism that allows memory cells to store information for longer durations and retrieve past computational results as needed \cite{sharma2025review}. The architecture employs three gates: an input gate controlling what information is stored, a forget gate determining what to discard, and an output gate regulating information passed to the next step \cite{sharma2025review}. Bidirectional LSTMs (BiLSTMs) process information in both directions, which is particularly valuable for identifying aspects and entities contributing to overall sentiment \cite{sharma2025review}.
+\ksremark{jak wyżej}
+To address the vanishing gradient problem, Hochreiter and Schmidhuber (1997) \ksremark{cytowanie tej pracy} proposed the long short-term memory (LSTM) network \cite{sharma2025review}. LSTMs incorporate a gating mechanism that allows memory cells to store information for longer durations and retrieve past computational results as needed \cite{sharma2025review}. The architecture employs three gates: an input gate controlling what information is stored, a forget gate determining what to discard, and an output gate regulating information passed to the next step \cite{sharma2025review}. Bidirectional LSTMs (BiLSTMs) process information in both directions, which is particularly valuable for identifying aspects and entities contributing to overall sentiment \cite{sharma2025review}.
 
 The gated recurrent unit (GRU) offers a simpler alternative with only two gates: a reset gate that combines new input with previous information, and an update gate that controls retention and discarding \cite{sharma2025review}. GRUs provide computational efficiency comparable to LSTMs while maintaining similar effectiveness, with bidirectional variants (Bi-GRUs) also available \cite{sharma2025review}.
 
-Tang et al. introduced neural network models combining convolutional and recurrent architectures for document-level sentiment classification \cite{behdenna2018document}. Their approach first learns sentence representations using either CNN or LSTM, then encodes the semantics and relations using gated RNNs \cite{behdenna2018document}. Experiments on IMDB and Yelp datasets showed that LSTM outperforms multi-filtered CNN for sentence representation \cite{behdenna2018document}.
+Tang et al. \ksremark{cytowanie tej pracy} introduced neural network models combining convolutional and recurrent architectures for document-level sentiment classification \cite{behdenna2018document}. Their approach first learns sentence representations using either CNN or LSTM, then encodes the semantics and relations using gated RNNs \cite{behdenna2018document}. Experiments on IMDB \ksremark{Trzeba rozwinąć skrót przy pierwszym jego wystąpieniu.} and Yelp datasets showed that LSTM outperforms multi-filtered CNN for sentence representation \cite{behdenna2018document}.
 
 \subsubsection{Transformer Architecture and BERT}
 
-The most significant breakthrough in deep learning for NLP came with the Transformer architecture and its pre-trained variants \cite{vaswani2017attention}. BERT (Bidirectional Encoder Representations from Transformers), developed by Google in 2018, revolutionized language understanding through its bidirectional architecture that considers both preceding and following words in context \cite{sharma2025review}.
+The most significant breakthrough in deep learning for NLP came with the transformer architecture and its pretrained variants \cite{vaswani2017attention}. BERT (Bidirectional Encoder Representations from Transformers), developed by Google in 2018 \ksremark{cytowanie}, revolutionized language understanding through its bidirectional architecture that considers both preceding and following words in context \cite{sharma2025review}.
 
-BERT leverages a self-attention mechanism to capture relationships between words within a sentence \cite{sharma2025review}. It follows a two-step approach: pre-training on massive text corpora using masked language modeling and next-sentence prediction, followed by fine-tuning on downstream tasks such as sentiment analysis \cite{sharma2025review}. BERT can tokenize text into subword units, handling various linguistic complexities, and has set new benchmarks across numerous NLP domains \cite{sharma2025review}.
+BERT leverages a self-attention mechanism to capture relationships between words within a sentence \cite{sharma2025review}. It follows a two-step approach: pretraining on massive text corpora using masked language modelling and next-sentence prediction, followed by fine-tuning on downstream tasks such as sentiment analysis \cite{sharma2025review}. BERT can tokenize text into subword units, handling various linguistic complexities, and has set new benchmarks across numerous NLP \ksremark{rozwinięcie skrótu} domains \cite{sharma2025review}.
 
 For sentiment analysis, fine-tuned BERT models achieve state-of-the-art results \cite{joshy2022analyzing}. DistilBERT, a distilled version of BERT that is smaller, faster, and retains most of BERT's language understanding capabilities, has been shown to perform well on sentiment analysis tasks \cite{joshy2022analyzing}.
 
@@ -770,11 +770,11 @@ For sentiment analysis, fine-tuned BERT models achieve state-of-the-art results 
 Deep learning offers powerful capabilities for sentiment analysis, achieving state-of-the-art performance across multiple tasks. However, these gains come with important trade-offs. A few statements can be made:
 
 \begin{itemize}
-	\item \textbf{Key strengths} include automatic feature learning, superior accuracy on large datasets, and versatility across tasks from basic polarity classification to aspect-based analysis \cite{sharma2025review}. Models can capture intricate relationships and adapt to new data, producing robust and generalizable systems \cite{sharma2025review}.
+	\item {Key strengths} include automatic feature learning, superior accuracy on large datasets, and versatility across tasks from basic polarity classification to aspect-based analysis \cite{sharma2025review}. Models can capture intricate relationships and adapt to new data, producing robust and generalizable systems \cite{sharma2025review}.
 	
-	\item \textbf{However}, these advantages come with substantial computational costs. Deep learning models typically require GPUs for training and inference, have large memory footprints, and are slower than classic models, making them less suitable for real-time applications and deployment on resource-constrained devices \cite{sharma2025review}.
+	\item {However}, these advantages come with substantial computational costs. Deep learning models typically require GPUs for training and inference, have large memory footprints, and are slower than classic models, making them less suitable for real-time applications and deployment on resource-constrained devices \cite{sharma2025review}.
 	
-	\item \textbf{Additionally}, optimal algorithm choice depends on the specific application and dataset: RNN variants (LSTM, GRU) excel with long-term dependencies, while CNNs offer efficiency for local pattern detection \cite{sharma2025review}. Recent research suggests RNNs are surpassing CNNs for many sentiment analysis tasks, particularly when long-range dependencies are involved \cite{sharma2025review}.
+	\item {Additionally}, optimal algorithm choice depends on the specific application and dataset: RNN variants (LSTM, GRU) excel with long-term dependencies, while CNNs offer efficiency for local pattern detection \cite{sharma2025review}. Recent research suggests RNNs are surpassing CNNs for many sentiment analysis tasks, particularly when long-range dependencies are involved \cite{sharma2025review}.
 \end{itemize}
 
 \section{Granular Computing: Foundations}
