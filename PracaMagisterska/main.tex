@@ -530,7 +530,6 @@ escapeinside={@*}{*@},%
 %\end{itemize}
 
 
-
 % TODO
 
 \chapter{State of the Art}
@@ -540,20 +539,16 @@ escapeinside={@*}{*@},%
 Sentiment analysis (or opinion mining) is an umbrella term for the computational study of people's opinions, sentiments, emotions, and attitudes expressed in written language \cite{Liu2012sentiment}. The term includes field names and slightly different tasks associated with them: sentiment analysis, opinion mining, opinion extraction, sentiment mining, subjectivity analysis, affect analysis, emotion analysis, review mining, etc. \cite{Liu2012sentiment} However, the main terms in academia remain both: sentiment analysis and opinion mining \cite{Liu2012sentiment}.
 
 A foundational formalization was proposed by \cite{Liu2012sentiment}, who recognized that opinions are not monolithic but rather composed of multiple interacting elements. This insight led to defining an opinion as a quintuple:
-\[
-(e_i, a_{ij}, s_{ijkl}, h_k, t_l)
-\]
-\ksremark{Wzory wycentrowane między akapitami zawsze numerujemy. Oczywiście \LaTeX\ robi to automatycznie:}
 \begin{equation}
 	(e_i, a_{ij}, s_{ijkl}, h_k, t_l),
 \end{equation}
 where:
 \begin{itemize}
-	\item $e_i$ is the name of an \ksremark{$i$-th?} entity (e.g., a product, service, organization, or individual),
-	\item $a_{ij}$ is an \ksremark{$j$-th?} aspect of $e_i$ (a specific feature or attribute of that entity),
-	\item $s_{ijkl}$ is the sentiment expressed toward aspect $a_{ij}$ of entity $e_i$, \ksremark{Co tutaj oznaczają $k$ i $l$?}
-	\item $h_k$ is the \ksremark{$k$-th?} opinion holder (the person or organization expressing the opinion), and
-	\item $t_l$ is the time when the opinion is expressed by $h_k$.
+	\item $e_i$ is the name of an $i$-th entity (e.g., a product, service, organization, or individual),
+	\item $a_{ij}$ is an $j$-th aspect of $e_i$ (a specific feature or attribute of that entity),
+	\item $h_k$ is the $k$-th opinion holder (the person or organization expressing the opinion),
+	\item $t_l$ is the $l$-th instance when the opinion is expressed, and
+	\item $s_{ijkl}$ is the sentiment expressed toward aspect $a_{ij}$ of entity $e_i$ at $t_l$ by $h_k$.
 \end{itemize}
 
 Following this definition, the main objective of sentiment analysis is to determine all quintuples present in given texts \cite{azzeddine2018sentiment}.
@@ -563,11 +558,11 @@ Following this definition, the main objective of sentiment analysis is to determ
 Sentiment analysis tasks are typically categorized by their granularity of analysis, reflecting different levels at which opinions can be extracted and aggregated \cite{azzeddine2018sentiment}. The choice of granularity determines both the complexity of the task and the type of insights that can be obtained. Three main levels of analysis are recognized in the literature:
 
 \begin{itemize}	
-	\item \textbf{Document-level sentiment analysis (DLSA)} operates at the coarsest granularity, aiming to determine the overall opinion expressed in an entire document \cite{behdenna2018document}. Following the opinion quintuple formulation, DLSA identifies the overall sentiment of the opinion holder about the entity \cite{azzeddine2018sentiment}. Documents are typically classified as positive, negative, or neutral \cite{sharma2025review}, under the assumption that the document focuses on a single entity or topic, and that the opinion is coherent \cite{sharma2025review}. The task commonly follows a two-step approach: \textit{Topic Relevance Retrieval} followed by \textit{Opinion Finding} \cite{azzeddine2018sentiment, missen2012opinion}. Considered the simplest sentiment analysis task, DLSA has been the most frequently studied granularity in the field, with 73 out of 159 reviewed articles operating at this level \cite{azzeddine2018sentiment, ravi2015survey}.
+	\item \textbf{Document-level sentiment analysis (DLSA)} operates at the coarsest granularity, aiming to determine the overall opinion expressed in an entire document \cite{behdenna2018document}. Following the opinion quintuple formulation, DLSA identifies the overall sentiment of the opinion holder about the entity \cite{azzeddine2018sentiment}. Documents are typically classified as positive, negative, or neutral \cite{sharma2025review}, under the assumption that the document focuses on a single entity or topic, and that the opinion is coherent \cite{sharma2025review}. The task commonly follows a two-step approach: Topic Relevance Retrieval followed by Opinion Finding \cite{azzeddine2018sentiment, missen2012opinion}. Considered the simplest sentiment analysis task, DLSA has been the most frequently studied granularity in the field, with 73 out of 159 reviewed articles operating at this level \cite{azzeddine2018sentiment, ravi2015survey}.
 	
-	\item \textbf{Sentence-level sentiment analysis (SLSA)} operates at a finer granularity by considering individual sentences as the unit of analysis \cite{behdenna2018document}. This level typically involves a two-step process. The first step, known as \textit{Subjectivity Classification}, distinguishes subjective sentences (expressing opinions) from objective sentences (presenting facts) \cite{azzeddine2018sentiment, CHATURVEDI201865}. The second step, \textit{Sentence Sentiment Classification}, then assigns polarity labels (positive, negative, or neutral) to subjective sentences \cite{azzeddine2018sentiment}. This approach is particularly useful when documents contain a mixture of factual statements and opinions \cite{sharma2025review}. However, a known limitation is that objective sentences can sometimes carry implicit sentiment \cite{behdenna2018document}. Furthermore, sentence-level analysis commonly assumes that each sentence expresses a single sentiment; sentences containing multiple opposing sentiments require more nuanced treatment \cite{azzeddine2018sentiment}.
+	\item \textbf{Sentence-level sentiment analysis (SLSA)} operates at a finer granularity by considering individual sentences as the unit of analysis \cite{behdenna2018document}. This level typically involves a two-step process. The first step, known as Subjectivity Classification, distinguishes subjective sentences (expressing opinions) from objective sentences (presenting facts) \cite{azzeddine2018sentiment, CHATURVEDI201865}. The second step, Sentence Sentiment Classification, then assigns polarity labels (positive, negative, or neutral) to subjective sentences \cite{azzeddine2018sentiment}. This approach is particularly useful when documents contain a mixture of factual statements and opinions \cite{sharma2025review}. However, a known limitation is that objective sentences can sometimes carry implicit sentiment \cite{behdenna2018document}. Furthermore, sentence-level analysis commonly assumes that each sentence expresses a single sentiment; sentences containing multiple opposing sentiments require more nuanced treatment \cite{azzeddine2018sentiment}.
 	
-	\item \textbf{Aspect-based sentiment analysis (ABSA)} represents the finest granularity, focusing on identifying sentiments expressed towards specific aspects or attributes of an entity \cite{sharma2025review}. Rather than assigning a single polarity to an entire document or sentence, ABSA extracts both the target of opinion and its associated sentiment, corresponding to the first three components of the opinion quintuple: entity, aspect, and sentiment \cite{behdenna2018document, azzeddine2018sentiment}. For example, in a restaurant review, the sentiment expressed towards ``food'' may differ from that towards ``service'' \cite{sharma2025review}. This fine-grained analysis addresses the need to know exactly what people liked or disliked \cite{azzeddine2018sentiment}. Aspects may be expressed either explicitly or implicitly \cite{azzeddine2018sentiment}, and ABSA consequently requires two core subtasks: \textit{Aspect Extraction} and \textit{Aspect-Level Sentiment Classification} \cite{sharma2025review}.
+	\item \textbf{Aspect-based sentiment analysis (ABSA)} represents the finest granularity, focusing on identifying sentiments expressed towards specific aspects or attributes of an entity \cite{sharma2025review}. Rather than assigning a single polarity to an entire document or sentence, ABSA extracts both the target of opinion and its associated sentiment, corresponding to the first three components of the opinion quintuple: entity, aspect, and sentiment \cite{behdenna2018document, azzeddine2018sentiment}. For example, in a restaurant review, the sentiment expressed towards ``food'' may differ from that towards ``service'' \cite{sharma2025review}. This fine-grained analysis addresses the need to know exactly what people liked or disliked \cite{azzeddine2018sentiment}. Aspects may be expressed either explicitly or implicitly \cite{azzeddine2018sentiment}, and ABSA consequently requires two core subtasks: Aspect Extraction and Aspect-Level Sentiment Classification \cite{sharma2025review}.
 \end{itemize}
 
 \subsection{Sentiment Analysis Tasks}
@@ -621,15 +616,14 @@ Lexicon-based methods are divided into two main categories: dictionary-based and
 \item \textbf{Corpus-based approaches}, by contrast, rely on the probability of sentiment words co-occurring with positive or negative seed words within large text collections \cite{azzeddine2018sentiment}. This method is particularly useful for discovering new sentiment words from domain-specific corpora or for creating entirely new sentiment lexicons \cite{nursal2025battle}. However, its effectiveness depends on the availability of a sufficiently large and representative corpus \cite{nursal2025battle}.
 \end{itemize}
 
-\subsubsection{Semantic Orientation and PMI}
-\ksremark{W tytule sekcji damy pełną wersję zamiast skrótu PMI.}
+\subsubsection{Semantic Orientation and Pointwise Mutual Information}
 A pioneering unsupervised algorithm was proposed by Turney \cite{azzeddine2018sentiment, behdenna2018document}, who introduced a method based on semantic orientation (SO). The algorithm proceeds in three steps: first, extracting two consecutive words whose part-of-speech tags follow a specific patterns; second, estimating the polarity of adjectives and adverbs using pointwise mutual information (PMI); and third, aggregating individual polarities to classify the entire review \cite{azzeddine2018sentiment}.
 
-PMI measures the statistical dependence between a phrase and reference words (typically ``excellent'' and ``poor'') based on their co-occurrence in a corpus or across the web~\cite{azzeddine2018sentiment}. A sentence receives positive SO when it has stronger associations with ``excellent'' and negative SO when associated with ``poor'' \cite{behdenna2018document}. Rothfels and Tibshirani extended this approach by using two seed reference sets rather than single words, improving domain adaptability  \cite{behdenna2018document}.
+PMI measures the statistical dependence between a phrase and reference words (typically ``excellent'' and ``poor'') based on their co-occurrence in a corpus or across the web \cite{azzeddine2018sentiment}. A sentence receives positive SO when it has stronger associations with ``excellent'' and negative SO when associated with ``poor'' \cite{behdenna2018document}. Rothfels and Tibshirani extended this approach by using two seed reference sets rather than single words, improving domain adaptability  \cite{behdenna2018document}.
 
 \subsubsection{Sentiment Lexicons}
 
-Tools such as \textsc{WordNet-Affect} and \textsc{SentiWordNet} provide foundational lexical resources for sentiment analysis \cite{nursal2025battle}.
+Tools such as WordNet-Affect and SentiWordNet provide foundational lexical resources for sentiment analysis \cite{nursal2025battle}.
 
 \begin{itemize}	
 \item \textbf{WordNet} organises nouns, verbs, adjectives, and adverbs into synsets (sets of cognitive synonyms), each representing a distinct concept \cite{nursal2025battle}. WordNet 3.0 contains over 117,000 synsets, with semantic relations connecting them \cite{nursal2025battle}. WordNet is an example of a well-known semantic network where definitional networks focus on IsA relationships between a concept and a newly defined sub-type, supporting the rule of inheritance for copying properties defined for a super-type to all its sub-types \cite{CHATURVEDI201865}.
@@ -651,7 +645,7 @@ However, misclassifications occurred due to several factors: limited vocabulary 
 
 \subsubsection{Handling Sentiment Shifters and Composition}
 
-Effective lexicon-based systems must account for sentiment shifters—linguistic elements that alter the polarity of words \cite{azzeddine2018sentiment, behdenna2018document}. Negations (e.g., ``not good'') reverse semantic polarity, while intensifiers (e.g., ``very good'') modify the degree of sentiment \cite{azzeddine2018sentiment}. Sophisticated approaches incorporate three pillars: a sentiment lexicon containing words, phrases, idioms, and composition rules; a set of rules for handling shifters and contrastive clauses (e.g., ``but''); and sentiment aggregation functions derived from parse trees \cite{azzeddine2018sentiment}.
+Effective lexicon-based systems must account for sentiment shifters-linguistic elements that alter the polarity of words \cite{azzeddine2018sentiment, behdenna2018document}. Negations (e.g., ``not good'') reverse semantic polarity, while intensifiers (e.g., ``very good'') modify the degree of sentiment \cite{azzeddine2018sentiment}. Sophisticated approaches incorporate three pillars: a sentiment lexicon containing words, phrases, idioms, and composition rules; a set of rules for handling shifters and contrastive clauses (e.g., ``but''); and sentiment aggregation functions derived from parse trees \cite{azzeddine2018sentiment}.
 
 \subsubsection{Preprocessing Considerations}
 
@@ -659,7 +653,7 @@ Preprocessing requirements vary across lexicons. While VADER can handle capitali
 
 \subsubsection{Advantages and Limitations}
 
-The main advantage of lexicon-based methods is that they require minimal effort for manual data annotation and do not need training datasets, making them readily applicable across domains \cite{nursal2025battle}. They are particularly competitive when labelled data is scarce~\cite{azzeddine2018sentiment}. However, these approaches are inherently limited to the words present in the lexicon and often cannot capture contextual nuances \cite{sharma2025review}. Domain dependency remains a challenge, as sentiment lexicons developed for one domain may perform poorly in another \cite{behdenna2018document}. Additionally, lexicon-based methods struggle with sarcasm, ambiguity, and the evolving nature of language, particularly on social media platforms \cite{nursal2025battle}.
+The main advantage of lexicon-based methods is that they require minimal effort for manual data annotation and do not need training datasets, making them readily applicable across domains \cite{nursal2025battle}. They are particularly competitive when labelled data is scarce \cite{azzeddine2018sentiment}. However, these approaches are inherently limited to the words present in the lexicon and often cannot capture contextual nuances \cite{sharma2025review}. Domain dependency remains a challenge, as sentiment lexicons developed for one domain may perform poorly in another \cite{behdenna2018document}. Additionally, lexicon-based methods struggle with sarcasm, ambiguity, and the evolving nature of language, particularly on social media platforms \cite{nursal2025battle}.
 
 \subsection{Classic Machine Learning Models}
 
@@ -667,11 +661,11 @@ With the availability of labelled datasets, supervised machine learning became t
 
 \subsubsection{Feature Engineering}
 
-Generally text is first converted into a numerical representation, typically a \textit{bag-of-words} (BoW) model where each document is represented by a vector of word frequencies. Variants include \textit{n-grams} (contiguous sequences of words) and \textit{TF-IDF} \ksremark{uwaga edycyjna: Wyżej mamy skróty metod pisane pismem prostym, a nie kursywą. Warto by wybrać i utrzymywać jeden sposób.} (term frequency–inverse document frequency) weighting, which down-weights common words \cite{behdenna2018document}. 
+Generally text is first converted into a numerical representation, typically a bag-of-words (BoW) model where each document is represented by a vector of word frequencies. Variants include $n$-grams (contiguous sequences of words) and TF-IDF (term frequency–inverse document frequency) weighting, which down-weights common words \cite{behdenna2018document}.
 
 Beyond these basic features, supervised approaches commonly employ syntactic features such as part-of-speech tags and dependency relations, as well as semantic features including sentiment words, phrases, and sentiment shifters \cite{azzeddine2018sentiment}. Feature engineering is the key to building effective sentiment analysis classifiers \cite{azzeddine2018sentiment}.
 
-Sentence-level analysis is important because it permits a fine-grained view of different opinions expressed \cite{CHATURVEDI201865}. Sentence-level features can be in the form of n-grams \ksremark{$n$-grams}, POS tags, or location based features \cite{CHATURVEDI201865}. Studies examining the different types of sentence features and their comparative effectiveness in determining sentiment analysis concluded that features such as length or rhetorical segments in text have little effect in accuracy and could sometimes decrease sentiment accuracy; similarly, bi-grams performed well without the need for POS features \cite{CHATURVEDI201865}.
+Sentence-level analysis is important because it permits a fine-grained view of different opinions expressed \cite{CHATURVEDI201865}. Sentence-level features can be in the form of $n$-grams, POS tags, or location based features \cite{CHATURVEDI201865}. Studies examining the different types of sentence features and their comparative effectiveness in determining sentiment analysis concluded that features such as length or rhetorical segments in text have little effect in accuracy and could sometimes decrease sentiment accuracy; similarly, $bi$-grams performed well without the need for POS features \cite{CHATURVEDI201865}.
 
 \subsubsection{Classification Algorithms}
 
@@ -696,7 +690,7 @@ Classifiers such as Naïve Bayes (NB), Logistic Regression, and Support Vector M
 
 \item Feature reduction techniques such as Principal Component Analysis (PCA) have been shown to improve both SVM and NB performance \cite{behdenna2018document}. 
 
-\item Hybrid approaches combining NB with genetic algorithms and rating-based features augmented with n-grams have also demonstrated performance gains \cite{behdenna2018document}. 
+\item Hybrid approaches combining NB with genetic algorithms and rating-based features augmented with $n$-grams have also demonstrated performance gains \cite{behdenna2018document}. 
 
 \item For dialectal Arabic tweets, replacing dialectal words with Modern Standard Arabic equivalents improved classifier accuracy by up to 3\% \cite{behdenna2018document}.
 \end{itemize}
@@ -723,36 +717,33 @@ Studies have consistently shown that deep learning models achieve superior accur
 
 \subsubsection{Word Embeddings}
 
-A fundamental shift in neural natural language processing came with the introduction of word embeddings \cite{desantis2023conceptual}. Unlike sparse bag-of-words representations, embeddings map words to dense continuous vectors that capture semantic similarity \cite{desantis2023conceptual}. Two widely used embedding models are \textsc{Word2Vec} and \textsc{GloVe} \cite{pennington2014glove, desantis2023conceptual}. These pre-trained representations allow models to use semantic knowledge learned from massive corpora, providing a richer input representation than traditional feature engineering \cite{desantis2023conceptual, sharma2025review, behdenna2018document}.
+A fundamental shift in neural Natural Language Processing (NLP) came with the introduction of word embeddings \cite{desantis2023conceptual}. Unlike sparse bag-of-words representations, embeddings map words to dense continuous vectors that capture semantic similarity \cite{desantis2023conceptual}. Two widely used embedding models are Word2Vec and GloVe \cite{pennington2014glove, desantis2023conceptual}. These pre-trained representations allow models to use semantic knowledge learned from massive corpora, providing a richer input representation than traditional feature engineering \cite{desantis2023conceptual, sharma2025review, behdenna2018document}.
 
-\subsubsection{Convolutional Neural Networks (CNNs)}
-\ksremark{w tytule podrozdziału bez skrótu}
-Convolutional neural networks \ksremark{(CNN)}, originally developed for computer vision, were successfully adapted to natural language processing tasks by Collobert and Weston in 2008 \cite{sharma2025review}. A CNN architecture for text typically consists of three main layers: an input layer that receives tokenized text, a feature extraction layer comprising convolutional and pooling operations, and a classification layer with fully connected networks \cite{sharma2025review}.
+\subsubsection{Convolutional Neural Networks}
+Convolutional Neural Networks (CNN), originally developed for computer vision, were successfully adapted to NLP tasks by Collobert and Weston in 2008 \cite{sharma2025review}. A CNN architecture for text typically consists of three main layers: an input layer that receives tokenized text, a feature extraction layer comprising convolutional and pooling operations, and a classification layer with fully connected networks \cite{sharma2025review}.
 
-For sentiment analysis, CNNs excel at learning contextual features through filters that capture local patterns such as key phrases and n-gram indicators of sentiment \cite{sharma2025review}. One advantage of CNNs is their efficiency: compared to fully connected networks, they have fewer parameters, leading to faster training times \cite{sharma2025review}. Paredes-Valverde et al. proposed a deep learning approach combining pre-processing, word embeddings, and a CNN model, demonstrating that CNN outperformed traditional SVM and Naïve Bayes classifiers \cite{behdenna2018document}.
+For sentiment analysis, CNNs excel at learning contextual features through filters that capture local patterns such as key phrases and $n$-gram indicators of sentiment \cite{sharma2025review}. One advantage of CNNs is their efficiency: compared to fully connected networks, they have fewer parameters, leading to faster training times \cite{sharma2025review}. Paredes-Valverde et al. proposed a deep learning approach combining pre-processing, word embeddings, and a CNN model, demonstrating that CNN outperformed traditional SVM and Naïve Bayes classifiers \cite{behdenna2018document}.
 
 However, CNNs have limitations when dealing with long-term dependencies in text data, often requiring deep architectures that become computationally expensive \cite{sharma2025review}.
 
 
-\subsubsection{Recurrent Neural Networks (RNNs)}
-\ksremark{w tytule podrozdziału bez skrótu}
-Recurrent neural networks \ksremark{(RNNs)} depart from feed-forward architectures by incorporating a memory element that retains information from previous computations \cite{sharma2025review}. This makes them naturally suited for sequential data such as text, as they can model sequences of varying lengths and capture long-range dependencies \cite{sharma2025review}.
+\subsubsection{Recurrent Neural Networks}
+Recurrent Neural Networks (RNNs) depart from feed-forward architectures by incorporating a memory element that retains information from previous computations \cite{sharma2025review}. This makes them naturally suited for sequential data such as text, as they can model sequences of varying lengths and capture long-range dependencies \cite{sharma2025review}.
 
 However, standard RNNs suffer from vanishing and exploding gradient problems when processing long sequences, which hinders their ability to learn effectively from extended dependencies \cite{sharma2025review}. Despite these limitations, RNNs have demonstrated exceptional performance in sentiment analysis tasks, with experimental results continuing to support their effectiveness \cite{sharma2025review}.
 
-\subsubsection{Long Short-Term Memory (LSTM) and Gated Recurrent Unit (GRU)}
-\ksremark{jak wyżej}
+\subsubsection{Long Short-Term Memory and Gated Recurrent Unit}
 To address the vanishing gradient problem, Hochreiter and Schmidhuber (1997) \ksremark{cytowanie tej pracy} proposed the long short-term memory (LSTM) network \cite{sharma2025review}. LSTMs incorporate a gating mechanism that allows memory cells to store information for longer durations and retrieve past computational results as needed \cite{sharma2025review}. The architecture employs three gates: an input gate controlling what information is stored, a forget gate determining what to discard, and an output gate regulating information passed to the next step \cite{sharma2025review}. Bidirectional LSTMs (BiLSTMs) process information in both directions, which is particularly valuable for identifying aspects and entities contributing to overall sentiment \cite{sharma2025review}.
 
 The gated recurrent unit (GRU) offers a simpler alternative with only two gates: a reset gate that combines new input with previous information, and an update gate that controls retention and discarding \cite{sharma2025review}. GRUs provide computational efficiency comparable to LSTMs while maintaining similar effectiveness, with bidirectional variants (Bi-GRUs) also available \cite{sharma2025review}.
 
-Tang et al. \ksremark{cytowanie tej pracy} introduced neural network models combining convolutional and recurrent architectures for document-level sentiment classification \cite{behdenna2018document}. Their approach first learns sentence representations using either CNN or LSTM, then encodes the semantics and relations using gated RNNs \cite{behdenna2018document}. Experiments on IMDB \ksremark{Trzeba rozwinąć skrót przy pierwszym jego wystąpieniu.} and Yelp datasets showed that LSTM outperforms multi-filtered CNN for sentence representation \cite{behdenna2018document}.
+Tang et al. \ksremark{cytowanie tej pracy} introduced neural network models combining convolutional and recurrent architectures for document-level sentiment classification \cite{behdenna2018document}. Their approach first learns sentence representations using either CNN or LSTM, then encodes the semantics and relations using gated RNNs \cite{behdenna2018document}. Experiments on Internet Movie Database (IMDB) and Yelp datasets showed that LSTM outperforms multi-filtered CNN for sentence representation \cite{behdenna2018document}.
 
 \subsubsection{Transformer Architecture and BERT}
 
-The most significant breakthrough in deep learning for NLP came with the transformer architecture and its pretrained variants \cite{vaswani2017attention}. BERT (Bidirectional Encoder Representations from Transformers), developed by Google in 2018 \ksremark{cytowanie}, revolutionized language understanding through its bidirectional architecture that considers both preceding and following words in context \cite{sharma2025review}.
+The most significant breakthrough in deep learning for NLP came with the transformer architecture and its pretrained variants \cite{vaswani2017attention}. Bidirectional Encoder Representations from Transformers (BERT), developed by Google in 2018 \cite{Delvin2018bert}, revolutionized language understanding through its bidirectional architecture that considers both preceding and following words in context \cite{sharma2025review}.
 
-BERT leverages a self-attention mechanism to capture relationships between words within a sentence \cite{sharma2025review}. It follows a two-step approach: pretraining on massive text corpora using masked language modelling and next-sentence prediction, followed by fine-tuning on downstream tasks such as sentiment analysis \cite{sharma2025review}. BERT can tokenize text into subword units, handling various linguistic complexities, and has set new benchmarks across numerous NLP \ksremark{rozwinięcie skrótu} domains \cite{sharma2025review}.
+BERT leverages a self-attention mechanism to capture relationships between words within a sentence \cite{sharma2025review}. It follows a two-step approach: pretraining on massive text corpora using masked language modelling and next-sentence prediction, followed by fine-tuning on downstream tasks such as sentiment analysis \cite{sharma2025review}. BERT can tokenize text into subword units, handling various linguistic complexities, and has set new benchmarks across numerous NLP domains \cite{sharma2025review}.
 
 For sentiment analysis, fine-tuned BERT models achieve state-of-the-art results \cite{joshy2022analyzing}. DistilBERT, a distilled version of BERT that is smaller, faster, and retains most of BERT's language understanding capabilities, has been shown to perform well on sentiment analysis tasks \cite{joshy2022analyzing}.
 
@@ -776,111 +767,101 @@ Deep learning offers powerful capabilities for sentiment analysis, achieving sta
 	\item {Additionally}, optimal algorithm choice depends on the specific application and dataset: RNN variants (LSTM, GRU) excel with long-term dependencies, while CNNs offer efficiency for local pattern detection \cite{sharma2025review}. Recent research suggests RNNs are surpassing CNNs for many sentiment analysis tasks, particularly when long-range dependencies are involved \cite{sharma2025review}.
 \end{itemize}
 
-\ksremark{Niepokoi mnie, że ten rozdział jest praktycnie oparty na jednym źródle  \cite{sharma2025review}.}
+\ksremark{Niepokoi mnie, że ten rozdział jest praktycnie oparty na jednym źródle \cite{sharma2025review}.}
 
-\section{Granular Computing: Foundations}
+\section{Granular Computing}
 
-*
+Granular Computing (GrC) is a paradigm that processes complex information by treating data as aggregations known as information granules \cite{bargiela2003granular}. These granules emerge from abstracting raw data into knowledge and appear in diverse forms: time intervals (hours, days, weeks), image regions where clusters of pixels form recognisable objects, and words in natural language all function as granules \cite{bargiela2003granular}. Because human cognitive capacity is limited, people naturally partition complex information into simpler blocks based on shared properties, and each such block constitutes a granule \cite{qui2006GrC}. GrC therefore exploits the human ability for problem-solving by operating at multiple levels of abstraction \cite{qui2006GrC}.
 
+Information Granulation (IG) is the process of constructing information granules \cite{bargiela2003granular}. An information granule is formally defined as a collection of elements grouped by indistinguishability, similarity, or functional proximity \cite{Liping2009GrC}. Granules can be arranged hierarchically: coarse granules provide a high-level overview, while finer granules reveal detailed information \cite{Liping2009GrC}. Three fundamental concepts underpin GrC, as originally articulated by Zadeh \cite{Zadeh1997GrC}:
+\begin{itemize}
+	\item \textbf{Granulation}: decomposition of the whole into parts,
+	\item \textbf{Organisation}: integration of parts into the whole,
+	\item \textbf{Causation}: association of causes and effects.
+\end{itemize}
 
-*
-
-
-*
-
-
-		Gotowe do tego momentu
-
-
-*
-
-
-*
-
-
-*
-
-Granular Computing (GrC) is an emerging paradigm that mimics human problem-solving by processing information at multiple levels of granularity \cite{[]}. An \textit{information granule} is a collection of objects drawn together by indistinguishability, similarity, or functionality. Granules can be organised hierarchically—coarse granules provide an overview, while finer granules reveal details. This hierarchical structure aligns with the way humans naturally perceive and analyse complex phenomena.
-
-Three fundamental concepts underpin GrC: \textit{granulation} (decomposing a whole into parts), \textit{organisation} (integrating parts into a whole), and \textit{causation} (associating causes and effects) \cite{[]}. In the context of text analysis, granules can be characters, words, phrases, sentences, or even higher-level concepts. Moving between these levels allows a system to balance abstraction and detail, potentially improving both efficiency and interpretability.
-
-The hierarchical organization of sentiment analysis tasks aligns naturally with granular computing principles. \cite{missen2012review} reviewed opinion mining from word to document level in a detailed manner, highlighting the importance of social networks for opinion mining tasks. \cite{feldman2013techniques} presented a general architecture where the input corpus is converted to text, preprocessed, and then annotated by a Document Analysis Module---with annotation potentially attributed to whole documents, sentences, or fine-grained entities (aspects). This multi-level perspective establishes sentiment analysis as inherently amenable to granular approaches \cite{rachid2018sentiment}.
-
+Concrete mechanisms for granulation are often seen in computing and human reasoning \cite{bargiela2003granular}. In computer systems, memory resources are granulated by adopting memory pages as basic operational chunks; swapping techniques then enable efficient access to individual data items \cite{bargiela2003granular}. When describing a problem, people tend to avoid numbers, instead using aggregates and constructing if-then rules that operate on those aggregates \cite{bargiela2003granular}. Although the physical world is inherently analog, computers perform digital processing, and this digitisation-grounded in set theory and interval analysis-exemplifies information granulation \cite{bargiela2003granular}. Furthermore, all data compression mechanisms represent instances of information granulation \cite{bargiela2003granular}.
 
 \subsection{Three-Way Decisions}
 
-A closely related idea is the theory of three-way decisions \cite{[][]}, which extends the traditional binary classification (accept/reject) by introducing a third option: deferment or uncertainty. In many real-world scenarios, it is preferable to withhold a decision when evidence is insufficient. Three-way decisions have been successfully integrated with GrC to create models that can delay classification until more information becomes available, a concept particularly useful in dynamic environments.
+Three-way decision (3WD) is a theory of thinking, problem solving, and information processing that relies on the use of three parts, three elements, or three levels \cite{Yao2018threeway}. It extends the classical binary (two‑way) approach-typically acceptance or rejection-by introducing a third option: non‑commitment, deferment, or uncertainty \cite{Fujita2016threeway, Yao2018threeway}. In many real‑world situations, making an immediate decision is unwise when evidence is insufficient; three‑way decision provides a principled way to withhold judgment until more information can be obtained \cite{Yao2018threeway}.
+
+The idea of trisecting a whole into three parts and then acting upon each part is a common human practice, evident in temporal (past–present–future), spatial (left–middle–right), volumetric (small–medium–large), and judgmental (acceptance–non‑commitment–rejection) divisions \cite{Fujita2016threeway}. Such a trisection can be formally represented by three pairwise disjoint subsets whose union is the universal set \cite{Fujita2016threeway}. Its cognitive basis lies in the limited capacity of human short‑term memory, which makes the number three a natural anchor-simple enough to process, yet richer than binary thinking \cite{Yao2018threeway}. Consequently, thinking in threes appears across many disciplines, from linguistics (three grammatical tenses) to computer science (three‑level database architectures) \cite{Yao2018threeway}.
+
+A general model of three‑way decision is the TAO (Trisecting–Acting–Outcome) framework \cite{Yao2018threeway}:
+\begin{itemize}
+	\item \textbf{Trisecting}: dividing a whole into three pairwise disjoint parts,
+	\item \textbf{Acting}: devising strategies to process each of the three parts,
+	\item \textbf{Outcome}: evaluating the effectiveness of the combined trisection and action.
+\end{itemize}
+
+The connection between three‑way decision and granular computing is deep and natural \cite{Fujita2016threeway, Yao2018threeway}. Both paradigms are human‑inspired and rely on abstraction: granular computing builds information granules at multiple levels, while three‑way decision uses three granules (or three levels) as a particularly effective cognitive structure \cite{Yao2018threeway}. In fact, sequential three‑way decisions arise naturally from multiple levels of granularity \cite{Fujita2016threeway}. At a higher (coarser) level of granularity, one may defer decisions about some objects to a lower (finer) level where additional detailed information becomes available \cite{Fujita2016threeway}. This interplay has led to the integration of three‑way decision and granular computing into what is sometimes called three‑way granular computing, a framework for dynamic decision‑making under uncertainty and multi‑level knowledge representation \cite{Fujita2016threeway, Yao2018threeway}.
 
 \subsection{Prototype Theory and Conceptual Spaces}
 
-In cognitive science, prototype theory \cite{[]} posits that natural categories are formed around prototypical examples. Conceptual spaces \cite{[]} provide a geometric framework where concepts correspond to convex regions, and prototypes are points within those regions. This aligns naturally with granular computing: a concept can be seen as a granule whose members are semantically similar words, and its centroid (cluster centre) serves as a prototype. Recent work has begun to bridge prototype theory and word embeddings \cite{[]}, demonstrating the potential of using clustering to derive concept-level representations for text.
+In cognitive science, prototype theory posits that natural categories are organised around prototypical examples, where certain members of a category are judged to be more representative than others \cite{DeSantis2023prototype}. This theory emerged from experimental studies on human categorisation and has become a foundational concept in cognitive psychology and linguistics \cite{DeSantis2023prototype}. Conceptual spaces extend this idea by providing a geometric framework in which concepts correspond to convex regions within a multidimensional space \cite{DeSantis2023prototype}. In such a space, each dimension represents a measurable quality or feature, and points within a region stand for individual instances of a concept \cite{DeSantis2023prototype}. The prototype of a category is then identified as a point, often the centroid, inside its corresponding region \cite{DeSantis2023prototype}. A key property is that natural properties form convex regions, meaning that if two points belong to the same concept, all points between them also belong to that concept \cite{DeSantis2023prototype}.
 
-\section{Granular Computing in Text Classification and Sentiment Analysis}
+This geometric view aligns naturally with granular computing \cite{DeSantis2023prototype}. A concept can be seen as an information granule whose members are semantically similar objects, and the prototype serves as the granule's central representative \cite{DeSantis2023prototype}. The Voronoi tessellation of a conceptual space, obtained by partitioning the space according to the closest prototype, provides a constructive way to generate such granules \cite{DeSantis2023prototype}. Thus, conceptual spaces offer a cognitive grounding for granular computing, bridging the subsymbolic level of distributed representations (e.g., word embeddings) and the symbolic level of discrete concepts \cite{DeSantis2023prototype}. Recent research has begun to apply this bridge to text processing, where word vectors are granulated into concept‑level clusters, enabling more abstract and interpretable representations \cite{DeSantis2023prototype}.
 
-The literature contains numerous applications of GrC to text mining. Below we review the most relevant contributions, grouped by their focus.
+\section{Granular Computing for Text Classification}
 
-\subsection{Data-Level Granularity}
+The literature contains numerous applications of GrC to text classification. Below we review the most relevant contributions, grouped by their focus.
 
-A \textit{classified feature representation three-way decision model} was proposed by \cite{[]}. The method selects distinct feature subsets for positive and negative classes using fuzzy quotient space theory and variance-weighted mutual information. If a sample falls into an uncertain region, the full feature set is used. This approach speeds up classification and reduces noise, albeit at the cost of training three separate models.
+\subsection{Techniques Based on Feature and Data Granulation}
 
-Another data-level technique is presented in \cite{[]}, where granular computing is combined with deep learning for cyberbullying detection. The authors generate \textit{textual granules} via a “reverse pancake scramble” algorithm and \textit{numerical granules} from word embeddings, then augment the training set with these granules. The resulting model, GCDL, demonstrates improved robustness.
+\subsubsection{Relational Granular Methods}
 
-\subsection{Relational Granular Techniques}
+Qiu et al.~\cite{qui2006GrC} propose an early granular computing framework for text classification that constructs a granule library containing feature granules (keywords with class sets), effective decision granules (feature subsets that uniquely determine a class), and association degrees between features and classes. A new document is converted into an information granule by combining its feature granules, then matched against decision granules via weighted similarity for classification~\cite{qui2006GrC}. The authors note that the method has not been tested in practical applications and requires further investigation of similarity computation and inclusion degrees~\cite{qui2006GrC}.
 
-One of the earliest GrC-based text classification methods \cite{[]} extracts two types of information from training data: semantic information (the degree to which a feature is associated with a class) and structural information (overlap between feature sets). For a new document, similarity is computed as a weighted combination of inclusion degree and association similarity, and the document is assigned to the class of the most similar decision granule. This relational approach captures both feature co-occurrence and class association.
+\subsubsection{Data-Level Granulation: Three-Way Feature Selection and Granular Deep Learning}
+
+Chen et al.~\cite{Chen2022threeway} propose a three-way decision model for binary sentiment analysis that selects distinct feature subsets for the positive and negative classes, rather than using a uniform representation. During testing, confident samples are classified using their class-specific optimal feature subset, while uncertain samples fall into a boundary region and are processed with the full feature set~\cite{Chen2022threeway}. Experiments on IMDB and Amazon show improved accuracy over chi-square and PCA-based feature selection, albeit with increased computational overhead~\cite{Chen2022threeway}.
+
+Behzadidoost et al.~\cite{Behzadidoost2024GrC} propose a Granular Computing-based Deep Learning model (GCDL) for cyberbullying and hate speech detection. The model generates two types of granules: textual granules, constructed by a “reverse pancake-scramble” algorithm that flips characters and reverses vowels, and numerical granules, extracted via ten rule-based features (e.g., hashtags, stop words, emojis)~\cite{Behzadidoost2024GrC}. Textual granules are processed by a stacked CNN-LSTM, while numerical granules feed into a stacked BILSTM-SVM – the first such combination in granular computing~\cite{Behzadidoost2024GrC}. An attention mechanism merges both outputs for final classification~\cite{Behzadidoost2024GrC}. On three datasets (cyberbullying and two hate speech collections), GCDL achieves 88.74\%, 89.62\%, and 70.85\% accuracy, outperforming state-of-the-art models~\cite{Behzadidoost2024GrC}. Ablation studies confirm that both granule types contribute positively, and the granulation process does not exceed the original dataset size, avoiding imbalance~\cite{Behzadidoost2024GrC}.
+
+\subsection{Sequential and Three-Way Decision Strategies}
+
+In dynamic environments where data streams arrive over time, static sentiment classifiers become outdated~\cite{Yang2022temporal}. Yang et al. propose a temporal-spatial three-way granular computing framework that incrementally updates the model as new data arrives~\cite{Yang2022temporal}. At each time step, the model classifies samples into three regions: positive, negative, and boundary. Confident samples are accepted or rejected immediately, while uncertain ones are deferred to the next level, where finer granularity (more data and updated parameters) enables more reliable decisions~\cite{Yang2022temporal}. This sequential three-way strategy reduces misclassification and time costs without sacrificing accuracy, as shown on IMDB, Yelp, and Amazon datasets using TextCNN, TextRNN, TextRCNN, and fastText~\cite{Yang2022temporal}.
+
+For open topic classification where test data may contain unseen classes, the same authors propose Three-Way Multi-Granularity learning towards Open topic classification (TWMG-Open)~\cite{Yang2022threeway}. The model operates at three granular levels: first, known topics are separated from unknowns using adaptive spherical decision boundaries; second, unknown samples are clustered via three-way DBSCAN to discover hidden classes; third, high-confidence clusters are added to a knowledge base for continual learning~\cite{Yang2022threeway}. Experiments on Banking77, StackOverflow, and TC20 show that TWMG-Open outperforms traditional baselines, especially when the proportion of known classes is high~\cite{Yang2022threeway}.
 
 \subsection{Bag-of-Concepts Approaches}
 
-Moving beyond words, several authors have explored \textit{bag-of-concepts} (BoC) representations. \cite{[]} directly apply prototype theory: word embeddings are clustered into Voronoi regions, and each document is represented by a histogram of cluster memberships. The authors show that such concept-level representations, when combined with standard classifiers, can rival word-level methods while offering better interpretability.
+Moving beyond word-level representations, several authors have explored \textit{bag-of-concepts} (BoC) approaches that aggregate semantically related tokens into higher-level information granules~\cite{Capillo2020mining, DeSantis2023prototype, Possemato2013AutomaticTC}. DeSantis et al.~\cite{DeSantis2023prototype} directly apply prototype theory: word embeddings are clustered into Voronoi regions, and each document is represented by a histogram of cluster memberships. This concept-level representation can rival word-level methods while offering better interpretability~\cite{DeSantis2023prototype}.
 
-Similarly, \cite{[]} extract m-grams, embed them using fastText, and cluster them per class to obtain class-specific alphabets of symbols. Documents are then converted into \textit{symbolic histograms} and classified with SVM. An evolutionary algorithm optimises hyperparameters and selects the most discriminative symbols.
+Capillo et al.~\cite{Capillo2020mining} present a granular computing framework that mines \(m\)-grams (short phrases) as information granules for text categorization. Each word in an $m$-gram is mapped to a vector using fastText embeddings, and the resulting sequence of vectors is compared using a custom edit distance that operates on word vectors rather than characters~\cite{Capillo2020mining}. A per-class clustering procedure extracts representative $m$-grams, which serve as alphabet symbols (concepts)~\cite{Capillo2020mining}. Documents are then transformed into symbolic histograms counting the occurrences of these concepts, and the histograms are classified by a SVM~\cite{Capillo2020mining}. A genetic algorithm optimises the system’s hyperparameters and selects the most discriminative symbols~\cite{Capillo2020mining}. Experiments on scientific abstracts (four classes) achieve about \(93\%\) accuracy, and on an SMS spam dataset about \(95\%\) accuracy~\cite{Capillo2020mining}. Importantly, the selected symbols are interpretable phrases (e.g., “string field theory” for theoretical physics, “customer care” for spam), demonstrating that the bag-of-concepts approach yields both high performance and explainable models~\cite{Capillo2020mining}.
 
-\cite{[]} address the problem of unbalanced datasets by first extracting n-grams, then running a granular algorithm (RL-GRADIS) per class to obtain representative symbols (cluster centres). The union of these symbols forms an alphabet, and documents are converted into histograms. Again, SVM with feature selection yields the final classification.
+Possemato et al.~\cite{Possemato2013AutomaticTC} extend the bag-of-concepts approach to handle unbalanced datasets by extracting $n$-grams and then running a per-class granular mining algorithm (RL-GRADIS) to obtain representative symbols for each category~\cite{Possemato2013AutomaticTC}. The union of these per-class symbols forms the final alphabet, and documents are converted into symbolic histograms by counting occurrences of each symbol~\cite{Possemato2013AutomaticTC}. A support vector machine with a Gaussian kernel then classifies the histograms, and a genetic algorithm performs wrapper-based feature selection to retain only discriminative symbols~\cite{Possemato2013AutomaticTC}. Experiments on the unbalanced Reuters-21578 dataset (ten categories) show that the per-class strategy improves macro-averaged F1 compared to the standard unsupervised version, demonstrating better handling of sparse classes~\cite{Possemato2013AutomaticTC}. The extracted symbols remain interpretable, such as phrases characterising the “Trade” class~\cite{Possemato2013AutomaticTC}.
 
-\subsection{Retrainable and Dynamic Models}
+\subsection{Interpretable Fuzzy Rule-Based Methods}
 
-In dynamic environments where data streams arrive over time, static models become outdated. \cite{[]} propose a temporal-spatial three-way granular computing framework for sentiment classification. Initially, a small training set is used to classify only confident samples into positive or negative; uncertain samples remain in a boundary region. As new data arrives, the model is updated and the boundary samples are re-evaluated. This iterative refinement gradually improves accuracy without retraining on the entire dataset.
+Interpretability is a key motivation for granular computing in sentiment analysis~\cite{Liu2017fuzzy}. Liu and Cocea propose a fuzzy rule-based system that replaces the traditional bag-of-words approach with a multi-granularity decomposition of text into sections, paragraphs, sentences, phrases, and words~\cite{Liu2017fuzzy}. This hierarchical granulation reduces instance complexity and dimensionality while enabling the extraction of local features at each level~\cite{Liu2017fuzzy}. Fuzzy logic handles linguistic uncertainty by assigning continuous membership degrees, reducing classification bias in subjective tasks~\cite{Liu2017fuzzy}. The resulting fuzzy rules are expressed in natural language, making the model fully transparent and interpretable~\cite{Liu2017fuzzy}. Experiments on movie reviews show competitive accuracy, though dimensionality remains high even after filtering~\cite{Liu2017fuzzy}.
 
-Open-topic classification, where new topics may appear after deployment, is tackled by \cite{[]}. The model uses BERT embeddings and DBSCAN to discover unknown topics, then incrementally learns new classes. A three-way mechanism defers uncertain samples, allowing them to be revisited when more knowledge is accumulated.
+\subsection{Multi-Granular Hierarchical Models}
 
-\subsection{Targeted Sentiment Analysis}
+\cite{Huang2022multigranular} propose a multi-granular joint sentiment-topic model (MgJST) that extends traditional LDA-based sentiment topic models by introducing two additional layers: a sentence layer between documents and words, and a sentiment layer between documents and topics~\cite{Huang2022multigranular}. Unlike previous models such as JST, which treat a document as a single topic mixture, MgJST assigns a distinct topic distribution to each sentence within a document, capturing finer-grained structural knowledge~\cite{Huang2022multigranular}. The model is a five-layer hierarchical architecture that uses Gibbs sampling for parameter estimation and can determine document-level sentiment polarity via a voting rule~\cite{Huang2022multigranular}. Experiments on seven review datasets show that MgJST significantly outperforms unsupervised baselines (WSTM and STSM) in sentiment detection F1 and achieves competitive performance with supervised deep learning methods~\cite{Huang2022multigranular}. The extracted topics are interpretable (e.g., positive topics for music contain “kiss the rain”, negative topics for electronics mention “sound quality” issues), demonstrating the model's ability to reveal opinionated topics at multiple granularities~\cite{Huang2022multigranular}.
 
-Targeted (or topic-aware, aspect-based, or sometimes fine-grained) sentiment analysis aims to determine the sentiment expressed towards a specific aspect of a text. \cite{[]} devise a multi-level interactive attention network where granules at different levels (word, phrase, sentence) interact through attention mechanisms. The architecture computes influence matrices between child and parent granules, enabling fine-grained sentiment prediction.
-
-At the document level, \cite{[]} propose a multi-granular joint sentiment-topic model (MgJST) that introduces a sentence layer between documents and words, and a sentiment layer between documents and topics. By modelling topics at the sentence level, the model captures nuanced sentiment–topic relationships, which is valuable for applications such as brand monitoring.
-
-\subsection{Multi-Level and Interpretable Methods}
-
-Interpretability is a key motivation for granular computing. \cite{[]} develop a fuzzy rule-based system for sentiment analysis using a divide-and-conquer strategy. Information granules at different levels allow local features to be extracted, reducing both instance complexity and fuzziness, and resulting in a more interpretable model.
-
-\cite{[]} provide a broader perspective on GrC for text mining, emphasising that text can be represented at character, word, phrase, and concept levels. Integrating these multiple views can capture richer information and improve mining performance.
+In a related multi-granular approach for targeted sentiment analysis, \cite{Li2020GrC} propose Granular Computing-based Multi-level Interactive Attention networks (GC-MIA). Each word is treated as an indivisible granule, and a three-level interactive attention mechanism refines the representations of both the target and its context~\cite{Li2020GrC}. The first level uses matrix-based interactive attention to capture pairwise word interactions; the second level incorporates Euclidean distance to encode semantic closeness; the third level applies interactive attention between child granules (individual words) and parent granules (the aggregated target or context) to assign sentiment-relevant weights~\cite{Li2020GrC}. The final context and target granules are merged into an ancestor granule and fed to a softmax classifier~\cite{Li2020GrC}. On the SemEval 2014 laptop and restaurant datasets, GC-MIA achieves accuracies of 73.7\% and 79.0\%, respectively, outperforming LSTM, TD-LSTM, and the original interactive attention networks (IAN)~\cite{Li2020GrC}. A case study further visualises that the model assigns higher attention weights to context words semantically or sentimentally relevant to a given target, illustrating the explanatory power of the multi-level granular design~\cite{Li2020GrC}.
 
 \section{Gap Analysis and Contribution}
 
-Several key patterns emerge from the literature. Traditional machine learning models are computationally efficient but operate on a fixed vocabulary, making them sensitive to changes in wording. Deep learning models achieve high accuracy but require substantial computational resources, making them impractical for large-scale deployment. Granular computing offers a theoretical middle path by representing text at the conceptual level rather than the lexical level.
+The preceding sections have surveyed sentiment analysis at three levels (document, sentence, aspect) and highlighted persistent challenges: contextual polarity ambiguity, sarcasm and irony, negation handling, implicit opinions, and vocabulary evolution \cite{behdenna2018document, sharma2025review}. Existing methods fall into three broad families: lexicon-based (interpretable but brittle), classic machine learning (efficient but feature-sensitive), and deep learning (accurate but computationally expensive). Granular computing offers a conceptual bridge, but existing GrC work for text has not fully exploited the trade-offs within sentiment analysis.
 
-This thesis empirically investigates this middle path by proposing a framework that combines concept-level text representation with a three-way cascade classifier. Based on the experimental results, the contributions and limitations of this approach are summarized below.
+\subsection{Gap Analysis}
 
-\subsection*{Pros}
-\begin{itemize}
-	\item \textbf{Semantic generalization to unseen words:} By clustering Sentence-BERT embeddings into conceptual groups, the system can map out-of-vocabulary words to semantically similar prototypes. This allows the model to maintain performance when encountering new terminology, addressing a key limitation of traditional bag-of-words approaches.
+\subsubsection{Gap 1 -- No efficient cascade that combines a lightweight classifier with a deep learning model for uncertain cases in sentiment analysis.} 
+Sequential three-way decision frameworks (e.g., Yang et al.~\cite{Yang2022temporal}) defer uncertain samples to finer granularities, but they apply the same deep architecture at all levels, incurring high costs even for easy samples. In sentiment analysis, many reviews are clearly positive or negative and could be handled by a fast model (e.g., SVM), while only ambiguous or sarcastic cases require a large transformer like BERT. No existing method implements such a cascade with a principled deferral threshold for sentiment analysis.
+
+\subsubsection{Gap 2 -- Bag-of-concepts via n-gram mining and clustering has been validated for topic and spam classification but not systematically evaluated for sentiment analysis.}
+Capillo et al.~\cite{Capillo2020mining} and Possemato et al.~\cite{Possemato2013AutomaticTC} show that mining representative n-grams and clustering them into concept granules works well for categorising scientific abstracts and detecting spam. However, sentiment analysis differs: polarity often depends on negation, sarcasm, and subtle phrase-level cues. Whether the same pipeline can capture sentiment-specific phenomena -- and whether the resulting concept granules are interpretable for polarity detection -- remains an open question.
+
+\subsection{Contribution}
+
+This work addresses the two gaps with the following contributions:
+
+\subsubsection{Cascade Granular Computing for Sentiment Analysis}
 	
-	\item \textbf{Efficient allocation of computational resources:} The cascade architecture implements three-way decision theory by routing samples based on classification confidence. A lightweight model handles clear-cut cases, while only the most ambiguous samples are passed to the computationally intensive specialist model. This balances accuracy against computational cost.
-	
-    \item \textbf{Targeted improvement on difficult cases:} Fine-tuning a deep learning model exclusively on the uncertain samples identified by the cascade resulted in approximately 0.1\% accuracy improvement on the training set compared to a standard DistilBERT baseline. This confirms that the cascade can be further specialized through transfer-learning.
-\end{itemize}
-
-\subsection*{Cons}
-\begin{itemize}
-	\item \textbf{Loss of lexical detail through abstraction:} The most significant finding is a measurable trade-off inherent in dimensionality reduction. Mapping thousands of specific n-grams onto a smaller set of conceptual clusters inevitably loses fine-grained lexical information. This loss resulted in approximately 2\% lower accuracy for the standalone concept-based classifiers compared to their vocabulary-based counterparts. For instance, the baseline SVM achieved 91.48\% accuracy, while the concept-clustered SVM reached 89.12\%.
-	
-	\item \textbf{Upfront computational cost:} Generating deep embeddings and clustering them into conceptual groups requires significant preprocessing time and resources. Sentence-BERT was chosen specifically because it can embed multi-word phrases, unlike static models such as Word2Vec which are limited to single tokens. However, the results indicate that even these context-aware embeddings cannot fully preserve the lexical precision lost during clustering.
-\end{itemize}
-
-\subsection*{Verdict}
-The two experiments point in opposite directions. Concept-level clustering failed to match the accuracy of vocabulary-based methods, showing that granular abstraction comes at a measurable cost. 
-
-However, the cascade classifier succeeded in distributing workload efficiently, proving that three-way decisions can reduce computational expense while maintaining accuracy.
+\subsubsection{Bag-of-Concepts for Sentiment Analysis}
 
 \chapter{Cascade System for Granular Sentiment Analysis using Grid-Search}
 
