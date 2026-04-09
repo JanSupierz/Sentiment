@@ -843,14 +843,20 @@ Huang et al.~\cite{Huang2022multigranular} propose a Multi-granular Joint Sentim
 
 In a related multi-granular approach for targeted sentiment analysis, \cite{Li2020GrC} propose Granular Computing-based Multi-level Interactive Attention (GC-MIA) networks. Each word is treated as an indivisible granule, and a three-level interactive attention mechanism refines the representations of both the target and its context~\cite{Li2020GrC}. The first level uses matrix-based interactive attention to capture pairwise word interactions; the second level incorporates Euclidean distance to encode semantic closeness; the third level applies interactive attention between child granules (individual words) and parent granules (the aggregated target or context) to assign sentiment-relevant weights~\cite{Li2020GrC}. The final context and target granules are merged into an ancestor granule and fed to a softmax classifier~\cite{Li2020GrC}. On the SemEval 2014 laptop and restaurant datasets, GC-MIA achieves accuracies of 73.7\% and 79.0\%, respectively, outperforming LSTM, Time Distributed LSTM (TD-LSTM), and the original Interactive Attention Networks (IANs)~\cite{Li2020GrC}. A case study further visualises that the model assigns higher attention weights to context words semantically or sentimentally relevant to a given target, illustrating the explanatory power of the multi-level granular design~\cite{Li2020GrC}.
 
+\subsubsection{Cascade Methods}
+
+\textbf{Cascade Approach (2024)}
+\textbf{Cascade with LLMs (2025)}
+
 \subsection{Gap Analysis and Contribution}
 
 \subsubsection{Gap Analysis}
 
 The preceding sections have surveyed sentiment analysis at three levels (document, sentence, aspect) and highlighted persistent challenges: contextual polarity ambiguity, sarcasm and irony, negation handling, implicit opinions, and vocabulary evolution \cite{behdenna2018document, sharma2025review}. Existing methods fall into three broad families: lexicon-based (interpretable but fragile), classic machine learning (efficient but feature-sensitive), and deep learning (accurate but computationally expensive). Granular computing offers a conceptual bridge, but existing GrC work for text has not fully exploited the trade-offs within sentiment analysis.
 
-\subsubsection{Gap 1 -- No efficient cascade that combines a lightweight classifier with a deep learning model for uncertain cases in sentiment analysis.} 
-Sequential three-way decision frameworks (e.g., Yang et al.~\cite{Yang2022temporal}) defer uncertain samples to finer granularities, but they apply the same deep architecture at all levels, incurring high costs even for easy samples. In sentiment analysis, many reviews are clearly positive or negative and could be handled by a fast model (e.g., SVM), while only ambiguous or sarcastic cases require a large transformer like BERT. No existing method implements such a cascade with a principled deferral threshold for sentiment analysis.
+\subsubsection{Gap 1 -- No efficient way to find the optimal deferral rate } 
+Sequential three-way decision frameworks (e.g., Yang et al.~\cite{Yang2022temporal}) defer uncertain samples to finer granularities, but they apply the same deep architecture at all levels, incurring high costs even for easy samples. In sentiment analysis, many reviews are clearly positive or negative and could be handled by a fast model (e.g., SVM), while only ambiguous or sarcastic cases require a large transformer like BERT.
+\textbf{T.B.C}
 
 \subsubsection{Gap 2 -- Bag-of-Concepts via n-gram mining has been validated for topic and spam classification but has not been evaluated for sentiment analysis.}
 Capillo et al.~\cite{Capillo2020mining} and Possemato et al.~\cite{Possemato2013AutomaticTC} show that mining representative n-grams and clustering them into concept granules works well for categorising scientific abstracts and detecting spam. However, sentiment analysis differs: polarity often depends on negation, sarcasm, and subtle phrase-level cues. Whether the same pipeline can capture sentiment-specific phenomena -- and whether the resulting concept granules are interpretable for polarity detection -- remains an open question.
