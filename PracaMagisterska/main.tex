@@ -764,13 +764,13 @@ Granular Computing (GrC) is a paradigm that processes complex information by tre
 
 An information granule is formally defined as a collection of elements grouped by indistinguishability, similarity, or functional proximity \cite{Liping2009GrC}. Granules can be arranged hierarchically: coarse granules provide a high-level overview, while finer granules reveal detailed information \cite{Liping2009GrC}.
 
-\begin{description}
-	\item Three fundamental concepts underpin GrC, as originally articulated by Zadeh \cite{Zadeh1997GrC}:
-	\begin{itemize}
-		\item \textbf{Granulation:} decomposition of the whole into parts,
-		\item \textbf{Organization:} integration of parts into the whole,
-		\item \textbf{Causation:} association of causes and effects.
-	\end{itemize}
+
+Three fundamental concepts underpin GrC, as originally articulated by Zadeh \cite{Zadeh1997GrC}:
+	\begin{description}
+		\item[Granulation:] decomposition of the whole into parts,
+		\item[Organization:] integration of parts into the whole,
+		\item[Causation:] association of causes and effects.
+ 
 \end{description}  
 
 Concrete mechanisms for granulation are often seen in computing and human reasoning \cite{bargiela2003granular}. In computer systems, memory resources are granulated by adopting memory pages as basic operational chunks; swapping techniques then enable efficient access to individual data items \cite{bargiela2003granular}. When describing a problem, people tend to avoid numbers, instead using aggregates and constructing if-then rules that operate on those aggregates \cite{bargiela2003granular}. Although the physical world is inherently analog, computers perform digital processing \cite{bargiela2003granular}. Furthermore, all data compression mechanisms represent instances of information granulation~\cite{bargiela2003granular}.
@@ -779,15 +779,13 @@ Concrete mechanisms for granulation are often seen in computing and human reason
 
 Three-way decision (3WD) is a theory of thinking, problem solving, and information processing that relies on the use of three parts, three elements, or three levels \cite{Yao2018threeway}. It extends the classical binary (two‑way) approach (typically acceptance or rejection) by introducing a third option: non‑commitment, deferment, or uncertainty \cite{Fujita2016threeway, Yao2018threeway}. In many real‑world situations, making an immediate decision is unwise when evidence is insufficient; 3WD provides a principled way to withhold judgment until more information can be obtained \cite{Yao2018threeway}.
 
-The idea of trisecting a whole into three parts and then acting upon each part is a common human practice, evident in temporal (past-present-future), spatial (left-middle-right), volumetric (small-medium-large), and judgmental (acceptance-non‑commitment-rejection) divisions \cite{Fujita2016threeway}. Such a trisection can be formally represented by three pairwise disjoint subsets whose union is the universal set \cite{Fujita2016threeway}. Its cognitive basis lies in the limited capacity of human short‑term memory, which makes the number three a natural anchor-simple enough to process, yet richer than binary thinking \cite{Yao2018threeway}. Consequently, thinking in threes appears across many disciplines, from linguistics (three grammatical tenses) to computer science (three‑level database architectures) \cite{Yao2018threeway}.
+The idea of trisecting a whole into three parts and then acting upon each part is a common human practice, evident in temporal (past-present-future), spatial (left-middle-right), volumetric (small-medium-large), and judgmental (acceptance-noncommitment-rejection) divisions \cite{Fujita2016threeway}. Such a trisection can be formally represented by three pairwise disjoint subsets whose union is the universal set \cite{Fujita2016threeway}. Its cognitive basis lies in the limited capacity of human short‑term memory, which makes the number three a natural anchor-simple enough to process, yet richer than binary thinking \cite{Yao2018threeway}. Consequently, thinking in threes appears across many disciplines, from linguistics (three grammatical tenses) to computer science (three‑level database architectures) \cite{Yao2018threeway}.
 
+ A general model of 3WD is the Trisecting-Acting-Outcome (TAO) framework \cite{Yao2018threeway}:
 \begin{description}
-	\item A general model of 3WD is the Trisecting-Acting-Outcome (TAO) framework \cite{Yao2018threeway}:
-	\begin{itemize}
-		\item \textbf{Trisecting}: dividing a whole into three pairwise disjoint parts,
-		\item \textbf{Acting}: devising strategies to process each of the three parts,
-		\item \textbf{Outcome}: evaluating the effectiveness.
-	\end{itemize}
+		\item[Trisecting:] dividing a whole into three pairwise disjoint parts,
+		\item[Acting:] devising strategies to process each of the three parts,
+		\item[Outcome:] evaluating the effectiveness.
 \end{description}  
 
 The connection between three‑way decision and granular computing is deep and natural \cite{Fujita2016threeway, Yao2018threeway}. Both paradigms are human‑inspired and rely on abstraction: granular computing builds information granules at multiple levels, while three‑way decision uses three granules (or three levels) as a particularly effective cognitive structure \cite{Yao2018threeway}. In fact, sequential three‑way decisions arise naturally from multiple levels of granularity \cite{Fujita2016threeway}. At a higher (coarser) level of granularity, one may defer decisions about some objects to a lower (finer) level where additional detailed information becomes available \cite{Fujita2016threeway}. This interplay has led to the integration of three‑way decision and granular computing into what is sometimes called three‑way granular computing \cite{Fujita2016threeway, Yao2018threeway}.
@@ -822,9 +820,9 @@ For open topic classification where test data may contain unseen classes, the au
 
 \subsubsection{Bag-of-Concepts Methods}
 
-Moving beyond word-level representations, several authors have explored bag-of-concepts (BoC) approaches that aggregate semantically related tokens into higher-level information granules~\cite{Capillo2020mining, DeSantis2023prototype, Possemato2013AutomaticTC}. De Santis et al.~\cite{DeSantis2023prototype} directly apply prototype theory: word embeddings are clustered into Voronoi regions, and each document is represented by a histogram of cluster memberships. This concept-level representation can rival word-level methods for text processing tasks, while offering better interpretability~\cite{DeSantis2023prototype}.
+Moving beyond word-level representations, several authors have explored bag-of-con\-cepts (BoC) approaches that aggregate semantically related tokens into higher-level information granules~\cite{Capillo2020mining, DeSantis2023prototype, Possemato2013AutomaticTC}. De Santis et al.~\cite{DeSantis2023prototype} directly apply prototype theory: word embeddings are clustered into Voronoi regions, and each document is represented by a histogram of cluster memberships. This concept-level representation can rival word-level methods for text processing tasks, while offering better interpretability~\cite{DeSantis2023prototype}.
 
-Capillo et al.~\cite{Capillo2020mining} present a granular computing framework that mines $m$-grams (short phrases) as information granules for text categorization. Each word in an $m$-gram is mapped to a vector using fastText embeddings, and the resulting sequence of vectors is compared using a custom edit distance that operates on word vectors rather than characters~\cite{Capillo2020mining}. A per-class clustering procedure extracts representative $m$-grams, which serve as alphabet symbols (concepts)~\cite{Capillo2020mining}. Documents are then transformed into symbolic histograms counting the occurrences of these concepts, and the histograms are classified by a SVM~\cite{Capillo2020mining}. A GA optimises the system’s hyperparameters and selects the most discriminative symbols~\cite{Capillo2020mining}. Experiments on scientific abstracts (four classes) achieve about 93\% accuracy, and on an SMS spam dataset about 95\% accuracy~\cite{Capillo2020mining}. Importantly, the selected symbols are interpretable phrases (e.g.,``string field theory'' for theoretical physics,``customer care'' for spam), demonstrating that the BoC approach yields both high performance and explainable models~\cite{Capillo2020mining}.
+Capillo et al.~\cite{Capillo2020mining} present a granular computing framework that mines $m$-grams (short phrases) as information granules for text categorization. Each word in an $m$-gram is mapped to a vector using fastText embeddings, and the resulting sequence of vectors is compared using a custom edit distance that operates on word vectors rather than characters~\cite{Capillo2020mining}. A per-class clustering procedure extracts representative $m$-grams, which serve as alphabet symbols (concepts)~\cite{Capillo2020mining}. Documents are then transformed into symbolic histograms counting the occurrences of these concepts, and the histograms are classified by a \ksremark{support vector machine – skrót występujący po raz pierwszy trzeba rozwinąć} (SVM)~\cite{Capillo2020mining}. A GA \ksremark{Przy pierwszym wystąpieniu trzeba rozwinąć.} optimises the system’s hyperparameters and selects the most discriminative symbols~\cite{Capillo2020mining}. Experiments on scientific abstracts (four classes) achieve about 93\% accuracy, and on an SMS spam dataset about 95\% accuracy~\cite{Capillo2020mining}. Importantly, the selected symbols are interpretable phrases (e.g. ``string field theory'' for theoretical physics,``customer care'' for spam), demonstrating that the BoC approach yields both high performance and explainable models~\cite{Capillo2020mining}.
 
 Possemato et al.~\cite{Possemato2013AutomaticTC} extend the BoC approach to handle unbalanced datasets by extracting $n$-grams and then running a per-class granular mining algorithm known as Reinforcement Learning Granular Approach for DIscrete
 Sequence (RL-GRADIS) to obtain representative symbols for each category~\cite{Possemato2013AutomaticTC}. The union of these per-class symbols forms the final alphabet, and documents are converted into symbolic histograms by counting occurrences of each symbol~\cite{Possemato2013AutomaticTC}. A SVM with a Gaussian kernel then classifies the histograms, and a GA performs feature selection to retain only discriminative symbols~\cite{Possemato2013AutomaticTC}. Experiments on the unbalanced Reuters-21578 dataset (ten categories) show that the per-class strategy improves results compared to the standard unsupervised version, demonstrating better handling of sparse classes~\cite{Possemato2013AutomaticTC}. The extracted symbols remain interpretable~\cite{Possemato2013AutomaticTC}.
@@ -854,7 +852,8 @@ Sequential three-way decision frameworks (e.g., Yang et al.~\cite{Yang2022tempor
 \textbf{T.B.C}
 
 \subsubsection{Gap 2 -- Bag-of-Concepts via n-gram mining has been validated for topic and spam classification but has not been evaluated for sentiment analysis.}
-Capillo et al.~\cite{Capillo2020mining} and Possemato et al.~\cite{Possemato2013AutomaticTC} show that mining representative n-grams and clustering them into concept granules works well for categorising scientific abstracts and detecting spam. However, sentiment analysis differs: polarity often depends on negation, sarcasm, and subtle phrase-level cues. Whether the same pipeline can capture sentiment-specific phenomena -- and whether the resulting concept granules are interpretable for polarity detection -- remains an open question.
+\ksremark{Może skrócić ten tytuł? Np. Gap 2 -- Bag-of-Concepts lacks evaluation for sentiment analysis}
+Capillo et al.~\cite{Capillo2020mining} and Possemato et al.~\cite{Possemato2013AutomaticTC} show that mining representative n\ksremark{$n$}-grams and clustering them into concept granules works well for categorising scientific abstracts and detecting spam. However, sentiment analysis differs: polarity often depends on negation, sarcasm, and subtle phrase-level cues. Whether the same pipeline can capture sentiment-specific phenomena -- and whether the resulting concept granules are interpretable for polarity detection -- remains an open question.
 
 \subsection{Contribution}
 
