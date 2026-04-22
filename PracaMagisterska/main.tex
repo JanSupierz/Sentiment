@@ -649,7 +649,7 @@ Effective lexicon-based systems must account for sentiment shifters-linguistic e
 
 \subsubsection{Preprocessing Considerations}
 
-Preprocessing requirements vary across lexicons. While VADER can handle capitalization, punctuation, and colloquial expressions with minimal preprocessing, tools such as TextBlob, SentiWordNet, and WordNet require rigorous cleaning \cite{nursal2025battle}. Typical preprocessing steps include tokenisation, lowercase conversion, spell-checking, stemming, stopword removal, part-of-speech tagging, lemmatisation, and noise removal \cite{nursal2025battle}. Normalisation of abbreviations and acronyms is particularly important for social media text, as inconsistent vocabulary can degrade accuracy \cite{nursal2025battle}.
+Preprocessing requirements vary across lexicons. While VADER can handle capitalization, punctuation, and colloquial expressions with minimal preprocessing, tools such as TextBlob, SentiWordNet, and WordNet require rigorous cleaning \cite{nursal2025battle}. Typical preprocessing steps include tokenization, lowercase conversion, spell-checking, stemming, stopword removal, part-of-speech tagging, lemmatization, and noise removal \cite{nursal2025battle}. Normalization of abbreviations and acronyms is particularly important for social media text, as inconsistent vocabulary can degrade accuracy \cite{nursal2025battle}.
 
 \subsubsection{Advantages and Limitations}
 
@@ -821,7 +821,7 @@ For open topic classification where test data may contain unseen classes, the au
 
 Moving beyond word-level representations, several authors have explored bag-of-concepts (BoC) approaches that aggregate semantically related tokens into higher-level information granules~\cite{Capillo2020mining, DeSantis2023prototype, Possemato2013AutomaticTC}. De Santis et al.~\cite{DeSantis2023prototype} directly apply prototype theory: word embeddings are clustered into Voronoi regions, and each document is represented by a histogram of cluster memberships. This concept-level representation can rival word-level methods for text processing tasks, while offering better interpretability~\cite{DeSantis2023prototype}.
 
-Capillo et al.~\cite{Capillo2020mining} present a granular computing framework that mines $m$-grams (short phrases) as information granules for text categorization. Each word in an $m$-gram is mapped to a vector using fastText embeddings, and the resulting sequence of vectors is compared using a custom edit distance that operates on word vectors rather than characters~\cite{Capillo2020mining}. A per-class clustering procedure extracts representative $m$-grams, which serve as alphabet symbols (concepts)~\cite{Capillo2020mining}. Documents are then transformed into symbolic histograms counting the occurrences of these concepts, and the histograms are classified by a Support Vector Machine (SVM)~\cite{Capillo2020mining}. A Genetic Algorithm (GA) optimises the system’s hyperparameters and selects the most discriminative symbols~\cite{Capillo2020mining}. Experiments on scientific abstracts (four classes) achieve about 93\% accuracy, and on an SMS spam dataset about 95\% accuracy~\cite{Capillo2020mining}. Importantly, the selected symbols are interpretable phrases (e.g. ``string field theory'' for theoretical physics,``customer care'' for spam), demonstrating that the BoC approach yields both high performance and explainable models~\cite{Capillo2020mining}.
+Capillo et al.~\cite{Capillo2020mining} present a granular computing framework that mines $m$-grams (short phrases) as information granules for text categorization. Each word in an $m$-gram is mapped to a vector using fastText embeddings, and the resulting sequence of vectors is compared using a custom edit distance that operates on word vectors rather than characters~\cite{Capillo2020mining}. A per-class clustering procedure extracts representative $m$-grams, which serve as alphabet symbols (concepts)~\cite{Capillo2020mining}. Documents are then transformed into symbolic histograms counting the occurrences of these concepts, and the histograms are classified by a Support Vector Machine (SVM)~\cite{Capillo2020mining}. A Genetic Algorithm (GA) optimises the system's hyperparameters and selects the most discriminative symbols~\cite{Capillo2020mining}. Experiments on scientific abstracts (four classes) achieve about 93\% accuracy, and on an SMS spam dataset about 95\% accuracy~\cite{Capillo2020mining}. Importantly, the selected symbols are interpretable phrases (e.g. ``string field theory'' for theoretical physics,``customer care'' for spam), demonstrating that the BoC approach yields both high performance and explainable models~\cite{Capillo2020mining}.
 
 Possemato et al.~\cite{Possemato2013AutomaticTC} extend the BoC approach to handle unbalanced datasets by extracting $n$-grams and then running a per-class granular mining algorithm known as Reinforcement Learning Granular Approach for DIscrete
 Sequence (RL-GRADIS) to obtain representative symbols for each category~\cite{Possemato2013AutomaticTC}. The union of these per-class symbols forms the final alphabet, and documents are converted into symbolic histograms by counting occurrences of each symbol~\cite{Possemato2013AutomaticTC}. A SVM with a Gaussian kernel then classifies the histograms, and a GA performs feature selection to retain only discriminative symbols~\cite{Possemato2013AutomaticTC}. Experiments on the unbalanced Reuters-21578 dataset (ten categories) show that the per-class strategy improves results compared to the standard unsupervised version, demonstrating better handling of sparse classes~\cite{Possemato2013AutomaticTC}. The extracted symbols remain interpretable~\cite{Possemato2013AutomaticTC}.
@@ -874,24 +874,181 @@ Figure~\ref{fig:pipeline} provides a high-level overview of the proposed system.
 	\label{fig:pipeline}
 \end{figure}
 
-% TODO
 \chapter{Experiments}
 
 \section{Datasets}
 
-"
-IMDB dataset has 50K movie reviews for natural language processing or Text analytics.
+For the empirical evaluation in this study, the Large Movie Review Dataset is used---commonly referred to as the IMDB sentiment dataset, introduced by Maas et al. \cite{Maas2011imdb}. This dataset serves as a standard benchmark for binary sentiment classification in natural language processing. It contains a total of 50,000 highly polar movie reviews. The acquisition of the IMDB dataset is facilitated by TensorFlow Datasets (TFDS).
 
-This is a dataset for binary sentiment classification containing substantially more data than previous benchmark datasets. We provide a set of 25,000 highly polar movie reviews for training and 25,000 for testing. So, predict the number of positive and negative reviews using either classification or deep learning algorithms.
-"
--> Learning Word Vectors for Sentiment Analysis --- article
-Example:
-> I first watched Kindred in 1987 along with another movie called devouring waves. I remember back then i hated them both and i have never really bothered to watch them again.<br /><br /> However i have recently started a crusade to collect as many 80's horror titles in their original boxed form, That have been deleted for some time. I have got myself quite a proud collection with many more titles on my list!<br /><br />The Kindred although i have not as yet got a copy is high priority as all the old movies i didn't like back then, I now own and have now re-watched and think they are brilliant and the bits i do remember of the Kindred are now driving me to want to get hold of a copy A.S.A.P.<br /><br />Hurray for the 80's and long live horror!
+Below is an example of a positive review from the dataset, demonstrating the typical length and informal, rather descriptive style of the text:
+
+\begin{quote}
+	I first watched Kindred in 1987 along with another movie called devouring waves. I remember back then i hated them both and i have never really bothered to watch them again.<br /><br /> However i have recently started a crusade to collect as many 80's horror titles in their original boxed form, That have been deleted for some time. I have got myself quite a proud collection with many more titles on my list!<br /><br />The Kindred although i have not as yet got a copy is high priority as all the old movies i didn't like back then, I now own and have now re-watched and think they are brilliant and the bits i do remember of the Kindred are now driving me to want to get hold of a copy A.S.A.P.<br /><br />Hurray for the 80's and long live horror!
+\end{quote}
+
 \section{Methodology}
-\subsection{Data preprocessing} 
-\subsection{Workflow of experiments}
-% narzędzia
-% testy statystyczne
+
+The objective of this study is to evaluate and optimize sentiment classification performance through a cascade ensemble architecture. The methodology is structured into distinct phases: data preprocessing, feature engineering, model selection, cascade ensemble, and statistical evaluation.
+
+\subsection{Data Preprocessing}
+
+While the original IMDb dataset is perfectly balanced and pre-divided into equal training and testing sets, this study merges the sets to perform data deduplication based on exact byte‑level matches of the raw review text. This process identified and removed 418 duplicate entries, resulting in a refined, unique dataset of 49,582 reviews. The dataset is shuffled and re‑divided into a training set of 24,791 reviews (approx. 50\%), a validation set of 17,353 reviews (approx. 35\%), and a testing set of 7,438 reviews (approx. 15\%). This split uses label stratification to maintain a balanced distribution of positive and negative sentiments across all sets.
+
+The textual data is then processed in parallel using a process pool executor to maximize efficiency. Each review is processed sequentially as follows:
+
+\begin{enumerate}
+	\item \textbf{Unicode normalization}: the text is converted to Normalization Form Compatibility Composition (NFKC) form to ensure consistent character representation.
+	
+	\item \textbf{Typographical unification}: a translation table replaces various quote marks (e.g., curly quotes, backticks, acute accents), dashes (en dash, em dash, minus signs), and ellipsis characters with default ASCII equivalents (straight quotes, hyphens, and ``...'' respectively).
+	
+	\item \textbf{Tag removal}: any substring within the HTML tags $<>$ is replaced with a space.
+	
+	\item \textbf{Whitespace condensation}: multiple whitespace characters are collapsed into a single space, and leading/trailing spaces are stripped.
+	
+	\item \textbf{Contraction expansion}: English contractions are expanded using the \texttt{contractions.fix} function (e.g., ``don't'' $\rightarrow$ ``do not'').
+	
+	\item \textbf{Tokenization}: the expanded text is tokenized using NLTK's \texttt{word\_tokenize}, producing \texttt{tokens\_cased}.
+	
+	\item \textbf{Lowercasing}: each token in \texttt{tokens\_cased} is converted to lowercase, producing \texttt{tokens\_lower}.
+	
+	\item \textbf{Part‑of-Speech-filtered tokenization}: the expanded text is processed with spaCy's English model (parser and named entity recogniser disabled). Tokens are lowercased and filtered based on their part‑of‑speech (POS) tags, as shown in the Table~\ref{tab:pos-filtering}. The result is stored as \texttt{tokens\_filtered}.
+	
+	\item \textbf{Alphabetic filtering}: from \texttt{tokens\_lower}, any character that is not a letter (a–z, A–Z) is removed; tokens that become empty after this removal are discarded. The result is \texttt{tokens\_letters}.
+	
+	\item \textbf{Stemming}: the Porter stemmer is applied to \texttt{tokens\_lower}, producing \texttt{tokens\_stemmed}.
+	
+	\item \textbf{Lemmatization}: the WordNet lemmatizer is applied to \texttt{tokens\_lower}, producing \texttt{tokens\_lemmatized}.
+\end{enumerate}
+
+After processing, each review is stored as a dictionary containing the different representations. The processed datasets are then converted to Pandas DataFrames, selecting a consistent column order, and finally saved as Parquet files (\texttt{train.parquet}, \texttt{val.parquet}, \texttt{test.parquet}) to enable selective loading in subsequent experiments.
+
+\subsubsection{Filtering Parts-Of-Speech}
+
+The tokens are lowercased and filtered based on their POS description. This step can highly lower the $n$-gram dimensionality in the upcoming steps by removing tags which do not influence the sentiment. However, this preprocessing step is purely subjective guesswork. In this study, it was decided to keep the filtering to the very minimum, as sentiment can be very subtle and hidden in the wording.
+
+\begin{table}[htbp]
+	\centering
+	\caption{Example of POS filtering with removed tags in bold}
+	\label{tab:pos-filtering}
+	\begin{tabular}{l l l l}
+		\toprule
+		Token & Lowercased & Coarse POS & Fine-grained POS \\
+		\midrule
+		I & i & PRON & PRP \\
+		\textbf{have} & \textbf{have} & \textbf{AUX} & \textbf{VBP} \\
+		got & got & VERB & VBN \\
+		myself & myself & PRON & PRP \\
+		quite & quite & ADV & RB \\
+		\textbf{a} & \textbf{a} & \textbf{DET} & \textbf{DT} \\
+		proud & proud & ADJ & JJ \\
+		collection & collection & NOUN & NN \\
+		with & with & ADP & IN \\
+		\textbf{many} & \textbf{many} & \textbf{DET} & \textbf{DT} \\
+		more & more & ADJ & JJR \\
+		titles & titles & NOUN & NNS \\
+		on & on & ADP & IN \\
+		\textbf{my} & \textbf{my} & \textbf{DET} & \textbf{PRP\$} \\
+		list & list & NOUN & NN \\
+		! & ! & PUNCT & . \\
+		\bottomrule
+	\end{tabular}
+\end{table}
+
+The POS filtering step removes tokens according to three criteria:
+
+\begin{itemize}
+	\item \textbf{Auxiliary verbs (except modals)}: tokens with the coarse POS tag \texttt{AUX}, unless their fine-grained tag is \texttt{MD} (modal auxiliary, e.g., \textit{can}, \textit{will}, \textit{must}).
+	\item \textbf{Determiners}: tokens with the coarse tag \texttt{DET} (e.g., \textit{a}, \textit{an}, \textit{the}, \textit{many}, \textit{my}).
+	\item \textbf{Possessive endings}: tokens with the fine-grained tag \texttt{POS} (the possessive clitic \textit{'s}).
+\end{itemize}
+
+\subsection{Feature engineering}
+
+To evaluate the impact of vocabulary representation on model performance, the tokenized text is transformed into discrete feature spaces using combinations of unigrams, bigrams, and trigrams. However, higher-order $n$-grams naturally introduce massive, highly sparse feature spaces. To mitigate the curse of dimensionality, an attempt is made to make use of a few advanced dimensionality reduction techniques: custom vectorization, statistical pruning and semantic clustering.
+
+\subsubsection{Custom Vectorization}
+
+The default \texttt{CountVectorizer} from scikit-learn applies pruning thresholds like \texttt{min\_df} and \texttt{max\_df} to individual words before building $n$-grams. This can discard rare unigrams that might form informative higher-order $n$-grams. To overcome this limitation, a custom pipeline is implemented.
+
+The input to this stage is already tokenized: each review is represented as a list of string tokens. These lists are joined back into single strings with spaces between tokens. A specialized tokenizer, \texttt{space\_tokenizer}, is then provided; it bypasses the default regular-expression tokenizer and splits only on spaces. The vectorizer is configured with \texttt{lowercase=False} (since lowercasing has already been applied during preprocessing) and the desired \texttt{ngram\_range} (e.g., (1,3)).
+
+This design ensures that the \texttt{min\_df} and \texttt{max\_df} thresholds are applied to complete $n$-grams, not to individual words before $n$-gram formation. Consequently, important multi-word expressions are preserved. For this study, $n$-grams that appear in fewer than 10 documents are discarded (\texttt{min\_df=10}), and no upper frequency limit is set (\texttt{max\_df=1.0}).
+
+\subsubsection{Statistical Pruning}
+A custom statistical pruning method based on Z-scores is employed to filter out neutral noise and retain only highly discriminative vocabulary. For a given feature, the log-odds ratio of its occurrence in the positive class versus the negative class is calculated. To prevent undefined logarithms resulting from zero-frequency occurrences, Laplace smoothing ($\alpha = 0.01$) is applied. The Z-score for a feature is calculated as:
+
+\begin{equation}
+	Z = \frac{\ln\left(\frac{p_{pos}}{p_{neg}}\right)}{\sqrt{\frac{1}{count_{pos} + \alpha} + \frac{1}{count_{neg} + \alpha}}}
+\end{equation}
+
+Where $p_{pos}$ and $p_{neg}$ represent the smoothed probability of the feature occurring in the positive and negative classes, respectively. Features with an absolute Z-score below a defined threshold (e.g., $|Z| \le 2.0$) are discarded, preserving only the vocabulary that demonstrates statistically significant class separation.
+
+\subsubsection{Semantic Clustering}
+To address the inherent sparsity of BoW and TF-IDF representations, an optional semantic clustering pipeline is implemented. Dense sentence embeddings for the extracted $n$-grams are generated using the \texttt{all-MiniLM-L6-v2} Sentence Transformer model. To enforce sentiment-aware distributions, these embeddings can be concatenated with VADER sentiment scores, weighted by a tunable hyperparameter.
+
+Following $L_2$ normalization, Facebook AI Similarity Search (FAISS) is utilized to perform K-Means clustering. This groups semantically similar $n$-grams into $k$ discrete concepts, compressing the feature space while retaining semantic granularity.
+
+\subsection{Machine Learning Models}
+
+The classification task is approached through a comparative analysis of traditional machine learning algorithms and deep neural networks.
+
+\begin{itemize}
+	\item \textbf{Traditional Baselines:} a linear Support Vector Machine (SVM) and Logistic Regression (LogReg) is employed. Because the cascade architecture relies on predictive certainty, the SVM-which inherently outputs uncalibrated distances to the separating hyperplane-is wrapped in a Platt scaling calibrator (\texttt{CalibratedClassifierCV}) to yield true probabilistic outputs.
+	\item \textbf{Deep Learning Classifier:} DistilBERT (distilbert-base-uncased-finetuned-sst-2-english), a distilled, computationally efficient variant of the BERT architecture is utilized. This model is fine-tuned using mixed-precision training, early stopping, and learning rate reduction on plateaus to prevent overfitting.
+\end{itemize}
+
+\subsection{Cascade Ensemble}
+
+To balance the computational efficiency of traditional machine learning algorithms with the understanding capacity of deep learning models, a cascade ensemble architecture is proposed. The system routes instances dynamically based on the predictive certainty of a lightweight base model.
+
+\begin{enumerate}
+	\item \textbf{Initial inference:} A computationally inexpensive base model evaluates an input text $X$ and outputs a probability score $P(y=1 \mid X)_{\text{base}}$.
+	
+	\item \textbf{Uncertainty delegation:} A delegation threshold $t_{\text{lower}}$ is defined. If the base model's probability falls within the uncertain interval $t_{\text{lower}} \le P(y=1 \mid X)_{\text{base}} \le 1 - t_{\text{lower}}$, the prediction is considered unreliable and is deferred. The threshold is selected by optimising the trade‑off between coverage and accuracy on the validation set.
+	
+	\item \textbf{Specialist resolution:} Uncertain instances are delegated to a computationally heavy specialist model. An attempt is made to further fine‑tuned the specialist on challenging samples mined from the validation set - specifically, the subset of data that the base model failed to classify confidently.
+\end{enumerate}
+
+The final predictions are evaluated on the held‑out test set. This architecture ensures that the majority of clear‑cut reviews are processed rapidly by the base model, while GPU‑intensive inference is reserved exclusively for ambiguous texts.
+
+\subsection{Statistical Evaluation}
+
+The experimental workflow is designed to systematically isolate and evaluate the impact of each pipeline component. Models are evaluated using the Macro F1-score, ensuring a balanced assessment across both positive and negative classes regardless of slight distribution shifts. 
+
+To ensure that observed performance gains are not attributable to random variance, statistical significance testing is applied to the classifier predictions using the McNemar test ($\alpha = 0.05$) between pairs samples. The baseline is established dynamically - for any given ablation study or comparison, the best-performing preceding configuration is selected as the baseline.
+
+\subsection{Implementation}
+
+All experiments, data transformations, and statistical analyses are implemented using Python. To ensure reproducibility and computational efficiency, the architecture leverages open-source libraries across various domains of the experimental pipeline:
+
+\begin{itemize}
+	\item \textbf{Data Management and Processing}: Core data manipulation, matrix operations, and dataset parsing is handled using \texttt{pandas} and \texttt{NumPy}.
+	
+	\item \textbf{Natural Language Processing (NLP)}: utilizes the \texttt{contractions} library alongside the Natural Language Toolkit (\texttt{NLTK}), which provides the implementations for Porter Stemming and WordNet Lemmatization. Advanced, context-aware POS filtering is executed using \texttt{spaCy} (\texttt{en\_core\_web\_sm}). Lexicon-based sentiment scoring is provided by \texttt{vaderSentiment}.
+	
+	\item \textbf{Classical Machine Learning}: The construction of Bag-of-Words and TF-IDF matrices, as well as the implementation of the base traditional classifiers (Linear SVM and Logistic Regression), are conducted using \texttt{scikit-learn}. For the high-dimensional semantic clustering of text features, FAISS is employed to perform GPU-accelerated K-Means clustering.
+	
+	\item \textbf{Deep Learning}: The deep learning components of the cascade architecture are built upon the \texttt{TensorFlow} and \texttt{Keras} frameworks. The DistilBERT model and its tokenizer are sourced from the Hugging Face \texttt{transformers} library. Additionally, the generation of dense semantic vectors prior to clustering is powered by the \texttt{sentence-transformers} library.
+	
+	\item \textbf{Statistical Testing and Visualization}: Significance testing via the McNemar test is computed using \texttt{statsmodels}. All graphical representations of the data are generated using \texttt{matplotlib}, \texttt{seaborn}, and the \texttt{wordcloud} library.
+\end{itemize}
+ 
+ *
+ 
+ *
+ 
+ *
+ 
+ *
+ 
+ *
+ 
+ *
+ 
+ *
+ 
+ *
+
 \section{Results} 
 
 
