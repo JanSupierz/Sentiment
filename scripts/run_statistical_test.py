@@ -17,8 +17,8 @@ def load_predictions(filepath):
 def main():
     parser = argparse.ArgumentParser(description="Wykonuje test McNemara i eksportuje wyniki do CSV.")
     parser.add_argument("--targets", nargs="+", required=True, 
-                        help="Lista celów. Format: 'folder:prefiks:sufiks:zawiera'. "
-                             "Puste pola są ignorowane. Przykład samego contains: 'folder:::szukana_fraza'")
+                        help="Lista celów. Format: 'folder:prefiks:sufiks:zawiera=Text|Reprezentacja|Model'. "
+                             "Przykład: 'run_basic:szukana_fraza=Cased|TF-IDF|Linear SVM'")
     parser.add_argument("--baseline", required=True, 
                         help="Ścieżka do pliku CSV modelu bazowego (względem folderu results)")
     parser.add_argument("--split", default="val", help="Podział danych (val lub test)")
@@ -37,8 +37,20 @@ def main():
     results = []
 
     for target in args.targets:
+        # --- NOWA LOGIKA: Wydobywanie 3 parametrów po znaku '=' oddzielonych '|' ---
+        if "=" in target:
+            query, custom_meta = target.split("=", 1)
+            meta_parts = custom_meta.split("|")
+            
+            text_val = meta_parts[0].strip() if len(meta_parts) > 0 else ""
+            rep_val = meta_parts[1].strip() if len(meta_parts) > 1 else ""
+            model_val = meta_parts[2].strip() if len(meta_parts) > 2 else ""
+        else:
+            query = target
+            text_val, rep_val, model_val = "", "", ""
+
         # Rozdzielanie formatu folder:prefiks:sufiks:zawiera
-        parts = target.split(":")
+        parts = query.split(":")
         exp = parts[0]
         prefix = parts[1] if len(parts) > 1 else ""
         suffix = parts[2] if len(parts) > 2 else ""
@@ -51,7 +63,6 @@ def main():
 
         csv_files = list(exp_dir.glob("*.csv"))
 
-        # Aplikowanie kolejnych warstw filtrowania
         if prefix:
             csv_files = [f for f in csv_files if f.name.startswith(prefix)]
         if suffix:
@@ -83,9 +94,14 @@ def main():
             acc_base = np.mean(preds_base == y_true_base)
             acc_comp = np.mean(preds_comp == y_true_comp)
 
+            # Fallback dla modelu, jeśli użytkownik nie podał parametrów
+            final_model_val = model_val if model_val else csv_file.stem
+
             results.append({
                 "Experiment": exp,
-                "Compared_Model": csv_file.stem,
+                "Text": text_val,               # Zapis do osobnej kolumny
+                "Representation": rep_val,      # Zapis do osobnej kolumny
+                "Model": final_model_val,       # Zapis do osobnej kolumny
                 "Baseline": baseline_name,
                 "Acc_Model": float(acc_comp),
                 "Acc_Baseline": float(acc_base),
@@ -94,7 +110,7 @@ def main():
 
     if results:
         df_res = pd.DataFrame(results)
-        df_res = df_res.sort_values(by=["Experiment", "Compared_Model"])
+        df_res = df_res.sort_values(by=["Experiment", "Text", "Representation", "Model"])
 
         out_dir = RESULTS_DIR / "analysis"
         out_path = out_dir / args.output
