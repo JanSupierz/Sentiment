@@ -1013,20 +1013,20 @@ The final predictions are evaluated on the held‑out test set. This architectur
 
 \subsection{Statistical Evaluation}
 
-The experimental workflow is designed to systematically isolate and evaluate the impact of each pipeline component. Models are evaluated using the Macro F1-score, ensuring a balanced assessment across both positive and negative classes regardless of slight distribution shifts. 
+The experimental workflow is designed to isolate and evaluate the impact of each pipeline component. Because the datasets are balanced through stratified sampling, models can be evaluated using both Accuracy and the Macro F1-score. The resulting scores remain very similar.
 
-To ensure that observed performance gains are not attributable to random variance, statistical significance testing is applied to the classifier predictions using the McNemar test ($\alpha = 0.05$) between pairs samples. The baseline is established dynamically - for any given ablation study or comparison, the best-performing preceding configuration is selected as the baseline.
+To ensure that observed performance gains are not attributable to random variance, statistical significance testing is applied to the classifier predictions using the McNemar test by comparing model pairs---baseline vs.\ challenger ($\alpha = 0.05$). The baseline is established dynamically; for any given ablation study or comparison, a new baseline is chosen, which is often the best-performing model from the previous step.
 
 \subsection{Implementation}
 
-All experiments, data transformations, and statistical analyses are implemented using Python. To ensure reproducibility and computational efficiency, the architecture leverages open-source libraries across various domains of the experimental pipeline:
+All experiments, data transformations, and statistical analyses are implemented using Python. The architecture leverages open-source libraries across various domains of the experimental pipeline:
 
 \begin{itemize}
 	\item \textbf{Data Management and Processing}: Core data manipulation, matrix operations, and dataset parsing is handled using \texttt{pandas} and \texttt{NumPy}.
 	
-	\item \textbf{Natural Language Processing (NLP)}: utilizes the \texttt{contractions} library alongside the Natural Language Toolkit (\texttt{NLTK}), which provides the implementations for Porter Stemming and WordNet Lemmatization. Advanced, context-aware POS filtering is executed using \texttt{spaCy} (\texttt{en\_core\_web\_sm}). Lexicon-based sentiment scoring is provided by \texttt{vaderSentiment}.
+	\item \textbf{Natural Language Processing (NLP)}: utilizes the \texttt{contractions} library alongside the Natural Language Toolkit (\texttt{NLTK}), which provides the implementations for Porter Stemming and WordNet Lemmatization. Context-aware POS filtering is executed using \texttt{spaCy} (\texttt{en\_core\_web\_sm}). Lexicon-based sentiment scoring is provided by \texttt{vaderSentiment}.
 	
-	\item \textbf{Classical Machine Learning}: The construction of Bag-of-Words and TF-IDF matrices, as well as the implementation of the base traditional classifiers (Linear SVM and Logistic Regression), are conducted using \texttt{scikit-learn}. For the high-dimensional semantic clustering of text features, FAISS is employed to perform GPU-accelerated K-Means clustering.
+	\item \textbf{Classical Machine Learning}: The construction of Bag-of-Words and TF-IDF matrices, as well as the implementation of the base traditional classifiers (Linear SVM and LogReg), are conducted using \texttt{scikit-learn}. For the high-dimensional semantic clustering of text features, FAISS is employed to perform GPU-accelerated K-Means clustering.
 	
 	\item \textbf{Deep Learning}: The deep learning components of the cascade architecture are built upon the \texttt{TensorFlow} and \texttt{Keras} frameworks. The DistilBERT model and its tokenizer are sourced from the Hugging Face \texttt{transformers} library. Additionally, the generation of dense semantic vectors prior to clustering is powered by the \texttt{sentence-transformers} library.
 	
