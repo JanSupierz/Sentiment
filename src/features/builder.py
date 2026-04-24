@@ -30,8 +30,7 @@ def _get_analyzer():
     return _ANALYZER
 
 
-def build_unit_matrices(token_col, ngram_range=(1,3), min_df=10, max_df=0.7, force=False):
-    # Ensure ngram_range is a tuple (YAML loads it as a list)
+def build_unit_matrices(token_col, ngram_range=(1,3), force=False):
     if isinstance(ngram_range, list):
         ngram_range = tuple(ngram_range)
 
@@ -56,8 +55,6 @@ def build_unit_matrices(token_col, ngram_range=(1,3), min_df=10, max_df=0.7, for
     # Build matrices for train and val simultaneously
     X_train, X_val, vectorizer = build_count_matrix(
         train_tokens, val_tokens,
-        min_df=min_df,
-        max_df=max_df,
         ngram_range=ngram_range
     )
 

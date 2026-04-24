@@ -24,7 +24,7 @@ def run_ngram_experiment():
             # Build Matrix
             X_train, X_val, _ = build_count_matrix(
                 train_df['tokens_lower'], val_df['tokens_lower'],
-                ngram_range=ngram, max_df=0.7
+                ngram_range=ngram
             )
 
             # Apply Z-Score Pruning
