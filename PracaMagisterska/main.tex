@@ -1260,6 +1260,100 @@ The statistical analysis reveals an important trend regarding feature pruning. W
 	\end{tabular}
 \end{table}
 
+As detailed in Table~\ref{tab:McNemarE2LogReg}, the simplest representation is chosen as the baseline---retaining only alphabetic characters (\texttt{Tokens Letters}) without pruning ($Z=0$). Compared to this baseline, a statistically significant increase in accuracy is observed when utilizing more sophisticated representations combined with a pruning threshold of $Z=2$. 
+
+Notably, the POS-filtered approach (\texttt{Tokens Filtered}) combined with $Z=2$ pruning achieves the highest overall accuracy for the LogReg model on this validation set ($90.72\%$). This outcome contrasts with the earlier findings for the linear SVM (where stemmed tokens proved optimal), emphasizing that feature selection strategies are highly model-dependent and cannot be universally applied across different classification algorithms.
+\begin{table}[h!]
+	\centering
+	\caption{McNemar Test (Custom TF-IDF vs LogReg Baseline)}
+	\label{tab:McNemarE2LogReg}
+	\begin{tabular}{llllrcc}
+		\toprule
+		& Text & Representation & Model & $Acc_{Model}$ & $\uparrow$/$\downarrow$ & $p$-value \\
+		\midrule
+		\textbf{0} & \textbf{Tokens Filtered} & \textbf{CustomTfidf (Z2)} & \textbf{LogReg} & \textbf{90.72\%} & \textbf{$\uparrow$} & \textbf{0.000007} \\
+		\textbf{1} & \textbf{Tokens Lower} & \textbf{CustomTfidf (Z2)} & \textbf{LogReg} & \textbf{90.68\%} & \textbf{$\uparrow$} & \textbf{0.000003} \\
+		\textbf{2} & \textbf{Tokens Lemmatized} & \textbf{CustomTfidf (Z2)} & \textbf{LogReg} & \textbf{90.68\%} & \textbf{$\uparrow$} & \textbf{0.000006} \\
+		\textbf{3} & \textbf{Tokens Stemmed} & \textbf{CustomTfidf (Z2)} & \textbf{LogReg} & \textbf{90.54\%} & \textbf{$\uparrow$} & \textbf{0.000541} \\
+		\textbf{4} & \textbf{Tokens Lower} & \textbf{CustomTfidf (Z3)} & \textbf{LogReg} & \textbf{90.50\%} & \textbf{$\uparrow$} & \textbf{0.001052} \\
+		\textbf{5} & \textbf{Tokens Lower} & \textbf{CustomTfidf (Z1)} & \textbf{LogReg} & \textbf{90.47\%} & \textbf{$\uparrow$} & \textbf{0.000508} \\
+		\textbf{6} & \textbf{Tokens Filtered} & \textbf{CustomTfidf (Z1)} & \textbf{LogReg} & \textbf{90.45\%} & \textbf{$\uparrow$} & \textbf{0.003916} \\
+		\textbf{7} & \textbf{Tokens Cased} & \textbf{CustomTfidf (Z2)} & \textbf{LogReg} & \textbf{90.45\%} & \textbf{$\uparrow$} & \textbf{0.002850} \\
+		\textbf{8} & \textbf{Tokens Filtered} & \textbf{CustomTfidf (Z0)} & \textbf{LogReg} & \textbf{90.45\%} & \textbf{$\uparrow$} & \textbf{0.003823} \\
+		\textbf{9} & \textbf{Tokens Stemmed} & \textbf{CustomTfidf (Z1)} & \textbf{LogReg} & \textbf{90.45\%} & \textbf{$\uparrow$} & \textbf{0.002138} \\
+		\textbf{10} & \textbf{Tokens Filtered} & \textbf{CustomTfidf (Z3)} & \textbf{LogReg} & \textbf{90.41\%} & \textbf{$\uparrow$} & \textbf{0.014078} \\
+		\textbf{11} & \textbf{Tokens Cased} & \textbf{CustomTfidf (Z3)} & \textbf{LogReg} & \textbf{90.40\%} & \textbf{$\uparrow$} & \textbf{0.013048} \\
+		\textbf{12} & \textbf{Tokens Stemmed} & \textbf{CustomTfidf (Z3)} & \textbf{LogReg} & \textbf{90.38\%} & \textbf{$\uparrow$} & \textbf{0.020793} \\
+		\textbf{13} & \textbf{Tokens Lemmatized} & \textbf{CustomTfidf (Z3)} & \textbf{LogReg} & \textbf{90.36\%} & \textbf{$\uparrow$} & \textbf{0.020176} \\
+		\textbf{14} & \textbf{Tokens Lower} & \textbf{CustomTfidf (Z0)} & \textbf{LogReg} & \textbf{90.31\%} & \textbf{$\uparrow$} & \textbf{0.017309} \\
+		\textbf{15} & \textbf{Tokens Lemmatized} & \textbf{CustomTfidf (Z1)} & \textbf{LogReg} & \textbf{90.30\%} & \textbf{$\uparrow$} & \textbf{0.035011} \\
+		\textbf{16} & \textbf{Tokens Letters} & \textbf{CustomTfidf (Z0)} & \textbf{LogReg} & \textbf{89.98\%} & \textbf{} & \textbf{Baseline} \\
+		\textbf{17} & \textbf{Tokens Letters} & \textbf{CustomTfidf (Z4)} & \textbf{LogReg} & \textbf{89.64\%} & \textbf{$\downarrow$} & \textbf{0.035752} \\
+		18 & Tokens Letters & CustomTfidf (Z2) & LogReg & 90.24\% &  & 0.053513 \\
+		19 & Tokens Cased & CustomTfidf (Z1) & LogReg & 90.23\% &  & 0.108343 \\
+		20 & Tokens Stemmed & CustomTfidf (Z0) & LogReg & 90.20\% &  & 0.163340 \\
+		21 & Tokens Stemmed & CustomTfidf (Z4) & LogReg & 90.13\% &  & 0.410827 \\
+		22 & Tokens Lemmatized & CustomTfidf (Z0) & LogReg & 90.12\% &  & 0.375011 \\
+		23 & Tokens Lemmatized & CustomTfidf (Z4) & LogReg & 90.11\% &  & 0.477496 \\
+		24 & Tokens Lower & CustomTfidf (Z4) & LogReg & 90.11\% &  & 0.492971 \\
+		25 & Tokens Filtered & CustomTfidf (Z4) & LogReg & 90.09\% &  & 0.588993 \\
+		26 & Tokens Letters & CustomTfidf (Z3) & LogReg & 90.07\% &  & 0.605078 \\
+		27 & Tokens Letters & CustomTfidf (Z1) & LogReg & 90.02\% &  & 0.785028 \\
+		28 & Tokens Cased & CustomTfidf (Z0) & LogReg & 90.00\% &  & 0.937425 \\
+		29 & Tokens Cased & CustomTfidf (Z4) & LogReg & 89.93\% &  & 0.766185 \\
+		\bottomrule
+	\end{tabular}
+\end{table}
+
+\subsubsection{Verification of Vectorization Strategy}
+
+The final experiment in this section demonstrates that the \texttt{CustomTfidf} representation achieves significantly higher accuracy than the \texttt{CustomBoW} approach across all evaluated configurations. This outcome verifies that the pattern observed in the initial experiments---depicted in Tables~\ref{tab:McNemarE1a} through~\ref{tab:McNemarE1d}---holds true: term frequency-inverse document frequency (TF-IDF) fundamentally outperforms simple bag-of-words (BoW) frequencies for this classification task. Consequently, it can be concluded that the superiority of TF-IDF is robust and largely independent of the tokenization strategy employed. Consistent with the trends previously illustrated in Figure~\ref{fig:zscore_threshold}, aggressive pruning at $Z=4$ results in severe performance degradation across all representations.
+
+\begin{table}[h!]
+	\centering
+	\caption{McNemar Test (Custom BoW vs Custom TF-IDF Z=2)}
+	\label{tab:McNemar}
+	\begin{tabular}{llllrcc}
+		\toprule
+		& Text & Representation & Model & $Acc_{Model}$ & $\uparrow$/$\downarrow$ & $p$-value \\
+		\midrule
+		\textbf{0} & \textbf{Lower} & \textbf{CustomTfidf (Z2)} & \textbf{SVM} & \textbf{91.34\%} & \textbf{} & \textbf{Baseline} \\
+		\textbf{1} & \textbf{Tokens Lower} & \textbf{CustomBow (Z0)} & \textbf{SVM} & \textbf{90.07\%} & \textbf{$\downarrow$} & \textbf{0.000000} \\
+		\textbf{2} & \textbf{Tokens Lower} & \textbf{CustomBow (Z1)} & \textbf{SVM} & \textbf{89.98\%} & \textbf{$\downarrow$} & \textbf{0.000000} \\
+		\textbf{3} & \textbf{Tokens Cased} & \textbf{CustomBow (Z1)} & \textbf{SVM} & \textbf{89.90\%} & \textbf{$\downarrow$} & \textbf{0.000000} \\
+		\textbf{4} & \textbf{Tokens Stemmed} & \textbf{CustomBow (Z1)} & \textbf{SVM} & \textbf{89.90\%} & \textbf{$\downarrow$} & \textbf{0.000000} \\
+		\textbf{5} & \textbf{Tokens Lemmatized} & \textbf{CustomBow (Z1)} & \textbf{SVM} & \textbf{89.87\%} & \textbf{$\downarrow$} & \textbf{0.000000} \\
+		\textbf{6} & \textbf{Tokens Filtered} & \textbf{CustomBow (Z0)} & \textbf{SVM} & \textbf{89.87\%} & \textbf{$\downarrow$} & \textbf{0.000000} \\
+		\textbf{7} & \textbf{Tokens Cased} & \textbf{CustomBow (Z0)} & \textbf{SVM} & \textbf{89.81\%} & \textbf{$\downarrow$} & \textbf{0.000000} \\
+		\textbf{8} & \textbf{Tokens Stemmed} & \textbf{CustomBow (Z0)} & \textbf{SVM} & \textbf{89.79\%} & \textbf{$\downarrow$} & \textbf{0.000000} \\
+		\textbf{9} & \textbf{Tokens Lemmatized} & \textbf{CustomBow (Z0)} & \textbf{SVM} & \textbf{89.79\%} & \textbf{$\downarrow$} & \textbf{0.000000} \\
+		\textbf{10} & \textbf{Tokens Letters} & \textbf{CustomBow (Z0)} & \textbf{SVM} & \textbf{89.79\%} & \textbf{$\downarrow$} & \textbf{0.000000} \\
+		\textbf{11} & \textbf{Tokens Filtered} & \textbf{CustomBow (Z1)} & \textbf{SVM} & \textbf{89.78\%} & \textbf{$\downarrow$} & \textbf{0.000000} \\
+		\textbf{12} & \textbf{Tokens Letters} & \textbf{CustomBow (Z1)} & \textbf{SVM} & \textbf{89.60\%} & \textbf{$\downarrow$} & \textbf{0.000000} \\
+		\textbf{13} & \textbf{Tokens Stemmed} & \textbf{CustomBow (Z2)} & \textbf{SVM} & \textbf{89.53\%} & \textbf{$\downarrow$} & \textbf{0.000000} \\
+		\textbf{14} & \textbf{Tokens Lower} & \textbf{CustomBow (Z2)} & \textbf{SVM} & \textbf{89.49\%} & \textbf{$\downarrow$} & \textbf{0.000000} \\
+		\textbf{15} & \textbf{Tokens Lemmatized} & \textbf{CustomBow (Z2)} & \textbf{SVM} & \textbf{89.48\%} & \textbf{$\downarrow$} & \textbf{0.000000} \\
+		\textbf{16} & \textbf{Tokens Cased} & \textbf{CustomBow (Z2)} & \textbf{SVM} & \textbf{89.39\%} & \textbf{$\downarrow$} & \textbf{0.000000} \\
+		\textbf{17} & \textbf{Tokens Filtered} & \textbf{CustomBow (Z2)} & \textbf{SVM} & \textbf{89.36\%} & \textbf{$\downarrow$} & \textbf{0.000000} \\
+		\textbf{18} & \textbf{Tokens Letters} & \textbf{CustomBow (Z2)} & \textbf{SVM} & \textbf{89.09\%} & \textbf{$\downarrow$} & \textbf{0.000000} \\
+		\textbf{19} & \textbf{Tokens Lemmatized} & \textbf{CustomBow (Z3)} & \textbf{SVM} & \textbf{88.90\%} & \textbf{$\downarrow$} & \textbf{0.000000} \\
+		\textbf{20} & \textbf{Tokens Lower} & \textbf{CustomBow (Z3)} & \textbf{SVM} & \textbf{88.77\%} & \textbf{$\downarrow$} & \textbf{0.000000} \\
+		\textbf{21} & \textbf{Tokens Filtered} & \textbf{CustomBow (Z3)} & \textbf{SVM} & \textbf{88.65\%} & \textbf{$\downarrow$} & \textbf{0.000000} \\
+		\textbf{22} & \textbf{Tokens Stemmed} & \textbf{CustomBow (Z3)} & \textbf{SVM} & \textbf{88.59\%} & \textbf{$\downarrow$} & \textbf{0.000000} \\
+		\textbf{23} & \textbf{Tokens Cased} & \textbf{CustomBow (Z3)} & \textbf{SVM} & \textbf{88.37\%} & \textbf{$\downarrow$} & \textbf{0.000000} \\
+		\textbf{24} & \textbf{Tokens Letters} & \textbf{CustomBow (Z3)} & \textbf{SVM} & \textbf{88.37\%} & \textbf{$\downarrow$} & \textbf{0.000000} \\
+		\textbf{25} & \textbf{Tokens Stemmed} & \textbf{CustomBow (Z4)} & \textbf{SVM} & \textbf{88.15\%} & \textbf{$\downarrow$} & \textbf{0.000000} \\
+		\textbf{26} & \textbf{Tokens Lemmatized} & \textbf{CustomBow (Z4)} & \textbf{SVM} & \textbf{87.94\%} & \textbf{$\downarrow$} & \textbf{0.000000} \\
+		\textbf{27} & \textbf{Tokens Cased} & \textbf{CustomBow (Z4)} & \textbf{SVM} & \textbf{87.92\%} & \textbf{$\downarrow$} & \textbf{0.000000} \\
+		\textbf{28} & \textbf{Tokens Filtered} & \textbf{CustomBow (Z4)} & \textbf{SVM} & \textbf{87.79\%} & \textbf{$\downarrow$} & \textbf{0.000000} \\
+		\textbf{29} & \textbf{Tokens Lower} & \textbf{CustomBow (Z4)} & \textbf{SVM} & \textbf{87.71\%} & \textbf{$\downarrow$} & \textbf{0.000000} \\
+		\textbf{30} & \textbf{Tokens Letters} & \textbf{CustomBow (Z4)} & \textbf{SVM} & \textbf{87.25\%} & \textbf{$\downarrow$} & \textbf{0.000000} \\
+		\bottomrule
+	\end{tabular}
+\end{table}
+
+\subsection{Impact of Sequence Lengths}
+
 \subsection{Impact of Semantic Clustering}
 
 \subsection{Impact of Cascade Ensemble}
