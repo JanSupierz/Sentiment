@@ -1360,7 +1360,7 @@ For the standard \texttt{BoW} representations, the application of various tokeni
 
 In contrast, the \texttt{TF-IDF} representations exhibit a lot of variance. For the Linear SVM, only the lemmatized tokenization approach proves significantly better than the TF-IDF Baseline. However, the introduction of $Z=2$ pruning actively enhances the model's capabilities, significantly increasing the Macro F1-scores for the lowered and stemmed representations. The synergistic combination of stemming and \texttt{CustomTfidf} achieves the highest overall performance metric ($91.41\%$).
 
-For the LogReg model, the overall classification scores are generally lower than those achieved by the SVM. For the BoW approach, pruning either degrades performance (as seen with cased and letter-only tokens) or has no statistically significant effect. However, the introduction of targeted filtering combined with \texttt{CustomTfidf} pruning proves highly effective. While isolated tokenization approaches do not have a clear impact on their own, the pruning strategy elevates almost all TF-IDF-based representations for LogReg, with the sole exception of the \texttt{Tokens Letters} configuration. The \texttt{Tokens Filtered} representation with $Z=2$ pruning outperforms the baseline by over 0.7 percentage points (rising from $89.98\%$ to $90.71\%$).
+For the LogReg model, the overall classification scores are generally lower than those achieved by the SVM. For the BoW approach, pruning either degrades performance (as seen with cased and letter-only tokens) or has no statistically significant effect. However, the introduction of filtering combined with \texttt{CustomTfidf} pruning proves highly effective. While isolated tokenization approaches do not have a clear impact on their own, the pruning strategy elevates almost all TF-IDF-based representations for LogReg, with the sole exception of the \texttt{Tokens Letters} configuration. The \texttt{Tokens Filtered} representation with $Z=2$ pruning outperforms the baseline by over 0.7 percentage points (rising from $89.98\%$ to $90.71\%$).
 
 \begin{figure}[htbp]
 	\centering
@@ -1369,12 +1369,25 @@ For the LogReg model, the overall classification scores are generally lower than
 	\label{fig:ablation_study}
 \end{figure}
 
-\subsection{Impact of Sequence Lengths}
+\subsection{Impact of Vocabulary Depth}
 
+This experiment examines the importance of selecting the optimal  $n$-gram range---the vocabulary depth. As depicted in the left panel of Figure~\ref{fig:vocabulary_depth}, expanding the token representation from simple unigrams (1, 1) to include bigrams (1, 2) yields a substantial increase in the Macro F1-score for both the linear SVM and LogReg models. However, extending the depth further to include trigrams (1, 3) provides only marginal performance gains, illustrating a clear pattern of diminishing returns.
 
+While deeper $n$-gram ranges capture richer sequential context, they introduce a severe structural challenge: the explosion of the feature space. The right panel of Figure~\ref{fig:vocabulary_depth} demonstrates that the base vocabulary grows aggressively, swelling from 18,471 unigrams to 139,015 total features when trigrams are included. Extrapolating this trajectory suggests that exploring even deeper ranges, such as $4$-grams (1, 4), would predictably push the raw feature count well beyond 190,000. Operating on such massive, highly sparse matrices becomes extremely memory-intensive.
+
+The implementation of statistical pruning ($Z=2.0$) effectively mitigates this dimensionality explosion. For the (1, 3) vocabulary range, pruning discards over 100,000 non-discriminative features, compressing the space from 139,015 down to manageable 36,350 features. This ensures that the classifiers can leverage the contextual richness of higher-order $n$-grams without suffering the standard computational penalties associated with high dimensionality.
+
+\begin{figure}[htbp]
+	\centering
+	\includegraphics[width=1\textwidth]{./figures/analysis/ngram_experiment_double.png}
+	\caption{Performance and dimensionality trends across varying $n$-gram ranges. The left panel illustrates model performance, while the right panel highlights the feature space reduction achieved via $Z=2.0$ statistical pruning.}
+	\label{fig:vocabulary_depth}
+\end{figure}
 \subsection{Impact of Semantic Clustering}
 
 \subsection{Impact of Cascade Ensemble}
+
+
 
 \begin{figure}
 	\centering
