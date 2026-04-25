@@ -1307,7 +1307,7 @@ Notably, the POS-filtered approach (\texttt{Tokens Filtered}) combined with $Z=2
 
 \subsubsection{Verification of Vectorization Strategy}
 
-The final experiment in this section demonstrates that the \texttt{CustomTfidf} representation achieves significantly higher accuracy than the \texttt{CustomBoW} approach across all evaluated configurations. This outcome verifies that the pattern observed in the initial experiments---depicted in Tables~\ref{tab:McNemarE1a} through~\ref{tab:McNemarE1d}---holds true: term frequency-inverse document frequency (TF-IDF) fundamentally outperforms simple bag-of-words (BoW) frequencies for this classification task. Consequently, it can be concluded that the superiority of TF-IDF is robust and largely independent of the tokenization strategy employed. Consistent with the trends previously illustrated in Figure~\ref{fig:zscore_threshold}, aggressive pruning at $Z=4$ results in severe performance degradation across all representations.
+This section demonstrates that the \texttt{CustomTfidf} representation achieves significantly higher accuracy than the \texttt{CustomBoW} approach across all evaluated configurations. This outcome verifies that the pattern observed in the initial experiments---depicted in Tables~\ref{tab:McNemarE1a} through~\ref{tab:McNemarE1d}---holds true: term frequency-inverse document frequency (TF-IDF) fundamentally outperforms simple bag-of-words (BoW) frequencies for this classification task. Consequently, it can be concluded that the superiority of TF-IDF is robust and largely independent of the tokenization strategy employed. Consistent with the trends previously illustrated in Figure~\ref{fig:zscore_threshold}, aggressive pruning at $Z=4$ results in severe performance degradation across all representations.
 
 \begin{table}[h!]
 	\centering
@@ -1352,7 +1352,25 @@ The final experiment in this section demonstrates that the \texttt{CustomTfidf} 
 	\end{tabular}
 \end{table}
 
+\subsubsection{Ablation Study}
+
+In the ablation study depicted in Figure~\ref{fig:ablation_study}, the \texttt{BoW} and \texttt{TF-IDF} labels denote standard, unpruned token representations. On the other hand, \texttt{CustomBoW} and \texttt{CustomTfidf} designate configurations where statistical pruning ($Z=2$) has been applied.
+
+For the standard \texttt{BoW} representations, the application of various tokenization strategies yields no statistically significant improvement over the \texttt{Expanded and Lower} baseline for either the Linear SVM or LogReg models. Furthermore, when statistical pruning is introduced (\texttt{CustomBoW}), performance consistently degrades across all configurations; removing vocabulary features universally harms the predictive power of the raw BoW.
+
+In contrast, the \texttt{TF-IDF} representations exhibit a lot of variance. For the Linear SVM, only the lemmatized tokenization approach proves significantly better than the TF-IDF Baseline. However, the introduction of $Z=2$ pruning actively enhances the model's capabilities, significantly increasing the Macro F1-scores for the lowered and stemmed representations. The synergistic combination of stemming and \texttt{CustomTfidf} achieves the highest overall performance metric ($91.41\%$).
+
+For the LogReg model, the overall classification scores are generally lower than those achieved by the SVM. For the BoW approach, pruning either degrades performance (as seen with cased and letter-only tokens) or has no statistically significant effect. However, the introduction of targeted filtering combined with \texttt{CustomTfidf} pruning proves highly effective. While isolated tokenization approaches do not have a clear impact on their own, the pruning strategy elevates almost all TF-IDF-based representations for LogReg, with the sole exception of the \texttt{Tokens Letters} configuration. The \texttt{Tokens Filtered} representation with $Z=2$ pruning outperforms the baseline by over 0.7 percentage points (rising from $89.98\%$ to $90.71\%$).
+
+\begin{figure}[htbp]
+	\centering
+	\includegraphics[width=1\textwidth]{./figures/analysis/ablation_study.png}
+	\caption{Ablation study of different token representations evaluating pre-tokenized representations without pruning ($Z=0$), and custom representations with statistical pruning ($Z=2$). These are compared against baseline \texttt{CountVectorizer} equivalents established in the initial experiments.}
+	\label{fig:ablation_study}
+\end{figure}
+
 \subsection{Impact of Sequence Lengths}
+
 
 \subsection{Impact of Semantic Clustering}
 
