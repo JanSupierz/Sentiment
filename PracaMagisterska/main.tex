@@ -1212,9 +1212,9 @@ A particularly interesting pattern emerges when utilizing the \texttt{CustomTfid
 	\label{fig:zscore_threshold}
 \end{figure}
 
-\subsubsection{The Best Representation}
+\subsubsection{Representation Choice}
 
-As detailed in Table~\ref{tab:McNemarE2}, the results establish that the most effective token representations rely on stemming, lemmatization, and simple lowercasing. The optimal configuration utilizes stemmed tokens paired with a Z-score pruning threshold of $Z=2$, achieving a peak accuracy of $91.41\%$ ($p = 0.0125$). Lemmatization/Stemming collapses tokens to their morphological roots and thus reduces the feature dimensionality compared to standard tokenization. Additionally, the lemmatized representations at pruning thresholds $Z=0$ and $Z=2$ achieve a nearly identical accuracy---reducing the dimensionality even more.
+As detailed in Table~\ref{tab:McNemarE2}, the most effective token representations rely on stemming, lemmatization, and simple lowercasing. The optimal configuration utilizes stemmed tokens paired with a Z-score pruning threshold of $Z=2$, achieving a peak accuracy of $91.41\%$ ($p = 0.0125$). Lemmatization/Stemming collapses tokens to their morphological roots and thus reduces the feature dimensionality compared to standard tokenization. Additionally, the lemmatized representations at pruning thresholds $Z=0$ and $Z=2$ achieve a nearly identical accuracy---reducing the dimensionality even more.
 
 The statistical analysis reveals an important trend regarding feature pruning. While a few configurations at $Z=1$ and $Z=2$ yield statistically significant improvements over the baseline ($\uparrow$), the vast majority of combinations between $Z=0$ and $Z=3$ result in $p$-values greater than $0.05$. This indicates that for most representation strategies, moderate statistical pruning perfectly maintains classification performance on par with the unpruned baseline. Statistically significant degradation ($\downarrow$) only begins to manifest under aggressive pruning at $Z=4$.
 \begin{table}[h!]
@@ -1305,7 +1305,7 @@ Notably, the POS-filtered approach (\texttt{Tokens Filtered}) combined with $Z=2
 	\end{tabular}
 \end{table}
 
-\subsubsection{Verification of Vectorization Strategy}
+\subsubsection{Impact of Vectorization Strategy}
 
 This section demonstrates that the \texttt{CustomTfidf} representation achieves significantly higher accuracy than the \texttt{CustomBoW} approach across all evaluated configurations. This outcome verifies that the pattern observed in the initial experiments---depicted in Tables~\ref{tab:McNemarE1a} through~\ref{tab:McNemarE1d}---holds true: term frequency-inverse document frequency (TF-IDF) fundamentally outperforms simple bag-of-words (BoW) frequencies for this classification task. Consequently, it can be concluded that the superiority of TF-IDF is robust and largely independent of the tokenization strategy employed. Consistent with the trends previously illustrated in Figure~\ref{fig:zscore_threshold}, aggressive pruning at $Z=4$ results in severe performance degradation across all representations.
 
@@ -1383,31 +1383,86 @@ The implementation of statistical pruning ($Z=2.0$) effectively mitigates this d
 	\caption{Performance and dimensionality trends across varying $n$-gram ranges. The left panel illustrates model performance, while the right panel highlights the feature space reduction achieved via $Z=2.0$ statistical pruning.}
 	\label{fig:vocabulary_depth}
 \end{figure}
+
 \subsection{Impact of Semantic Clustering}
+
+Semantic clustering groups semantically related $n$-grams to capture conceptual representations and evaluate the combined impact of similar phrases. For example, as shown in Figure~\ref{fig:concepts_pos_10000_0}, the cluster containing ``great'', ``wonderful'', and ``amazing'' forms the most discriminative positive concept, achieving a Z-score of 44.20. An interesting pattern emerges with clusters focused on structural phrases, such as ``his'' or ``is an'', which also rank among the top positive concepts. This reinforces the earlier observation that reviewers tend to use more descriptive language when expressing a positive opinion.
+
+Conversely, Figure~\ref{fig:concepts_neg_10000_0} illustrates that negative clusters contain repeated punctuation. A significant advantage of clustering $n$-grams in this manner is that varying permutations of punctuation (e.g., ``?!'' and ``!??'') are effectively grouped into a single conceptual feature, which theoretically could improve the model's ability to generalize noisy text. Other top negative concepts consist of direct negative descriptors (e.g., ``worst'', ``horrible'', ``awful''). The cluster containing the phrase ``bad, but'' appears highly ranked for negativity, even though such phrasing often introduces a mitigating clause or mixed sentiment in natural language rather than pure negativity.
+
+\begin{figure}[htbp]
+	\centering
+	\includegraphics[width=1\textwidth]{./figures/concepts/pos_wc_tokens_lower_k10000_w0.png}
+	\caption{Top 5 positive concepts extracted via baseline semantic clustering ($w=0$).}
+	\label{fig:concepts_pos_10000_0}
+\end{figure}
+
+\begin{figure}[htbp]
+	\centering
+	\includegraphics[width=1\textwidth]{./figures/concepts/neg_wc_tokens_lower_k10000_w0.png}
+	\caption{Top 5 negative concepts extracted via baseline semantic clustering ($w=0$).}
+	\label{fig:concepts_neg_10000_0}
+\end{figure}
+
+This study further investigates the impact of augmenting the semantic clustering process with external sentiment scores provided by VADER. As demonstrated in Figures~\ref{fig:concepts_pos_10000_10} and \ref{fig:concepts_neg_10000_10}, incorporating lexicon-based polarity weights explicitly drives the Z-scores to higher absolute values. This indicates that sentiment-aware grouping produces more cohesive and discriminative clusters.
+
+Under this weighted approach, the clusters become semantically denser with respect to polarity. For instance, the primary positive cluster expands to seamlessly integrate ``excellent'' alongside ``great.'' Similarly, the ``bad'' cluster becomes far more distinct and dominant in capturing negative connotations, confirming the effectiveness of the weighting strategy. Consequently, purely descriptive but sentiment-neutral concepts (such as the ``his'' cluster) decrease in relative prominence and are successfully pushed down in the rankings, demonstrating that VADER-weighting effectively prioritizes genuine sentiment signals over contextual noise.
+
+\begin{figure}[htbp]
+	\centering
+	\includegraphics[width=1\textwidth]{./figures/concepts/pos_wc_tokens_lower_k10000_w10.png}
+	\caption{Top 5 positive concepts extracted via VADER-weighted semantic clustering ($w=10$).}
+	\label{fig:concepts_pos_10000_10}
+\end{figure}
+
+\begin{figure}[htbp]
+	\centering
+	\includegraphics[width=1\textwidth]{./figures/concepts/neg_wc_tokens_lower_k10000_w10.png}
+	\caption{Top 5 negative concepts extracted via VADER-weighted semantic clustering ($w=10$).}
+	\label{fig:concepts_neg_10000_10}
+\end{figure}
+
+\subsubsection{Concept Granularity}
+
+The results demonstrate that compressing the vocabulary to $n$ concepts results in performance degradation for both the linear SVM and LogReg models. As the number of clusters increases from $k=500$ to $k=5000$ and $k=10000$, the Macro F1-score improves, indicating that preserving nuances in wording is required for effective sentiment analysis. This performance trajectory appears bounded by the benchmark; even at 10,000 concepts, the clustered representations fail to surpass the unclustered baseline.
+
+Figure~\ref{fig:clustering_performance} highlights the benefit of sentiment weighting during the clustering phase at the lowest granularity ($k=500$). Seemingly, injecting external sentiment knowledge mitigates information loss when the feature space is heavily compressed.
+
+\begin{figure}[htbp]
+	\centering
+	\includegraphics[width=1\textwidth]{./figures/concepts/cluster_comparison.pdf}
+	\caption{Performance comparison of clustered concepts across varying granularities ($k$) and sentiment weights ($w$), plotted against the unclustered $Z=2.0$ baseline.}
+	\label{fig:clustering_performance}
+\end{figure}
+
+
+\subsection{Impact of Certainty}
+
+The tested models have an interesting feature---the certainity(probability) of the positive class can be used to...
+
+\begin{figure}[htbp]
+	\centering
+	\includegraphics[width=1\textwidth]{./figures/analysis/model_comparison_certainty_dist.png}
+	\caption{Certainty analysis for linear SVM and Logistic Regression models.}
+	\label{fig:a}
+\end{figure}
 
 \subsection{Impact of Cascade Ensemble}
 
+Cascade works
 
-
-\begin{figure}
+\begin{figure}[htbp]
 	\centering
 	\includegraphics[width=1\textwidth]{./figures/analysis/accuracy_coverage_tradeoff.png}
 	\caption{Overview of the proposed granular cascade pipeline.}
 	\label{fig:a}
 \end{figure}
 
-\begin{figure}
+\begin{figure}[htbp]
 	\centering
 	\includegraphics[width=1\textwidth]{./figures/thesis/thesis_final_results.png}
 	\caption{}
 	\label{fig:e}
-\end{figure}
-
-\begin{figure}
-	\centering
-	\includegraphics[width=1\textwidth]{./figures/vocabulary/top_5_Positive_w30.png}
-	\caption{}
-	\label{fig:d}
 \end{figure}
 
 %
