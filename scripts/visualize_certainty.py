@@ -80,7 +80,7 @@ def process_and_plot_axis(ax, model_filename, title, experiment_name):
     ax.text(0.75, ax.get_ylim()[1]*0.95, 'Predicts POSITIVE', ha='center', va='top', fontsize=14, color='#555555', fontweight='bold', alpha=0.7)
 
     ax.set_title(title, fontsize=18, fontweight='bold', pad=20)
-    ax.set_xlabel("Predicted Probability (Positive Class)", fontsize=14, fontweight='bold')
+    ax.set_xlabel("Certainty of Positive Label", fontsize=14, fontweight='bold')
     ax.xaxis.set_major_formatter(mtick.PercentFormatter(1.0))
     ax.grid(axis='x', visible=False)
 
@@ -93,10 +93,10 @@ def plot_model_comparison(svm_file, logreg_file, experiment_name):
     sns.set_theme(style="whitegrid", context="talk")
     fig, axes = plt.subplots(1, 2, figsize=(20, 8), sharey=True)
 
-    process_and_plot_axis(axes[0], svm_file, "Linear SVM (1-3 N-Grams, Z=2.0)", experiment_name)
-    process_and_plot_axis(axes[1], logreg_file, "Logistic Regression (1-3 N-Grams, Z=2.0)", experiment_name)
+    process_and_plot_axis(axes[0], svm_file, "SVM", experiment_name)
+    process_and_plot_axis(axes[1], logreg_file, "Logistic Regression", experiment_name)
 
-    axes[0].set_ylabel("Number of Samples", fontsize=14, fontweight='bold')
+    axes[0].set_ylabel("Number of Classified Samples", fontsize=14, fontweight='bold')
     if len(axes) > 1:
         axes[1].set_ylabel("")
 
@@ -117,7 +117,7 @@ def plot_model_comparison(svm_file, logreg_file, experiment_name):
     out_dir.mkdir(parents=True, exist_ok=True)
     out_path = out_dir / "model_comparison_certainty_dist.png"
 
-    plt.savefig(out_path, dpi=200, bbox_inches='tight')
+    plt.savefig(out_path, dpi=300, bbox_inches='tight')
     plt.close(fig)
 
 if __name__ == "__main__":
