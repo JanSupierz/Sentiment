@@ -159,9 +159,9 @@
 
 
 \usepackage{csquotes}
-\usepackage[natbib=true,backend=bibtex,maxbibnames=99]{biblatex}  % compilation of bibliography with BibTeX
+%\usepackage[natbib=true,backend=bibtex,maxbibnames=99]{biblatex}  % compilation of bibliography with BibTeX
 %\usepackage[natbib=true,backend=biber,maxbibnames=99]{biblatex}  % compilation of bibliography with Biber
-\bibliography{biblio}
+%\bibliography{biblio}
 
 \usepackage{ifmtarg}   % empty commands  
 
@@ -421,7 +421,7 @@ escapeinside={@*}{*@},%
 	
 	\vfill  \vfill  
 			 
-	{\large\Title\par}
+ 	{\large\Title\par}
 	
 	\vfill  
 		
@@ -874,30 +874,21 @@ Figure~\ref{fig:pipeline} provides a high-level overview of the proposed system.
 	\label{fig:pipeline}
 \end{figure}
 
-\chapter{Experiments}
 
-\section{Datasets}
 
-For the empirical evaluation in this study, the Large Movie Review Dataset is used---commonly referred to as the IMDB sentiment dataset, introduced by Maas et al. \cite{Maas2011imdb}. This dataset serves as a standard benchmark for binary sentiment classification in natural language processing. It contains a total of 50,000 highly polar movie reviews. The acquisition of the IMDB dataset is facilitated by TensorFlow Datasets (TFDS).
 
-Below is an example of a positive review from the dataset, demonstrating the typical length and informal, rather descriptive style of the text:
-
-\begin{quote}
-	I first watched Kindred in 1987 along with another movie called devouring waves. I remember back then i hated them both and i have never really bothered to watch them again.<br /><br /> However i have recently started a crusade to collect as many 80's horror titles in their original boxed form, That have been deleted for some time. I have got myself quite a proud collection with many more titles on my list!<br /><br />The Kindred although i have not as yet got a copy is high priority as all the old movies i didn't like back then, I now own and have now re-watched and think they are brilliant and the bits i do remember of the Kindred are now driving me to want to get hold of a copy A.S.A.P.<br /><br />Hurray for the 80's and long live horror!
-\end{quote}
-
-\section{Methodology}
+ 
 
 The objective of this study is to evaluate and optimize sentiment classification performance through a cascade ensemble architecture. The methodology is structured into distinct phases: data preprocessing, feature engineering, model selection, cascade ensemble, and statistical evaluation.
 
-\subsection{Data Preprocessing}
+\section{Data Preprocessing}
 
-While the original IMDb dataset is perfectly balanced and pre-divided into equal training and testing sets, this study merges the sets to perform data deduplication based on exact matches of the raw review text. This process identified and removed 418 duplicate entries, resulting in a refined, unique dataset of 49,582 reviews. The dataset is shuffled and re‑divided into a training set of 24,791 reviews (approx. 50\%), a validation set of 17,353 reviews (approx. 35\%), and a testing set of 7,438 reviews (approx. 15\%). Stratification is employed to maintain a balanced distribution of positive and negative sentiments across all sets. The textual data is processed in parallel using a process pool executor. Each review is processed sequentially as follows:
+While the original IMDb \ksremark{Trochę inna nazwa zbioru niż wyżej.} dataset is perfectly balanced and pre-divided into equal training and testing sets, this study merges the sets to perform data deduplication based on exact matches of the raw review text. This process identified and removed 418 duplicate entries, resulting in a refined, unique dataset of 49,582 reviews. The dataset is shuffled and re‑divided into a training set of 24,791 reviews (approx. 50\%), a validation set of 17,353 reviews (approx. 35\%), and a testing set of 7,438 reviews (approx. 15\%). Stratification is employed to maintain a balanced distribution of positive and negative sentiments across all sets. The textual data is processed in parallel using a process pool executor. Each review is processed sequentially as follows:
 
 \begin{enumerate}
 	\item \textbf{Unicode normalization} converts the original text to Normalization Form Compatibility Composition (NFKC) form to ensure consistent character representation.
 	
-	\item \textbf{Typographical unification} uses a translation table to replace uncommon characters with their ASCII equivalents.
+	\item \textbf{Typographical unification} uses a translation table to replace uncommon characters with their ASCII equivalents. \ksremark{Tu by się przydał przykład «uncommon character».}
 	
 	\item \textbf{Tag removal} replaces any substrings within the HTML tags $<>$ with a space.
 	
@@ -909,7 +900,7 @@ While the original IMDb dataset is perfectly balanced and pre-divided into equal
 	
 	\item \textbf{Lowercasing} converts each token in \texttt{tokens\_cased} to the lowercase form, resulting in \texttt{tokens\_lower}.
 	
-	\item \textbf{Part‑of-Speech-filtered tokenization} processes the expanded text with spaCy's English model (parser and named entity recogniser (NER) disabled). \texttt{tokens\_lower} are filtered based on their part‑of‑speech (POS) tags and stored as \texttt{tokens\_filtered}.
+	\item \textbf{Part‑of-Speech-filtered tokenization} processes the expanded text with spaCy's English model (parser and named entity recogniser (NER) disabled). \texttt{tokens\_lower} are filtered based on their part of speech (POS) tags and stored as \texttt{tokens\_filtered}.
 	
 	\item \textbf{Alphabetic filtering} removes any character that is not a letter (a–z, A–Z) from \texttt{tokens\_lower}; tokens that become empty after this removal are discarded. The result is \texttt{tokens\_letters}.
 	
@@ -920,53 +911,53 @@ While the original IMDb dataset is perfectly balanced and pre-divided into equal
 
 After processing, each review is stored as a dictionary containing the different representations. The dictionaries are then converted to Pandas DataFrames, selecting a consistent column order, and finally saved as Parquet files (\texttt{train.parquet}, \texttt{val.parquet}, \texttt{test.parquet}). This enables selective loading in subsequent experiments.
 
-\subsubsection{Stop-Word Removal}
+\section{Stop-Word Removal}
 
 Reducing the dimensionality of the $n$-gram feature space can be done by removing words that lack sentiment value---commonly known as stop words. However, stop-word removal is inherently subjective and risks discarding subtle contextual cues.
 
 Filtering stop-words is kept to a minimum in this study. The stop-word list provided by scikit-learn's \texttt{CountVectorizer} is intentionally bypassed because it eliminates potentially sentiment-bearing words such as ``well'' (e.g., in the phrase ``well filmed''). Instead, a targeted POS-based approach is utilized.
 
-\begin{table}[htbp]
+\begin{table}[tbp]
 	\centering
 	\caption{Example of POS filtering with removed tags in bold}
 	\label{tab:pos-filtering}
 	\begin{tabular}{l l l l}
 		\toprule
-		Token & Lowercased & Coarse POS & Fine-grained POS \\
-		\midrule
-		I & i & PRON & PRP \\
-		\textbf{have} & \textbf{have} & \textbf{AUX} & \textbf{VBP} \\
-		got & got & VERB & VBN \\
-		myself & myself & PRON & PRP \\
-		quite & quite & ADV & RB \\
-		\textbf{a} & \textbf{a} & \textbf{DET} & \textbf{DT} \\
-		proud & proud & ADJ & JJ \\
-		collection & collection & NOUN & NN \\
-		with & with & ADP & IN \\
-		\textbf{many} & \textbf{many} & \textbf{DET} & \textbf{DT} \\
-		more & more & ADJ & JJR \\
-		titles & titles & NOUN & NNS \\
-		on & on & ADP & IN \\
-		\textbf{my} & \textbf{my} & \textbf{DET} & \textbf{PRP\$} \\
-		list & list & NOUN & NN \\
-		! & ! & PUNCT & . \\
-		\bottomrule
+		Token         & Lowercased    & Coarse POS   & Fine-grained POS \\ \midrule
+		I             & i             & PRON         & PRP              \\
+		\textbf{have} & \textbf{have} & \textbf{AUX} & \textbf{VBP}     \\
+		got           & got           & VERB         & VBN              \\
+		myself        & myself        & PRON         & PRP              \\
+		quite         & quite         & ADV          & RB               \\
+		\textbf{a}    & \textbf{a}    & \textbf{DET} & \textbf{DT}      \\
+		proud         & proud         & ADJ          & JJ               \\
+		collection    & collection    & NOUN         & NN               \\
+		with          & with          & ADP          & IN               \\
+		\textbf{many} & \textbf{many} & \textbf{DET} & \textbf{DT}      \\
+		more          & more          & ADJ          & JJR              \\
+		titles        & titles        & NOUN         & NNS              \\
+		on            & on            & ADP          & IN               \\
+		\textbf{my}   & \textbf{my}   & \textbf{DET} & \textbf{PRP\$}   \\
+		list          & list          & NOUN         & NN               \\
+		!             & !             & PUNCT        & .                \\ \bottomrule
 	\end{tabular}
 \end{table}
+\ksremark{Trzeba gdzieś wyjaśnić skróty w tab. \ref{tab:pos-filtering}.}
+\ksremark{Co oznacza wytłuszczenie niektórych pół w tabeli \ref{tab:pos-filtering}?}
 
 The Part-Of-Speech (POS) filtering follows three specific criteria:
 
 \begin{itemize}
-	\item \textbf{Auxiliary verbs (except modals)}: tokens with the coarse POS tag \texttt{AUX} are removed, unless their fine-grained tag is \texttt{MD} (modal auxiliary, e.g., \textit{can}, \textit{will}, \textit{must}).
+	\item \textbf{Auxiliary verbs (except modals)}: tokens with the coarse POS tag \texttt{AUX} \ksremark{Może warto by zapisać te symbole w makrach, żeby zachować to samo formatowanie w całej pracy?} are removed, unless their fine-grained tag is \texttt{MD} (modal auxiliary, e.g., \textit{can}, \textit{will}, \textit{must}).
 	\item \textbf{Determiners}: tokens with the coarse tag \texttt{DET} are removed (e.g., \textit{a}, \textit{the}, \textit{many}, \textit{my}).
 	\item \textbf{Possessive endings}: tokens with the fine-grained tag \texttt{POS} are removed---the possessive clitic \textit{'s}.
 \end{itemize}
 
-\subsection{Feature engineering}
+\section{Feature engineering}
 
 To evaluate the impact of vocabulary representation on model performance, the tokenized text is transformed into discrete feature spaces using combinations of unigrams, bigrams, and trigrams. However, higher-order $n$-grams naturally introduce massive, highly sparse feature spaces. To mitigate the curse of dimensionality, an attempt is made to employ a few dimensionality reduction techniques: custom vectorization, statistical pruning and semantic clustering.
 
-\subsubsection{Custom Vectorization}
+\subsection{Custom Vectorization}
 
 By default, scikit-learn's \texttt{CountVectorizer} processes text by first removing terms specified in the \texttt{stop\_words} parameter, generating $n$-grams, and subsequently pruning the vocabulary based on the \texttt{min\_df} and \texttt{max\_df} thresholds. 
 
@@ -976,21 +967,35 @@ The input at this stage consists of pre-tokenized reviews, where each document i
 
 This customized pipeline ensures that scikit-learn's frequency-based pruning is applied directly to the finalized $n$-grams, effectively reducing dimensionality and promoting model generalization. For this study, the minimum document frequency is set to 10 (\texttt{min\_df=10}) to discard highly rare $n$-grams, and a maximum document frequency threshold is established at 70\% (\texttt{max\_df=0.7}) to filter out overly omnipresent combinations.
 
-\subsubsection{Statistical Pruning}
+\subsection{Statistical Pruning}
 A custom statistical pruning method based on Z-scores is employed to discard neutral noise and retain only highly discriminative vocabulary. For a given feature, the log-odds ratio of its occurrence in the positive class versus the negative class is calculated. Laplace smoothing ($\alpha = 0.01$) is applied to prevent undefined logarithms resulting from zero-frequency occurrences. The Z-score for a feature is calculated as:
 
 \begin{equation}
 	Z = \frac{\ln\left(\frac{p_{pos}}{p_{neg}}\right)}{\sqrt{\frac{1}{count_{pos} + \alpha} + \frac{1}{count_{neg} + \alpha}}}
+	\label{eq:z-score}
 \end{equation}
+\ksremark{Wzór \eqref{eq:z-score}: Zachęcam do zapisania oznaczeń do makr. Wcześniej czy później natrafimy na kolizję oznaczeń. Wtedy wystarczy zmienić w makrze i problem rozwiązany.}
+\newcommand{\zscore}{Z}
+\newcommand{\positive}{p}
+\newcommand{\negative}{n}
+\newcommand{\smoothedprob}[1]{s(#1)}
+\newcommand{\Count}[1]{\|{#1}\|}
+\ksremark{Wzór \eqref{eq:z-score}: Używanie słów (np. count) we wzorach nie jest najlepszym pomysłem. Matematyka abstrahuje od języka i lepsze jest zdefiniowane symboli niż używanie słów. Może zrobić coś takiego (tak na szybko piszę) $\positive$ positive class, $\negative$ negative class, $\smoothedprob{\positive}$ smoothed probability in positive class, $\Count{\positive}$ positive count? Wtedy wzór \eqref{eq:z-score} wyglądałby tak:}
+\begin{equation}
+	\zscore = \frac{\ln\frac{\smoothedprob{\positive}}{\smoothedprob{\negative}}}{\sqrt{\frac{1}{\Count{\positive} + \alpha} + \frac{1}{\Count{\negative} + \alpha}}}
+\end{equation}
+
+
+
 
 Where $p_{pos}$ and $p_{neg}$ represent the smoothed probability of the feature occurring in the positive and negative classes, respectively. Features with an absolute Z-score below a defined threshold (e.g., $|Z| \le 2.0$) are discarded, preserving only the vocabulary that demonstrates statistically significant class separation.
 
-\subsubsection{Semantic Clustering}
+\subsection{Semantic Clustering}
 To address the inherent sparsity of BoW and TF-IDF representations, an optional semantic clustering pipeline is implemented. Dense sentence embeddings for the extracted $n$-grams are generated using the \texttt{all-MiniLM-L6-v2} Sentence Transformer model. These embeddings can be concatenated with VADER sentiment scores, weighted by a tunable hyperparameter, to enforce sentiment-aware distribution.
 
 Following $L_2$ normalization, Facebook AI Similarity Search (FAISS) is utilized to perform K-Means clustering. This groups semantically similar $n$-grams into $k$ discrete concepts, compressing the feature space while retaining semantic granularity.
 
-\subsection{Machine Learning Models}
+\section{Machine Learning Models}
 
 The classification task is approached through a comparative analysis of traditional machine learning algorithms and deep neural networks.
 
@@ -999,7 +1004,7 @@ The classification task is approached through a comparative analysis of traditio
 	\item \textbf{Deep Learning Classifier:} DistilBERT (distilbert-base-uncased-finetuned-sst-2-english), a distilled, computationally efficient variant of the BERT architecture is utilized. This model is fine-tuned using mixed-precision training, early stopping, and learning rate reduction on plateaus to prevent overfitting.
 \end{itemize}
 
-\subsection{Cascade Ensemble}
+\section{Cascade Ensemble}
 
 To balance the computational efficiency of traditional machine learning algorithms with the understanding capacity of deep learning models, a cascade ensemble architecture is proposed. The system routes instances dynamically based on the predictive certainty of a lightweight base model.
 
@@ -1013,13 +1018,13 @@ To balance the computational efficiency of traditional machine learning algorith
 
 The final predictions are evaluated on the held‑out test set. This architecture ensures that the majority of clear‑cut reviews are processed rapidly by the base model, while GPU‑intensive inference is reserved exclusively for ambiguous texts.
 
-\subsection{Statistical Evaluation}
+\section{Statistical Evaluation}
 
 The experimental workflow is designed to evaluate the impact of each pipeline component. To ensure that observed performance gains are statistically significant rather than artifacts of random variance, McNemar's test ($\alpha = 0.05$) is applied to the paired classifier predictions (baseline versus challenger). For any given ablation study or comparative analysis, the baselines are established dynamically; often, the best-performing model from the preceding step is chosen. 
 
 Unlike tests that compare overall aggregate scores, McNemar's test analyzes discordant pairs---instances where one model predicts correctly while the other fails. Because the test evaluates the marginal frequencies of these correct and incorrect prediction counts, it inherently measures differences in overall classification accuracy. Since the datasets in this study are strictly balanced through stratified sampling, model performance can be reliably assessed using both Accuracy and the Macro F1-score. Establishing accuracy as a robust metric on this balanced data was a critical prerequisite, ensuring that McNemar's test is a perfectly aligned statistical approach for this study.
 
-\subsection{Implementation}
+\section{Implementation}
 
 All experiments, data transformations, and statistical analyses are implemented using Python. The architecture leverages open-source libraries across various domains of the experimental pipeline:
 
@@ -1035,6 +1040,22 @@ All experiments, data transformations, and statistical analyses are implemented 
 	\item \textbf{Statistical Testing and Visualization:} Significance testing via the McNemar test is computed using \texttt{statsmodels}. All graphical representations of the data are generated using \texttt{matplotlib}, \texttt{seaborn}, and the \texttt{wordcloud} library.
 \end{itemize}
 
+\chapter{Experiments}
+
+\section{Datasets}
+
+For the empirical evaluation in this study, the Large Movie Review Dataset is used---commonly referred to as the IMDB sentiment dataset, introduced by Maas et al. \cite{Maas2011imdb}\footnote{\ksremark{Jeżeli repozytorium jest gdzieś udostępnione w internecie, to tutaj warto by dać jego \url{adres}.}}. This dataset serves as a standard benchmark for binary sentiment classification in natural language processing. It contains a total of 50,000 highly polar movie reviews. The acquisition of the IMDB dataset is facilitated by TensorFlow Datasets (TFDS).
+
+Below is an example of a positive review \ksremark{Może warto też przedstawić negatywny?} from the dataset, demonstrating the typical length and informal, rather descriptive style of the text:
+
+\begin{quote}
+	I first watched Kindred in 1987 along with another movie called devouring waves. I remember back then i hated them both and i have never really bothered to watch them again.<br /><br /> However i have recently started a crusade to collect as many 80's horror titles in their original boxed form, That have been deleted for some time. I have got myself quite a proud collection with many more titles on my list!<br /><br />The Kindred although i have not as yet got a copy is high priority as all the old movies i didn't like back then, I now own and have now re-watched and think they are brilliant and the bits i do remember of the Kindred are now driving me to want to get hold of a copy A.S.A.P.<br /><br />Hurray for the 80's and long live horror!
+\end{quote}
+
+\section{Methodology}
+
+\ksremark{Tutaj trzeba napisać, co będziemy badać.}
+
 \section{Results}
 
 This section details the empirical findings and statistical evaluations of the classification models across various configurations.
@@ -1043,17 +1064,18 @@ This section details the empirical findings and statistical evaluations of the c
 
 In this experiment, the performance of two classical classifiers---Linear SVM and Logistic Regression (LogReg)---is evaluated across varying preprocessing and feature representation configurations. All models were trained on the training set. The evaluation metrics (Macro F1-score and Accuracy) are computed on the validation set. The experimental conditions are categorized as follows:
 \begin{itemize}
-	\item Minimal preprocessing (Clean) vs. Contraction expansion (Expanded).
-	\item Original capitalization (Cased) vs. Lowercased (Lower).
+	\item Minimal preprocessing (Clean) vs. Contraction expansion (Expanded),
+	\item Original capitalization (Cased) vs. Lowercased (Lower),
 	\item BoW vs. TF-IDF (\texttt{ngram\_range=(1, 3)}, \texttt{min\_df=10}, \texttt{max\_df=0.7}).
 \end{itemize}
 
-\begin{figure}[htbp]
+\begin{figure}[tbp]
 	\centering
 	\includegraphics[width=\textwidth]{./figures/analysis/casing-effect-slopegraph.png}
 	\caption{Impact of expansion on classical machine learning models and representations}
 	\label{fig:casing-expansion-effect}
 \end{figure}
+\ksremark{Rys. \ref{fig:casing-expansion-effect}: Co oznaczają wyszarzone części wykresu?}
 
 As illustrated in Figure~\ref{fig:casing-expansion-effect}, the transition from cleaned to expanded text provides a statistically significant benefit for lower-cased text, as demonstrated by McNemar's test, applied to the pairwise predictions.
 
@@ -1067,7 +1089,8 @@ Tables~\ref{tab:McNemarE1a} through \ref{tab:McNemarE1d} provide a cross-configu
 	\item \textbf{Representation Impact:} TF-IDF features yield better performance than BoW.
 \end{enumerate}
 
-\begin{table}[htbp]
+\ksremark{W nagłówku tabeli \ref{tab:McNemarE1a} mamy ``Experiment 1 - a''. Może pociągnąć ten pomysł i tak właśnie oznaczyć kolejne eksperymenty?}
+\begin{table}[tbp]
 	\centering
 	\caption{McNemar Test (Experiment 1 - a)}
 	\label{tab:McNemarE1a}
@@ -1084,7 +1107,7 @@ Tables~\ref{tab:McNemarE1a} through \ref{tab:McNemarE1d} provide a cross-configu
 	\end{tabular}
 \end{table}
 
-\begin{table}[htbp]
+\begin{table}[tbp]
 	\centering
 	\caption{McNemar Test (Experiment 1 - b)}
 	\label{tab:McNemarE1b}
@@ -1101,7 +1124,7 @@ Tables~\ref{tab:McNemarE1a} through \ref{tab:McNemarE1d} provide a cross-configu
 	\end{tabular}
 \end{table}
 
-\begin{table}[htbp]
+\begin{table}[tbp]
 	\centering
 	\caption{McNemar Test (Experiment 1 - c)}
 	\label{tab:McNemarE1c}
@@ -1118,7 +1141,7 @@ Tables~\ref{tab:McNemarE1a} through \ref{tab:McNemarE1d} provide a cross-configu
 	\end{tabular}
 \end{table}
 
-\begin{table}[htbp]
+\begin{table}[tbp]
 	\centering
 	\caption{McNemar Test (Experiment 1 - d)}
 	\label{tab:McNemarE1d}
@@ -1146,7 +1169,7 @@ In the word clouds (Figure~\ref{fig:tokens_lower_clouds} and Figure~\ref{fig:tok
 \subsubsection{Observations}
 It is worth noting that the results are easily interpretable. Tokens such as ``great'' or ``love'' indicate positive sentiment, while ``bad'', ``worst'', or ``boring'' indicate negative feelings towards movies. It is also interesting that ``his'', ``episodes'', or ``music'' appear in the positive group, suggesting that people tend to be more descriptive when they write a positive review. Tokens such as ``?'', ``why'', and ``...'' appear in the negative reviews.
 
-\begin{figure}[h!]
+\begin{figure}[]
 	\centering
 	\begin{subfigure}[b]{0.32\textwidth}
 		\centering
@@ -1172,7 +1195,7 @@ It is worth noting that the results are easily interpretable. Tokens such as ``g
 	\label{fig:tokens_lower_clouds}
 \end{figure}
 
-\begin{figure}[h!]
+\begin{figure}[]
 	\begin{subfigure}[b]{0.32\textwidth}
 		\centering
 		\includegraphics[width=\textwidth]{figures/analysis/tokens_filtered_positive_wordcloud.pdf}
@@ -1217,7 +1240,7 @@ A particularly interesting pattern emerges when utilizing the \texttt{CustomTfid
 As detailed in Table~\ref{tab:McNemarE2}, the most effective token representations rely on stemming, lemmatization, and simple lowercasing. The optimal configuration utilizes stemmed tokens paired with a Z-score pruning threshold of $Z=2$, achieving a peak accuracy of $91.41\%$ ($p = 0.0125$). Lemmatization/Stemming collapses tokens to their morphological roots and thus reduces the feature dimensionality compared to standard tokenization. Additionally, the lemmatized representations at pruning thresholds $Z=0$ and $Z=2$ achieve a nearly identical accuracy---reducing the dimensionality even more.
 
 The statistical analysis reveals an important trend regarding feature pruning. While a few configurations at $Z=1$ and $Z=2$ yield statistically significant improvements over the baseline ($\uparrow$), the vast majority of combinations between $Z=0$ and $Z=3$ result in $p$-values greater than $0.05$. This indicates that for most representation strategies, moderate statistical pruning perfectly maintains classification performance on par with the unpruned baseline. Statistically significant degradation ($\downarrow$) only begins to manifest under aggressive pruning at $Z=4$.
-\begin{table}[h!]
+\begin{table}[]
 	\centering
 	\caption{McNemar Test (Custom TF-IDF vs SVM Baseline)}
 	\label{tab:McNemarE2}
@@ -1263,7 +1286,7 @@ The statistical analysis reveals an important trend regarding feature pruning. W
 As detailed in Table~\ref{tab:McNemarE2LogReg}, the simplest representation is chosen as the baseline---retaining only alphabetic characters (\texttt{Tokens Letters}) without pruning ($Z=0$). Compared to this baseline, a statistically significant increase in accuracy is observed when utilizing more sophisticated representations combined with a pruning threshold of $Z=2$. 
 
 Notably, the POS-filtered approach (\texttt{Tokens Filtered}) combined with $Z=2$ pruning achieves the highest overall accuracy for the LogReg model on this validation set ($90.72\%$). This outcome contrasts with the earlier findings for the linear SVM (where stemmed tokens proved optimal), emphasizing that feature selection strategies are highly model-dependent and cannot be universally applied across different classification algorithms.
-\begin{table}[h!]
+\begin{table}[]
 	\centering
 	\caption{McNemar Test (Custom TF-IDF vs LogReg Baseline)}
 	\label{tab:McNemarE2LogReg}
@@ -1309,7 +1332,7 @@ Notably, the POS-filtered approach (\texttt{Tokens Filtered}) combined with $Z=2
 
 This section demonstrates that the \texttt{CustomTfidf} representation achieves significantly higher accuracy than the \texttt{CustomBoW} approach across all evaluated configurations. This outcome verifies that the pattern observed in the initial experiments---depicted in Tables~\ref{tab:McNemarE1a} through~\ref{tab:McNemarE1d}---holds true: term frequency-inverse document frequency (TF-IDF) fundamentally outperforms simple bag-of-words (BoW) frequencies for this classification task. Consequently, it can be concluded that the superiority of TF-IDF is robust and largely independent of the tokenization strategy employed. Consistent with the trends previously illustrated in Figure~\ref{fig:zscore_threshold}, aggressive pruning at $Z=4$ results in severe performance degradation across all representations.
 
-\begin{table}[h!]
+\begin{table}[]
 	\centering
 	\caption{McNemar Test (Custom BoW vs Custom TF-IDF Z=2)}
 	\label{tab:McNemar}
@@ -1362,7 +1385,7 @@ In contrast, the \texttt{TF-IDF} representations exhibit a lot of variance. For 
 
 For the LogReg model, the overall classification scores are generally lower than those achieved by the SVM. For the BoW approach, pruning either degrades performance (as seen with cased and letter-only tokens) or has no statistically significant effect. However, the introduction of filtering combined with \texttt{CustomTfidf} pruning proves highly effective. While isolated tokenization approaches do not have a clear impact on their own, the pruning strategy elevates almost all TF-IDF-based representations for LogReg, with the sole exception of the \texttt{Tokens Letters} configuration. The \texttt{Tokens Filtered} representation with $Z=2$ pruning outperforms the baseline by over 0.7 percentage points (rising from $89.98\%$ to $90.71\%$).
 
-\begin{figure}[htbp]
+\begin{figure}[tbp]
 	\centering
 	\includegraphics[width=1\textwidth]{./figures/analysis/ablation_study.png}
 	\caption{Ablation study of different token representations evaluating pre-tokenized representations without pruning ($Z=0$), and custom representations with statistical pruning ($Z=2$). These are compared against baseline \texttt{CountVectorizer} equivalents established in the initial experiments.}
@@ -1377,7 +1400,7 @@ While deeper $n$-gram ranges capture richer sequential context, they introduce a
 
 The implementation of statistical pruning ($Z=2.0$) effectively mitigates this dimensionality explosion. For the (1, 3) vocabulary range, pruning discards over 100,000 non-discriminative features, compressing the space from 139,015 down to manageable 36,350 features. This ensures that the classifiers can leverage the contextual richness of higher-order $n$-grams without suffering the standard computational penalties associated with high dimensionality.
 
-\begin{figure}[htbp]
+\begin{figure}[tbp]
 	\centering
 	\includegraphics[width=1\textwidth]{./figures/analysis/ngram_experiment_double.png}
 	\caption{Performance and dimensionality trends across varying $n$-gram ranges. The left panel illustrates model performance, while the right panel highlights the feature space reduction achieved via $Z=2.0$ statistical pruning.}
@@ -1630,10 +1653,10 @@ Cascade works
 
 \cleardoublepage
 \phantomsection
-%\bibliographystyle{plplain}  % bibtex
-%\bibliography{biblio} % bibtex
+\bibliographystyle{plplain}  % bibtex
+\bibliography{biblio} % bibtex
 \addcontentsline{toc}{chapter}{Bibliography}
-\printbibliography           % biblatex
+%\printbibliography           % biblatex
 
 \begin{appendices}
 

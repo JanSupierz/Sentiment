@@ -60,7 +60,7 @@ def plot_top_concepts(unit_to_cluster, stats, sentiment_weight, top_n=10, save_p
     plot_data = pd.concat([neg_df, spacer, pos_df], ignore_index=True)
 
     # Compact Canvas Setup
-    plt.figure(figsize=(9, 10), facecolor='#F8F9FA') 
+    plt.figure(figsize=(9, 10), facecolor='#F8F9FA')
     ax = plt.gca()
 
     colors = {'Positive': '#2ecc71', 'Negative': '#e74c3c', 'Neutral': '#95a5a6'}
@@ -68,7 +68,7 @@ def plot_top_concepts(unit_to_cluster, stats, sentiment_weight, top_n=10, save_p
     for i, row in plot_data.iterrows():
         color = colors[row['Sentiment']]
         if row['Sentiment'] == 'Neutral':
-            plt.text(0, i, "• • •", ha='center', va='center', color=color, fontweight='bold')
+            plt.text(0, i, "• • •", ha='center', va='center', color=color, fontweight='bold', fontsize=15)
             continue
 
         plt.hlines(y=i, xmin=0, xmax=row['plot_z'], color=color, alpha=0.5, linewidth=1.5)
@@ -76,15 +76,14 @@ def plot_top_concepts(unit_to_cluster, stats, sentiment_weight, top_n=10, save_p
 
     # Tighten Labels and Spines
     ax.set_xlim(-65, 65)
-    plt.yticks(range(len(plot_data)), plot_data['label'], fontsize=9, fontweight='bold')
-    plt.xticks(fontsize=5)
+    plt.yticks(range(len(plot_data)), plot_data['label'], fontsize=15, fontweight='bold')  # y-tick labels size 15
+    plt.xticks(fontsize=15)  # x-tick labels size 15
 
     plt.axvline(0, color='black', linewidth=0.8, alpha=0.3)
 
-    # Compact Title
-    plt.title(f"Concept Discrimination (Weight={sentiment_weight})", 
-              fontsize=13, fontweight='bold', pad=10)
-    plt.xlabel("Z-score Intensity", fontsize=10, fontweight='bold')
+    # Title & axis labels size 15
+    plt.title(f"Concept Discrimination (Weight={sentiment_weight})", fontsize=15, fontweight='bold', pad=10)
+    plt.xlabel("Z-score Intensity", fontsize=15, fontweight='bold')
 
     for spine in ['top', 'right', 'left']:
         ax.spines[spine].set_visible(False)
@@ -110,7 +109,7 @@ def plot_cluster_wordclouds(unit_to_cluster, stats, sentiment_weight, class_id=1
     if top_n == 1:
         axes = [axes]
     label = "Positive" if class_id == 1 else "Negative"
-    fig.suptitle(f"Top {top_n} {label} Clusters (weight={sentiment_weight})", fontsize=16)
+    fig.suptitle(f"Top {top_n} {label} Clusters (weight={sentiment_weight})", fontsize=15)  # suptitle size 15
 
     for i, cid in enumerate(top_clusters):
         words = cluster_to_words.get(cid, ["empty"])
@@ -119,7 +118,7 @@ def plot_cluster_wordclouds(unit_to_cluster, stats, sentiment_weight, class_id=1
                        colormap='Greens' if class_id == 1 else 'Reds',
                        max_words=max_words).generate_from_frequencies(freq)
         axes[i].imshow(wc, interpolation='bilinear')
-        axes[i].set_title(f"Cluster {cid}\nZ={class_df.iloc[i]['zscore']:.2f}", fontsize=12)
+        axes[i].set_title(f"Cluster {cid}\nZ={class_df.iloc[i]['zscore']:.2f}", fontsize=15)  # subplot title size 15
         axes[i].axis('off')
 
     plt.tight_layout()
