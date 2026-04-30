@@ -42,7 +42,7 @@ def main():
             # Build base Count matrix once per tokenization
             X_train_base, X_val_base, _ = build_count_matrix(
                 train_df[token_col],
-                val_df[token_col],
+                val_df[token_col]
             )
 
             # Fit sentiment feature statistics once

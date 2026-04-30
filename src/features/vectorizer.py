@@ -6,7 +6,7 @@ def space_tokenizer(text):
     return text.split(' ')
 
 
-def build_count_matrix(train_tokens, val_tokens, min_df=10, max_df=1.0, ngram_range=(1,3)):
+def build_count_matrix(train_tokens, val_tokens, min_df=10, max_df=0.7, ngram_range=(1,3)):
 
     train_reviews = [" ".join(tokens) for tokens in train_tokens]
     val_reviews = None if val_tokens is None else [" ".join(tokens) for tokens in val_tokens]

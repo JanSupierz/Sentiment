@@ -11,10 +11,10 @@ from src.features.vectorizer import build_count_matrix
 def main():
     parser = argparse.ArgumentParser(description="Generate WordClouds for specific token columns.")
     parser.add_argument(
-        "--column", 
-        type=str, 
-        default="tokens_lower", 
-        help="The dataframe column containing the tokens to visualize (e.g., tokens_lower, tokens_filtered)"
+        "--column",
+        type=str,
+        default="tokens_lower",
+        help="The dataframe column containing the tokens to visualize"
     )
     args = parser.parse_args()
     target_col = args.column
@@ -27,8 +27,8 @@ def main():
 
     y_train = train_df["sentiment"].values
 
-    print(f"Vectorizing text for '{target_col}' (max_df=0.7)...")
-    X_train, _, count_vect = build_count_matrix(train_df[target_col], None, max_df=0.7)
+    print(f"Vectorizing text for '{target_col}'")
+    X_train, _, count_vect = build_count_matrix(train_df[target_col], None)
     vocab = count_vect.get_feature_names_out()
 
     print("Calculating Z-scores on the Custom matrix...")
@@ -40,7 +40,6 @@ def main():
 
     z_threshold = 2
 
-    # --- SPLIT INTO TRASHED AND KEPT ---
     trashed_df = df_scores[df_scores['zscore'].abs() <= z_threshold].copy()
     trashed_df['abs_z'] = trashed_df['zscore'].abs()
     trashed_df = trashed_df.sort_values('abs_z', ascending=True)
@@ -48,38 +47,66 @@ def main():
     kept_pos = df_scores[df_scores['zscore'] > z_threshold].sort_values('zscore', ascending=False)
     kept_neg = df_scores[df_scores['zscore'] < -z_threshold].sort_values('zscore', ascending=True)
 
-    # --- GENERATE VISUALIZATIONS ---
-    print("\nGenerating WordClouds (with punctuation preserved)...")
-    fig, axes = plt.subplots(1, 3, figsize=(20, 6))
-    fig.suptitle(f"Sentiment Analysis: {target_col}", fontsize=20, fontweight='bold', y=1.05)
+    print("\nGenerating WordClouds individually (DPI=300)...")
 
-    # Panel 1: Trashed (Greys) - using \S+ to keep punctuation
-    trashed_text = " ".join([w.replace(" ", "_") for w in trashed_df['word'].head(150)])
-    wc_trash = WordCloud(background_color='white', colormap='Greys', width=400, height=400, regexp=r"\S+").generate(trashed_text)
-    axes[0].imshow(wc_trash, interpolation='bilinear')
-    axes[0].set_title(f"Trashed Words (Neutral Noise)\nTotal Discarded: {len(trashed_df)}", fontsize=16, fontweight='bold')
-    axes[0].axis('off')
+    out_dir = FIGURES_DIR / "analysis"
+    out_dir.mkdir(parents=True, exist_ok=True)
 
-    # Panel 2: Kept Positive (Greens)
-    pos_text = " ".join([w.replace(" ", "_") for w in kept_pos['word'].head(150)])
-    wc_pos = WordCloud(background_color='white', colormap='Greens', width=400, height=400, regexp=r"\S+").generate(pos_text)
-    axes[1].imshow(wc_pos, interpolation='bilinear')
-    axes[1].set_title(f"Kept Positive Words\nTotal Kept: {len(kept_pos)}", fontsize=16, fontweight='bold')
-    axes[1].axis('off')
+    def save_wordcloud(word_scores_dict, caption_text, colormap, filename):
+        """Save a word cloud as a PDF using frequencies with no built‑in title, and print the caption."""
+        # Replace spaces with underscores to keep n-grams grouped as single elements
+        formatted_dict = {str(k).replace(" ", "_"): float(v) for k, v in word_scores_dict.items()}
 
-    # Panel 3: Kept Negative (Reds)
-    neg_text = " ".join([w.replace(" ", "_") for w in kept_neg['word'].head(150)])
-    wc_neg = WordCloud(background_color='white', colormap='Reds', width=400, height=400, regexp=r"\S+").generate(neg_text)
-    axes[2].imshow(wc_neg, interpolation='bilinear')
-    axes[2].set_title(f"Kept Negative Words\nTotal Kept: {len(kept_neg)}", fontsize=16, fontweight='bold')
-    axes[2].axis('off')
+        wc = WordCloud(
+            background_color='white',
+            colormap=colormap,
+            width=800,
+            height=800,
+            regexp=r"\S+"
+        ).generate_from_frequencies(formatted_dict)
 
-    plt.tight_layout()
+        fig, ax = plt.subplots(figsize=(8, 8))
+        ax.imshow(wc, interpolation='bilinear')
+        ax.axis('off')
+        plt.tight_layout(pad=0)
+        fig.savefig(out_dir / filename, dpi=300, bbox_inches='tight', format='pdf')
+        plt.close(fig)
 
-    out_path = FIGURES_DIR / "analysis" / f"{target_col}_wordclouds.png"
-    out_path.parent.mkdir(parents=True, exist_ok=True)
-    plt.savefig(out_path, dpi=150, bbox_inches='tight')
-    print(f"\nSaved comparison image to {out_path}")
+        print(f"Saved: {out_dir / filename}  →  caption: \"{caption_text}\"")
+
+    # Generate dictionaries for the top 150 words
+    neutral_top = trashed_df.head(150)
+    neutral_dict = dict(zip(neutral_top['word'], neutral_top['abs_z']))
+
+    pos_top = kept_pos.head(150)
+    pos_dict = dict(zip(pos_top['word'], pos_top['zscore']))
+
+    neg_top = kept_neg.head(150)
+    neg_dict = dict(zip(neg_top['word'], neg_top['zscore'].abs()))
+
+    # Save the WordClouds
+    save_wordcloud(
+        word_scores_dict=pos_dict,
+        caption_text=f"Extracted positive words (total kept: {len(kept_pos)})",
+        colormap='Greens',
+        filename=f"{target_col}_positive_wordcloud.pdf"
+    )
+
+    save_wordcloud(
+        word_scores_dict=neutral_dict,
+        caption_text=f"Extracted neutral words (total discarded: {len(trashed_df)})",
+        colormap='Greys',
+        filename=f"{target_col}_neutral_wordcloud.pdf"
+    )
+
+    save_wordcloud(
+        word_scores_dict=neg_dict,
+        caption_text=f"Extracted negative words (total kept: {len(kept_neg)})",
+        colormap='Reds',
+        filename=f"{target_col}_negative_wordcloud.pdf"
+    )
+
+    print("\nAll three wordclouds saved successfully (DPI=300).")
 
 
 if __name__ == "__main__":
