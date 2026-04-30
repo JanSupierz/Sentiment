@@ -119,6 +119,7 @@
 \newcommand{\kconcepts}{k}
 \newcommand{\inputtext}{X}
 \newcommand{\mcnemaralpha}{\alpha}
+\newcommand{\weightparam}{w}
 
 \newcommand{\literal}[1]{\textit{``#1''}}
 % end of thesis customisation
@@ -694,7 +695,7 @@ Sentence-level analysis is important because it permits a fine-grained view of d
 Classifiers such as Naïve Bayes (NB), Logistic Regression (\logreg{}), and Support Vector Machines (SVM) are then trained on these feature vectors. SVM and NB, in particular, have been shown to be the most effective classifiers for sentiment analysis tasks \cite{behdenna2018document}. Extracted features are used to train state-of-the-art classifiers such as SVM and NB that assume that the class of a particular feature is independent of the class of other features given the training data \cite{CHATURVEDI201865}.
 
 \begin{itemize}
-\item \textbf{Support Vector Machines (SVM)} perform well on high-dimensional sparse text data due to their margin-maximization objective and have been widely adopted for sentiment classification \cite{behdenna2018document}. 
+\item \textbf{Support Vector Machines (SVMs)} perform well on high-dimensional sparse text data due to their margin-maximization objective and have been widely adopted for sentiment classification \cite{behdenna2018document}. 
 
 \item \textbf{Naïve Bayes (NB)} offers simplicity and efficiency, often achieving competitive results despite its strong independence assumptions \cite{behdenna2018document}. 
 \end{itemize}
@@ -712,7 +713,7 @@ Classifiers such as Naïve Bayes (NB), Logistic Regression (\logreg{}), and Supp
 	
 	\item Feature reduction techniques such as Principal Component Analysis (PCA) have been shown to improve both SVM and NB performance \cite{Vinodhini2013effect}. 
 	
-	\item Hybrid approaches combining NB with genetic algorithms (GAs) and rating-based features augmented with $n$-grams have also demonstrated performance gains \cite{Govindarajan2014SentimentAO}. 
+	\item Hybrid approaches combining NB with Genetic Algorithms (GAs) and rating-based features augmented with $n$-grams have also demonstrated performance gains \cite{Govindarajan2014SentimentAO}. 
 	
 	\item For dialectal Arabic tweets, replacing dialectal words with Modern Standard Arabic equivalents improved classifier accuracy by up to 3\% \cite{Duwairi2015sentiment}.
 \end{itemize}
@@ -737,7 +738,7 @@ Deep learning has become very influential for sentiment analysis by offering sev
 
 Studies have consistently shown that deep learning models achieve superior accuracy compared to traditional methods such as SVM and Naïve Bayes \cite{ain2017sentiment, behdenna2018document, mulianingrum2025comparative, sharma2025review}. Furthermore, deep learning offers versatility across various sentiment analysis tasks, from basic polarity classification to aspect-based analysis and emotion detection \cite{sharma2025review}.
 
-These advantages come with substantial computational costs \cite{strubell2019energy}. Deep learning models typically require specialized hardware such as Graphics Processing Units (GPUs) or Tensor Processing Units (TPUs) for training, leading to significant financial expenses for hardware, electricity, or cloud compute time, as well as a considerable environmental impact due to carbon emissions \cite{strubell2019energy}. BERT‑Base requires GPU acceleration and an order of magnitude more training time than SVM, which runs efficiently on a standard CPU and performs inference nearly two orders of magnitude faster \cite{mulianingrum2025comparative}. Deep learning models are data‑hungry and perform poorly when labeled data is scarce \cite{Li2017deep}. Another issue is the difficulty to interpret the predictions, as the models are often black boxes \cite{Li2017deep}.
+These advantages come with substantial computational costs \cite{strubell2019energy}. Deep learning models typically require specialized hardware such as Graphics Processing Units (GPUs) or Tensor Processing Units (TPUs) for training, leading to significant financial expenses for hardware, electricity, or cloud compute time, as well as a considerable environmental impact due to carbon emissions \cite{strubell2019energy}. BERT-Base requires GPU acceleration and an order of magnitude more training time than SVM, which runs efficiently on a standard CPU and performs inference nearly two orders of magnitude faster \cite{mulianingrum2025comparative}. Deep learning models are data-hungry and perform poorly when labeled data is scarce \cite{Li2017deep}. Another issue is the difficulty to interpret the predictions, as the models are often black boxes \cite{Li2017deep}.
 
 \subsubsection{Word Embeddings}
 
@@ -798,9 +799,9 @@ Concrete mechanisms for granulation are often seen in computing and human reason
 
 \subsection{Three-Way Decisions}
 
-Three-way decision (3WD) is a theory of thinking, problem solving, and information processing that relies on the use of three parts, three elements, or three levels \cite{Yao2018threeway}. It extends the classical binary (two‑way) approach (typically acceptance or rejection) by introducing a third option: non‑commitment, deferment, or uncertainty \cite{Fujita2016threeway, Yao2018threeway}. In many real‑world situations, making an immediate decision is unwise when evidence is insufficient; 3WD provides a principled way to withhold judgment until more information can be obtained \cite{Yao2018threeway}.
+Three-way decision (3WD) is a theory of thinking, problem solving, and information processing that relies on the use of three parts, three elements, or three levels \cite{Yao2018threeway}. It extends the classical binary (two-way) approach (typically acceptance or rejection) by introducing a third option: non-commitment, deferment, or uncertainty \cite{Fujita2016threeway, Yao2018threeway}. In many real-world situations, making an immediate decision is unwise when evidence is insufficient; 3WD provides a principled way to withhold judgment until more information can be obtained \cite{Yao2018threeway}.
 
-The idea of trisecting a whole into three parts and then acting upon each part is a common human practice, evident in temporal (past-present-future), spatial (left-middle-right), volumetric (small-medium-large), and judgmental (acceptance-noncommitment-rejection) divisions \cite{Fujita2016threeway}. Such a trisection can be formally represented by three pairwise disjoint subsets whose union is the universal set \cite{Fujita2016threeway}. Its cognitive basis lies in the limited capacity of human short‑term memory, which makes the number three a natural anchor-simple enough to process, yet richer than binary thinking \cite{Yao2018threeway}. Consequently, thinking in threes appears across many disciplines, from linguistics (three grammatical tenses) to computer science (three‑level database architectures) \cite{Yao2018threeway}.
+The idea of trisecting a whole into three parts and then acting upon each part is a common human practice, evident in temporal (past-present-future), spatial (left-middle-right), volumetric (small-medium-large), and judgmental (acceptance-noncommitment-rejection) divisions \cite{Fujita2016threeway}. Such a trisection can be formally represented by three pairwise disjoint subsets whose union is the universal set \cite{Fujita2016threeway}. Its cognitive basis lies in the limited capacity of human short-term memory, which makes the number three a natural anchor-simple enough to process, yet richer than binary thinking \cite{Yao2018threeway}. Consequently, thinking in threes appears across many disciplines, from linguistics (three grammatical tenses) to computer science (three-level database architectures) \cite{Yao2018threeway}.
 
  A general model of 3WD is the Trisecting-Acting-Outcome (TAO) framework \cite{Yao2018threeway}:
 \begin{description}
@@ -809,7 +810,7 @@ The idea of trisecting a whole into three parts and then acting upon each part i
 	\item[Outcome:] evaluating the effectiveness.
 \end{description}  
 
-The connection between three‑way decision and granular computing is deep and natural \cite{Fujita2016threeway, Yao2018threeway}. Both paradigms are human‑inspired and rely on abstraction: granular computing builds information granules at multiple levels, while three‑way decision uses three granules (or three levels) as a particularly effective cognitive structure \cite{Yao2018threeway}. In fact, sequential three‑way decisions arise naturally from multiple levels of granularity \cite{Fujita2016threeway}. At a higher (coarser) level of granularity, one may defer decisions about some objects to a lower (finer) level where additional detailed information becomes available \cite{Fujita2016threeway}. This interplay has led to the integration of three‑way decision and granular computing into what is sometimes called three‑way granular computing \cite{Fujita2016threeway, Yao2018threeway}.
+The connection between three-way decision and granular computing is deep and natural \cite{Fujita2016threeway, Yao2018threeway}. Both paradigms are human-inspired and rely on abstraction: granular computing builds information granules at multiple levels, while three-way decision uses three granules (or three levels) as a particularly effective cognitive structure \cite{Yao2018threeway}. In fact, sequential three-way decisions arise naturally from multiple levels of granularity \cite{Fujita2016threeway}. At a higher (coarser) level of granularity, one may defer decisions about some objects to a lower (finer) level where additional detailed information becomes available \cite{Fujita2016threeway}. This interplay has led to the integration of three-way decision and granular computing into what is sometimes called three-way granular computing \cite{Fujita2016threeway, Yao2018threeway}.
 
 \subsection{Prototype Theory and Conceptual Spaces}
 
@@ -843,7 +844,7 @@ For open topic classification where test data may contain unseen classes, the au
 
 Moving beyond word-level representations, several authors have explored Bag-of-Concepts (BoC) approaches that aggregate semantically related tokens into higher-level information granules~\cite{Capillo2020mining, DeSantis2023prototype, Possemato2013AutomaticTC}. De Santis et al.~\cite{DeSantis2023prototype} directly apply prototype theory: word embeddings are clustered into Voronoi regions, and each document is represented by a histogram of cluster memberships. This concept-level representation can rival word-level methods for text processing tasks, while offering better interpretability~\cite{DeSantis2023prototype}.
 
-Capillo et al.~\cite{Capillo2020mining} present a granular computing framework that mines $m$-grams (short phrases) as information granules for text categorization. Each word in an $m$-gram is mapped to a vector using fastText embeddings, and the resulting sequence of vectors is compared using a custom edit distance that operates on word vectors rather than characters~\cite{Capillo2020mining}. A per-class clustering procedure extracts representative $m$-grams, which serve as alphabet symbols (concepts)~\cite{Capillo2020mining}. Documents are then transformed into symbolic histograms counting the occurrences of these concepts, and the histograms are classified by a Support Vector Machine (SVM)~\cite{Capillo2020mining}. A Genetic Algorithm (GA) optimises the system's hyperparameters and selects the most discriminative symbols~\cite{Capillo2020mining}. Experiments on scientific abstracts (four classes) achieve about 93\% accuracy, and on an SMS spam dataset about 95\% accuracy~\cite{Capillo2020mining}. Importantly, the selected symbols are interpretable phrases (e.g. \literal{string field theory} for theoretical physics, \literal{customer care} for spam), demonstrating that the BoC approach yields both high performance and explainable models~\cite{Capillo2020mining}.
+Capillo et al.~\cite{Capillo2020mining} present a granular computing framework that mines $m$-grams (short phrases) as information granules for text categorization. Each word in an $m$-gram is mapped to a vector using fastText embeddings, and the resulting sequence of vectors is compared using a custom edit distance that operates on word vectors rather than characters~\cite{Capillo2020mining}. A per-class clustering procedure extracts representative $m$-grams, which serve as alphabet symbols (concepts)~\cite{Capillo2020mining}. Documents are then transformed into symbolic histograms counting the occurrences of these concepts, and the histograms are classified by a SVM~\cite{Capillo2020mining}. A Genetic Algorithm (GA) optimises the system's hyperparameters and selects the most discriminative symbols~\cite{Capillo2020mining}. Experiments on scientific abstracts (four classes) achieve about 93\% accuracy, and on an SMS spam dataset about 95\% accuracy~\cite{Capillo2020mining}. Importantly, the selected symbols are interpretable phrases (e.g. \literal{string field theory} for theoretical physics, \literal{customer care} for spam), demonstrating that the BoC approach yields both high performance and explainable models~\cite{Capillo2020mining}.
 
 Possemato et al.~\cite{Possemato2013AutomaticTC} extend the BoC approach to handle unbalanced datasets by extracting $n$-grams and then running a per-class granular mining algorithm known as Reinforcement Learning Granular Approach for DIscrete
 Sequence (RL-GRADIS) to obtain representative symbols for each category~\cite{Possemato2013AutomaticTC}. The union of these per-class symbols forms the final alphabet, and documents are converted into symbolic histograms by counting occurrences of each symbol~\cite{Possemato2013AutomaticTC}. A SVM with a Gaussian kernel then classifies the histograms, and a GA performs feature selection to retain only discriminative symbols~\cite{Possemato2013AutomaticTC}. Experiments on the unbalanced Reuters-21578 dataset (ten categories) show that the per-class strategy improves results compared to the standard unsupervised version, demonstrating better handling of sparse classes~\cite{Possemato2013AutomaticTC}. The extracted symbols remain interpretable~\cite{Possemato2013AutomaticTC}.
@@ -860,7 +861,7 @@ In Granular Computing-based Multi-level Interactive Attention (GC-MIA) networks 
 
 Varshney and Baral~\cite{varshney2022model} describe a sequence of models of increasing capacity (e.g., BERT-mini, medium, base) to improve both computational efficiency and prediction accuracy. An input is first processed by the smallest model; if its confidence exceeds a threshold, the prediction is output immediately~\cite{varshney2022model}. Otherwise, the instance is passed to the next larger model. This avoids expensive inference on easy instances~\cite{varshney2022model}. Experiments on ten Natural Language Understanding (NLU) datasets show that cascading saves up to 88.93\% of computation cost while matching or even exceeding the accuracy of the largest model alone (e.g., a 2.18\% accuracy improvement on CommitmentBank)~\cite{varshney2022model}. The method requires no architectural modifications and adds minimal storage overhead~\cite{varshney2022model}.
 
-Online cascade learning proposed by Nie et al.~\cite{nie2024online}, is a framework where smaller models are updated continuously over a data stream by imitating the outputs of a LLM expert. The system is formulated as an episodic Markov decision process with a deferral policy that decides, for each incoming query, which cascade level to invoke~\cite{nie2024online}. Smaller models (e.g., \logreg{} and BERT) learn online from the LLM's annotations, improving over time and gradually handling an increasing proportion of queries~\cite{nie2024online}. This significantly reduces the number of calls to the expensive LLM, cutting inference costs by up to 90\% while maintaining accuracy comparable to using the LLM alone~\cite{nie2024online}. The approach requires no human‑labeled training data and remains robust under distribution shifts in input length or category, as demonstrated on sentiment analysis (IMDb), hate speech detection, emotion classification, and fact‑checking benchmarks~\cite{nie2024online}.
+Online cascade learning proposed by Nie et al.~\cite{nie2024online}, is a framework where smaller models are updated continuously over a data stream by imitating the outputs of a LLM expert. The system is formulated as an episodic Markov decision process with a deferral policy that decides, for each incoming query, which cascade level to invoke~\cite{nie2024online}. Smaller models (e.g., \logreg{} and BERT) learn online from the LLM's annotations, improving over time and gradually handling an increasing proportion of queries~\cite{nie2024online}. This significantly reduces the number of calls to the expensive LLM, cutting inference costs by up to 90\% while maintaining accuracy comparable to using the LLM alone~\cite{nie2024online}. The approach requires no human-labeled training data and remains robust under distribution shifts in input length or category, as demonstrated on sentiment analysis (IMDb), hate speech detection, emotion classification, and fact-checking benchmarks~\cite{nie2024online}.
 
 \subsection{Gap Analysis and Contribution}
 
@@ -891,7 +892,7 @@ The system operates at three levels. First, the raw data undergoes preprocessing
 
 \section{Data Preprocessing}
 
-While the original IMDb dataset is perfectly balanced and pre-divided into equal training and testing sets, this study merges the sets to perform data deduplication based on exact matches of the raw review text. This process identified and removed 418 duplicate entries, resulting in a refined, unique dataset of 49,582 reviews. The dataset is shuffled and re‑divided into a training set of 24,791 reviews (approx. 50\%), a validation set of 17,353 reviews (approx. 35\%), and a testing set of 7,438 reviews (approx. 15\%). Stratification is employed to maintain a balanced distribution of positive and negative sentiments across all sets. The textual data is processed in parallel using a process pool executor. Each review is processed sequentially as follows:
+While the original IMDb dataset is perfectly balanced and pre-divided into equal training and testing sets, this study merges the sets to perform data deduplication based on exact matches of the raw review text. This process identified and removed 418 duplicate entries, resulting in a refined, unique dataset of 49,582 reviews. The dataset is shuffled and re-divided into a training set of 24,791 reviews (approx. 50\%), a validation set of 17,353 reviews (approx. 35\%), and a testing set of 7,438 reviews (approx. 15\%). Stratification is employed to maintain a balanced distribution of positive and negative sentiments across all sets. The textual data is processed in parallel using a process pool executor. Each review is processed sequentially as follows:
 
 \begin{enumerate}
 	\item \textbf{Unicode normalization} converts the original text to Normalization Form Compatibility Composition (NFKC) form to ensure consistent character representation.
@@ -908,7 +909,7 @@ While the original IMDb dataset is perfectly balanced and pre-divided into equal
 	
 	\item \textbf{Lowercasing} converts each token in \code{tokens\_cased} to the lowercase form, resulting in \code{tokens\_lower}.
 	
-	\item \textbf{POS‑filtered tokenization} processes the expanded text by filtering \code{tokens\_lower} based on their Part‑Of‑Speech (POS) tags; the result is stored as \code{tokens\_filtered}.
+	\item \textbf{POS-filtered tokenization} processes the expanded text by filtering \code{tokens\_lower} based on their Part-Of-Speech (POS) tags; the result is stored as \code{tokens\_filtered}.
 	
 	\item \textbf{Alphabetic filtering} removes any character that is not a letter (a–z, A–Z) from \code{tokens\_lower}; tokens that become empty after this removal are discarded. The result is \code{tokens\_letters}.
 	
@@ -919,14 +920,14 @@ While the original IMDb dataset is perfectly balanced and pre-divided into equal
 
 After processing, each review is stored as a dictionary containing the various token representations. The dictionaries are then converted to Pandas DataFrames with a consistent column order and saved as Parquet files (\code{train.parquet}, \code{val.parquet}, \code{test.parquet}). This format enables selective loading of representations in subsequent experiments.
 
-\subsection{Stop‑Word Removal}
+\subsection{Stop-Word Removal}
 
-During the POS‑filtered tokenization step, the dimensionality of the $n$-gram feature space can be reduced by removing words that carry little sentiment value---commonly termed as stop words. However, because this step is inherently subjective and risks discarding subtle contextual cues, the standard stop-word removal using the English stop-word list provided by scikit-learn's \code{CountVectorizer} is bypassed. That list contains words such as \literal{well}, whose presence may be informative (e.g., \literal{well filmed}). Instead, stop‑word filtering is kept to a minimum by utilizing a targeted POS‑based approach. The approach relies on the POS tags assigned by the spaCy library: coarse‑grained Universal POS (UPOS) tags\footnote{\url{https://universaldependencies.org/u/pos/}} and fine‑grained Penn Treebank tags\footnote{\url{https://www.ling.upenn.edu/courses/Fall_2003/ling001/penn_treebank_pos.html}}. SpaCy's English model is used with parser and Named Entity Recognizer disabled to avoid computational overhead. The POS filtering removes tokens that satisfy any of three specific criteria:
+During the POS-filtered tokenization step, the dimensionality of the $n$-gram feature space can be reduced by removing words that carry little sentiment value---commonly termed as stop words. However, because this step is inherently subjective and risks discarding subtle contextual cues, the standard stop-word removal using the English stop-word list provided by scikit-learn's \code{CountVectorizer} is bypassed. That list contains words such as \literal{well}, whose presence may be informative (e.g., \literal{well filmed}). Instead, stop-word filtering is kept to a minimum by utilizing a targeted POS-based approach. The approach relies on the POS tags assigned by the spaCy library: coarse-grained Universal POS (UPOS) tags\footnote{\url{https://universaldependencies.org/u/pos/}} and fine-grained Penn Treebank tags\footnote{\url{https://www.ling.upenn.edu/courses/Fall_2003/ling001/penn_treebank_pos.html}}. SpaCy's English model is used with parser and Named Entity Recognizer disabled to avoid computational overhead. The POS filtering removes tokens that satisfy any of three specific criteria:
 
 \begin{itemize}
-	\item \textbf{Auxiliary verbs (except modals)}: tokens with the coarse tag \postag{AUX} (auxiliary) are removed, unless their fine‑grained tag is \postag{MD} (modal auxiliary). Thus, words such as \literal{is}, \literal{are}, \literal{was}, and \literal{have} are removed, while modals like \literal{can}, \literal{will}, and \literal{must} are retained.
+	\item \textbf{Auxiliary verbs (except modals)}: tokens with the coarse tag \postag{AUX} (auxiliary) are removed, unless their fine-grained tag is \postag{MD} (modal auxiliary). Thus, words such as \literal{is}, \literal{are}, \literal{was}, and \literal{have} are removed, while modals like \literal{can}, \literal{will}, and \literal{must} are retained.
 	\item \textbf{Determiners}: tokens with the coarse tag \postag{DET} (determiner) are removed. Examples include \literal{a}, \literal{an}, \literal{the}, \literal{many}, and \literal{my}.
-	\item \textbf{Possessive endings}: tokens with the fine‑grained tag \postag{POS} (possessive ending) are removed. This typically corresponds to the possessive clitic \literal{'s}.
+	\item \textbf{Possessive endings}: tokens with the fine-grained tag \postag{POS} (possessive ending) are removed. This typically corresponds to the possessive clitic \literal{'s}.
 \end{itemize}
 
 The application of these rules is demonstrated in Table~\ref{tab:pos-filtering}. The listed tags include basic parts of speech such as pronouns (\postag{PRON}/\postag{PRP}), verbs and auxiliaries (\postag{VERB}/\postag{VBN}, \postag{AUX}/\postag{VBP}), adverbs (\postag{ADV}/\postag{RB}), determiners (\postag{DET}/\postag{DT}, \postag{DET}/\postag{PRP\$}), adjectives (\postag{ADJ}/\postag{JJ}, \postag{ADJ}/\postag{JJR}), nouns (\postag{NOUN}/\postag{NN}, \postag{NOUN}/\postag{NNS}), adpositions (\postag{ADP}/\postag{IN}), and punctuation (\postag{PUNCT}/\postag{.}). Rows designated for removal are highlighted in \textbf{bold} to help visualize how the approach works.
@@ -965,7 +966,7 @@ To evaluate the impact of vocabulary representation on model performance, the to
 
 By default, scikit-learn's \code{CountVectorizer} removes terms listed in the \code{stop\_words} parameter, generates $n$-grams, and then prunes the vocabulary according to the \code{min\_df} and \code{max\_df} thresholds. To faithfully evaluate the various token representations produced during preprocessing, it is essential to preserve their exact structures. Therefore, the default tokenization behavior is overridden.
 
-At this stage, each document is a list of tokens. The lists are joined into single, space‑separated strings, and a custom \code{space\_tokenizer} is supplied to the vectorizer. This tokenizer bypasses the default regular‑expression‑based tokenizer and splits text strictly on spaces. The vectorizer is additionally configured with \code{lowercase=False} (lowercasing was already performed during preprocessing) and the desired \code{ngram\_range} (e.g., (1,3)). This customized pipeline ensures that scikit-learn's frequency‑based pruning is applied directly to the finalized $n$-grams, effectively reducing dimensionality and promoting model generalization. For this study, the minimum document frequency is set to 10 (\code{min\_df=10}) to discard extremely rare $n$-grams, and a maximum document frequency threshold of 70\% (\code{max\_df=0.7}) is established to filter out overly omnipresent combinations.
+At this stage, each document is a list of tokens. The lists are joined into single, space-separated strings, and a custom \code{space\_tokenizer} is supplied to the vectorizer. This tokenizer bypasses the default regular-expression-based tokenizer and splits text strictly on spaces. The vectorizer is additionally configured with \code{lowercase=False} (lowercasing was already performed during preprocessing) and the desired \code{ngram\_range} (e.g., (1,3)). This customized pipeline ensures that scikit-learn's frequency-based pruning is applied directly to the finalized $n$-grams, effectively reducing dimensionality and promoting model generalization. For this study, the minimum document frequency is set to 10 (\code{min\_df=10}) to discard extremely rare $n$-grams, and a maximum document frequency threshold of 70\% (\code{max\_df=0.7}) is established to filter out overly omnipresent combinations.
 
 \subsection{Statistical Pruning}
 
@@ -999,47 +1000,103 @@ Finally, features whose absolute \zscore-score falls below a defined threshold (
 
 \subsection{Semantic Clustering}
 
-To address the sparsity inherent in BoW and TF‑IDF representations, an optional clustering pipeline is implemented. Dense sentence embeddings for the extracted $n$-grams are generated using the Sentence Transformer model \texttt{all-MiniLM-L6-v2}. These embeddings can be concatenated with VADER sentiment scores, weighted by a tunable hyperparameter, to enforce a sentiment‑aware distribution. Following $L_2$ normalization, Facebook AI Similarity Search (FAISS) is utilized to perform K‑Means clustering. This groups semantically similar $n$-grams into $\kconcepts$ discrete concepts, compressing the feature space while retaining semantic granularity.
+To address the sparsity inherent in BoW and TF-IDF representations, an optional clustering pipeline is implemented. Traditional static word embeddings such as Word2Vec are limited to individual words and cannot directly represent arbitrary multi-word $n$-grams. In contrast, transformer-based models like the one employed here---\texttt{all-MiniLM-L6-v2}---produce dense contextual embeddings of dimension 384 for any input text, including bigrams and trigrams. Although generating these embeddings is computationally expensive, they provide the most semantically rich representation currently available and were deliberately chosen to test whether powerful, context-aware grouping of $n$-grams can outperform simpler vocabulary reduction methods.
+
+Each $n$-gram in the vocabulary is encoded with this Sentence Transformer model. The resulting embedding is then augmented with a sentiment score obtained from the VADER lexicon: the compound polarity score of the $n$-gram is multiplied by a tunable hyperparameter $\weightparam$ and concatenated to the embedding vector. After augmentation, $L_2$ normalization is reapplied to restore unit length, ensuring the final vector space balances semantic proximity with sentiment polarity.
+
+FAISS-accelerated K-Means clustering is utilized on these normalized, sentiment-aware vectors to partition the vocabulary into $\kconcepts$ discrete groups. Each cluster forms a ``concept'' that aggregates semantically and sentimentally related $n$-grams. The resulting mapping from each original $n$-gram to its concept identifier is stored. Concept-level feature matrices are then constructed by summing the term-frequency counts of all $n$-grams belonging to the same concept for each document. This produces a dense $D \times \kconcepts$ matrix that compresses the original high-dimensional vocabulary while preserving discriminative information. Statistical pruning via \zscore-scores can be applied to these concept features in exactly the same manner as to the original units, further reducing dimensionality and focusing the representation on the most sentiment-bearing concepts.
 
 \section{Machine Learning Models}
 
-The classification task is approached through a comparative analysis of traditional machine learning algorithms and deep neural networks.
+The classification task is approached through a comparative analysis of traditional machine learning algorithms and a transformer-based deep neural network. All models are trained on the preprocessed training set, with hyperparameter selection and early stopping guided by a held-out validation partition.
 
-\begin{itemize}
-	\item \textbf{Traditional Baselines:} a linear SVM and \logreg are employed. Because the cascade architecture relies on predictive certainty, the SVM---which outputs uncalibrated distances to the separating hyperplane---is wrapped in a Platt scaling calibrator (\texttt{CalibratedClassifierCV}) to yield well‑calibrated probabilistic outputs.
-	\item \textbf{Deep Learning Classifier:} DistilBERT, a distilled, computationally efficient variant of the BERT architecture, is utilized. This model is fine‑tuned using mixed‑precision training, early stopping, and learning rate reduction on plateaus to prevent overfitting. (\texttt{distilbert-base-uncased-finetuned-sst-2-english})
-\end{itemize}
+\subsection{Traditional Baselines}
+
+A linear SVM and \logreg{} are employed as computationally efficient baselines. Both classifiers are trained on the feature matrices produced by the preprocessing and feature engineering stages---specifically, the TF-IDF weighted $n$-gram vectors (BoW representations are also evaluated during experimentation, but the core pipeline converges on TF-IDF). The training procedure utilizes the scikit-learn implementations with the following configuration.
+
+\subsubsection{Linear Support Vector Machine}
+
+The linear SVM optimizes the squared hinge loss with L2 regularization. The default penalty strength $C=1.0$ is retained, and the solver is permitted up to $10\,000$ iterations to ensure convergence even on high-dimensional data. At inference time, the raw signed distance to the separating hyperplane is not a calibrated probability measure. To embed the SVM into the cascade architecture, which requires reliable confidence estimates, the distance scores are passed through a Platt scaling calibrator (\texttt{CalibratedClassifierCV}). This wrapper fits an internal \logreg{} on the SVM scores using $5$-fold cross-validation, thereby mapping unbounded decision values to the $[0,1]$ interval and producing well-calibrated posterior probabilities for the positive class.
+
+\subsubsection{Logistic Regression}
+
+\logreg{} directly models the conditional class probability $P(y=1 \mid \inputtext)$ by minimising the log-loss (cross-entropy) objective with an L2 penalty. It is configured with the L-BFGS solver, which approximates the Hessian for quasi-Newton optimisation and is well-suited to moderately sized problems. The regularization strength $C=1.0$ and a maximum of $1\,000$ iterations are used. Unlike the SVM, LR natively outputs probability estimates without an external calibration step. Both models are fitted on the same training split and evaluated on the same validation and test sets, ensuring fair comparison.
+	
+\subsection{Deep Learning Classifier}
+
+The deep learning component of the system is based on DistilBERT, a distilled, six-layer variant of the BERT architecture that preserves over 95\% of the original model’s performance while being substantially smaller and faster. Two separate training regimes are employed: a \textbf{basic fine-tuning} that yields a standalone sentiment classifier for benchmark comparisons, and a \textbf{specialist fine-tuning} that adapts the model to the ambiguous instances encountered in the cascade ensemble.
+
+\subsubsection{Basic Fine-Tuning}
+\label{sec:bert_basic}
+
+The checkpoint \texttt{distilbert-base-uncased-finetuned-sst-2-english}, which has been pre-trained on large English corpora and already fine-tuned on the Stanford Sentiment Treebank (SST-2), is loaded from the Hugging Face hub. Its classification head is further fine-tuned on the full IMDb training set. Input texts (the \code{text\_clean} field) are tokenized with the corresponding DistilBERT tokenizer, truncated or padded to a maximum length of $256$ tokens. Training is performed for $3$ epochs with a batch size of $16$, using the Adam optimizer with a learning rate of $2 \times 10^{-5}$. Mixed-precision (float16) computation is utilized to reduce memory consumption and accelerate training. Early stopping monitors the validation loss with a patience of $2$ epochs, and a learning rate reduction on plateau (factor $0.5$, patience $1$) is applied. A stratified $20\%$ hold-out from the training set serves as the validation partition. After training, the model outputs class probabilities via a softmax over the two logits. This basic DistilBERT serves two purposes: it provides a strong baseline for the standalone comparison of traditional models versus deep learning, and it is reused as the initialisation point for the specialist variant.
+
+\subsubsection{Specialist Fine-Tuning}
+\label{sec:bert_specialist}
+
+For the cascade ensemble, the basic DistilBERT model is further fine-tuned on the subset of validation instances that the base model could not classify with high confidence. The backbone of the transformer is partially frozen: the first $5$ layers are kept frozen, while the remaining layers and the classification head remain trainable. The specialist is trained for $10$ epochs with a lower learning rate of $2 \times 10^{-6}$, a batch size of $16$, and early stopping with a patience of $3$ epochs. All other training settings (mixed precision, tokenizer, maximum sequence length) remain identical to the basic fine-tuning. This targeted fine-tuning encourages the model to specialise in the ambiguous region of the decision boundary identified by the base model, without overfitting to the relatively small hard-sample set.
 
 \section{Cascade Ensemble}
 
-To balance the computational efficiency of traditional machine learning algorithms with the deep understanding capacity of transformer‑based models, a cascade ensemble architecture is proposed. The system routes instances dynamically according to the predictive certainty of a lightweight base model.
+To balance the computational efficiency of traditional machine learning algorithms with the deep understanding capacity of transformer-based models, a cascade ensemble architecture is proposed. The design follows the 3WD paradigm, where each instance is assigned to one of three regions based on the predictive confidence of a lightweight base model. Instances classified with high confidence are accepted immediately, while those falling into a boundary region of uncertainty are deferred to a more powerful but computationally expensive specialist.
+
+\subsection{Architecture}
+
+The cascade operates in three stages:
 
 \begin{enumerate}
-	\item \textbf{Initial inference:} A computationally inexpensive base model evaluates an input text $\inputtext$ and outputs a probability score $P(y=1 \mid \inputtext)_{\text{base}}$.
+	\item \textbf{Initial inference:} A computationally inexpensive base model---selected through the feature engineering and model selection pipeline---evaluates an input text $\inputtext$ and outputs a probability score $P(y=1 \mid \inputtext)_{\text{base}} \in [0,1]$.
 	
-	\item \textbf{Uncertainty delegation:} A threshold $t_{\text{lower}}$ is defined. If the base model's probability falls within the uncertain interval $t_{\text{lower}} \le P(y=1 \mid \inputtext)_{\text{base}} \le 1 - t_{\text{lower}}$, the prediction is considered unreliable and is deferred. The threshold is chosen by optimizing the trade‑off between coverage and accuracy on the validation set.
+	\item \textbf{Uncertainty delegation:} A threshold $t_{\text{lower}} \in [0, 0.5]$ is defined. If the base model's probability lies within the closed interval
+	\begin{equation}
+		t_{\text{lower}} \le P(y=1 \mid \inputtext)_{\text{base}} \le 1 - t_{\text{lower}}
+	\end{equation}
+	the prediction is considered unreliable and the instance is placed in the boundary region. The complementary intervals $[0, t_{\text{lower}})$ and $(1-t_{\text{lower}}, 1]$ correspond to high-confidence negative and positive predictions, respectively, which are accepted without further processing.
 	
-	\item \textbf{Specialist resolution:} Uncertain instances are delegated to a computationally heavy specialist model. An attempt is made to further fine‑tune the specialist on challenging samples mined from the validation set---specifically, the subset of data that the base model failed to classify confidently.
+	\item \textbf{Specialist resolution:} Instances in the boundary region are forwarded to a specialist model. Three specialist configurations are evaluated:
+	\begin{itemize}
+		\item an SVM specialist trained exclusively on the boundary samples mined from the validation set;
+		\item a generic DistilBERT classifier (basic fine-tuning, Section~\ref{sec:bert_basic}) used as a black-box specialist;
+		\item a DistilBERT specialist fine-tuned on the same boundary samples with the backbone partially frozen (specialist fine-tuning, Section~\ref{sec:bert_specialist}).
+	\end{itemize}
 \end{enumerate}
 
-The final predictions are evaluated on the held‑out test set. This architecture ensures that the majority of clear‑cut reviews are processed rapidly by the base model, while GPU‑intensive inference is reserved exclusively for ambiguous texts.
+The final prediction for each \inputtext{} is obtained by combining the outputs:
+\begin{equation}
+P(y=1 \mid \inputtext)_{\text{cascade}} =
+\begin{cases}
+	P(y=1 \mid \inputtext)_{\text{base}}, & \text{if \inputtext{} is in the acceptance region},\\[4pt]
+	P(y=1 \mid \inputtext)_{\text{specialist}}, & \text{if \inputtext{} is in the boundary region}.
+\end{cases}
+\end{equation}
+The hard class label is derived by thresholding this probability at $0.5$.
 
-\section{Statistical Evaluation}
+\subsection{Threshold Selection}
 
-The experimental workflow is designed to isolate the impact of each pipeline component. To ensure that observed performance gains are statistically significant rather than artifacts of random variance, McNemar's test ($\mcnemaralpha = 0.05$) is applied to paired classifier predictions (baseline versus challenger). For any ablation study or comparative analysis, the baselines are established dynamically; typically, the best‑performing model from the preceding step is chosen.
+The delegation threshold $t_{\text{lower}}$ is a critical hyperparameter that governs the trade-off between coverage (the fraction of instances processed by the fast base model) and global accuracy (the overall performance of the hybrid system). To determine the optimal value, a sweep over possible thresholds is performed on the validation set. For each candidate $t_{\text{lower}}$, the cascade predictions are simulated using the base model and the specialist (the basic BERT variant is used as a placeholder during this sweep to avoid data leakage from the final specialist training). Two quantities are recorded: the coverage, i.e., the proportion of instances that are accepted by the base model, and the hybrid accuracy, which is the accuracy of the combined predictions on the entire validation set. The threshold that maximizes hybrid accuracy is selected, provided it does not delegate an excessive fraction of the data (practical coverage constraints are implicitly encoded in the sweep range). The optimal threshold found through this procedure is $t_{\text{lower}} = 0.254$, resulting in an acceptance region width of approximately $0.492$ ($0.254$ to $0.746$). At this operating point, roughly 25--30\% of the test instances are expected to be delegated to the specialist.
 
-Unlike tests that compare aggregate scores, McNemar's test analyzes discordant pairs---instances where one model predicts correctly while the other errs. Because the test evaluates the marginal frequencies of correct and incorrect prediction counts, it inherently measures differences in overall classification accuracy. As the datasets in this study are kept strictly balanced through stratified sampling, model performance can be reliably assessed using both accuracy and the macro F1‑score. The balance of the data makes accuracy a robust metric, thereby ensuring that McNemar's test is a perfectly aligned statistical approach for this study.
+\subsection{Specialist Training}
+
+The specialist models are trained on the boundary region samples identified by the base model on the validation set.
+
+For the SVM specialist, the same linear SVM architecture and hyperparameters as the base model are employed, but the model is fitted exclusively on the TF-IDF representations of the validation documents whose base model prediction probability fell within $[t_{\text{lower}}, 1-t_{\text{lower}}]$. This creates a lightweight specialist that shares the same feature space and decision function type as the base model but is concentrated on the ambiguous region.
+
+For the BERT specialist, the fine-tuning procedure detailed in Section~\ref{sec:bert_specialist} is applied to the same boundary subset. No additional data balancing is required, as the boundary region naturally contains an approximately equal number of positive and negative examples due to the symmetric thresholding.
+
+\subsection{Evaluation}
+
+The final cascade predictions are evaluated on the held-out test set. Performance is compared against the standalone base model, the standalone BERT baseline, and an ensemble that uses the basic BERT without specialist fine-tuning. McNemar's test is applied to the paired predictions to assess statistical significance. This architecture ensures that the majority of clear-cut reviews are processed rapidly by the linear SVM, while the GPU-intensive transformer inference is reserved exclusively for the small fraction of texts for which the base model's confidence is insufficient.
 
 \section{Implementation}
 
-All experiments, data transformations, and statistical analyses are implemented in Python. The architecture leverages open‑source libraries across the different domains of the experimental pipeline:
+All experiments, data transformations, and statistical analyses are implemented in Python. The architecture leverages open-source libraries across the different domains of the experimental pipeline:
 
 \begin{itemize}
 	\item \textbf{Data Management and Processing:} Core data manipulation, matrix operations, and dataset parsing are handled using \code{pandas} and \code{NumPy}.
 	
-	\item \textbf{Natural Language Processing (NLP):} the \code{contractions} library is utilized alongside the Natural Language Toolkit (\code{NLTK}), which provides the implementations for Porter Stemming and WordNet Lemmatization. Context‑aware POS filtering is executed with \code{spaCy} (\texttt{en\_core\_web\_sm}). Lexicon‑based sentiment scoring is provided by \code{vaderSentiment}.
+	\item \textbf{Natural Language Processing:} the \code{contractions} library is utilized alongside the Natural Language Toolkit (\code{NLTK}), which provides the implementations for Porter Stemming and WordNet Lemmatization. Context-aware POS filtering is executed with \code{spaCy} (\texttt{en\_core\_web\_sm}). Lexicon-based sentiment scoring is provided by \code{vaderSentiment}.
 	
-	\item \textbf{Classical Machine Learning:} the construction of BoW and TF‑IDF matrices, as well as the implementation of the traditional classifiers (linear SVM and \logreg), are conducted using \code{scikit-learn}. For high‑dimensional semantic clustering, \code{FAISS} is employed to perform GPU‑accelerated K‑Means clustering.
+	\item \textbf{Classical Machine Learning:} the construction of BoW and TF-IDF matrices, as well as the implementation of the traditional classifiers (linear SVM and \logreg), are conducted using \code{scikit-learn}. For high-dimensional semantic clustering, \code{FAISS} is employed to perform GPU-accelerated K-Means clustering.
 	
 	\item \textbf{Deep Learning:} the deep learning components of the cascade architecture are built upon the \code{TensorFlow} and \code{Keras} frameworks. The DistilBERT model and its tokenizer are sourced from the Hugging Face \code{transformers} library. The generation of dense semantic vectors prior to clustering is powered by the \code{sentence-transformers} library.
 	
@@ -1082,11 +1139,12 @@ The text is labeled as negative within the dataset, but is overly positive. This
 
 \section{Methodology}
 
-In this section, it is being evaluated what parameters have impact on the robustness of sentiment analysis. Finally, a cascade ensemble approach is evaluated.
+...Jeszcze nie gotowe
 
-... Jeszcze nie gotowe
+The experimental workflow is designed to isolate the impact of each pipeline component. To ensure that observed performance gains are statistically significant rather than artifacts of random variance, McNemar's test ($\mcnemaralpha = 0.05$) is applied to paired classifier predictions (baseline versus challenger). For any ablation study or comparative analysis, the baselines are established dynamically; typically, the best-performing model from the preceding step is chosen.
 
-Impact of distinct phases is evaluated...
+Unlike tests that compare aggregate scores, McNemar's test analyzes discordant pairs---instances where one model predicts correctly while the other errs. Because the test evaluates the marginal frequencies of correct and incorrect prediction counts, it inherently measures differences in overall classification accuracy. As the datasets in this study are kept strictly balanced through stratified sampling, model performance can be reliably assessed using both accuracy and the macro F1-score. The balance of the data makes accuracy a robust metric, thereby ensuring that McNemar's test is a perfectly aligned statistical approach for this study.
+
 
 \section{Results}
 
@@ -1221,7 +1279,7 @@ It is worth noting that the results are easily interpretable. Tokens such as \li
 		\caption{Extracted negative words (total kept: 17178)}
 		\label{fig:tokens_lower_negative}
 	\end{subfigure}
-	\caption{Word clouds for \code{tokens\_lower} (kept and discarded by \zscore‑score).}
+	\caption{Word clouds for \code{tokens\_lower} (kept and discarded by \zscore-score).}
 	\label{fig:tokens_lower_clouds}
 \end{figure}
 
@@ -1246,7 +1304,7 @@ It is worth noting that the results are easily interpretable. Tokens such as \li
 		\caption{Extracted negative words (total kept: 14268)}
 		\label{fig:tokens_filtered_negative}
 	\end{subfigure}
-	\caption{Word clouds for \code{tokens\_filtered} (kept and discarded by \zscore‑score).}
+	\caption{Word clouds for \code{tokens\_filtered} (kept and discarded by \zscore-score).}
 	\label{fig:tokens_filtered_clouds}
 \end{figure}
 
