@@ -114,7 +114,7 @@
 
 \newcommand{\vocabsize}{V}
 \newcommand{\tokenclass}{c}
-\newcommand{\numbertokens}[1]{N_{#1}}
+\newcommand{\numbertokens}[1]{T_{#1}}
 \newcommand{\smoothparam}{\beta}
 \newcommand{\kconcepts}{k}
 \newcommand{\inputtext}{X}
@@ -122,6 +122,27 @@
 \newcommand{\weightparam}{w}
 
 \newcommand{\literal}[1]{\textit{``#1''}}
+
+% Ensemble symbols
+\newcommand{\predVal}{y}
+\newcommand{\idx}{\iota}
+\newcommand{\mBase}{B}
+\newcommand{\mSpec}{S}
+\newcommand{\mCas}{C}
+\newcommand{\thresh}{\tau}
+
+% Probability notations
+\newcommand{\probSmall}[1]{p_{#1}}       % e.g., p_B, p_S
+\newcommand{\probLarge}[2]{P_{#1}(\predVal=1 \mid #2)}
+
+% Sweep and metrics
+\newcommand{\numVal}{N}
+\newcommand{\sweepthresh}{t}
+\newcommand{\acceptance}[1]{A_{\idx}(#1)}   % acceptance mask for instance i with threshold #1
+\newcommand{\coverage}{\epsilon(\sweepthresh)}
+\newcommand{\hybridacc}{\aleph(\sweepthresh)}
+\newcommand{\cascadePred}[1]{\hat{\predVal}_{\idx}^{\,\mCas}(#1)} % cascade prediction for i with threshold #1
+
 % end of thesis customisation
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
@@ -975,7 +996,6 @@ A custom statistical pruning method based on \zscore-scores is employed to disca
 \subsubsection{Smoothed Probabilities}
 
 First, the smoothed token-level probability of a feature in a given class $\tokenclass$ is calculated, denoted as $\smoothedprob{\tokenclass}$. To prevent undefined logarithms resulting from zero-frequency occurrences, Laplace smoothing ($\smoothparam = 0.01$) is applied:
-
 \begin{equation}
 	\smoothedprob{\tokenclass} = \frac{\Count{\tokenclass} + \smoothparam}{\numbertokens{\tokenclass} + \smoothparam \vocabsize}
 \end{equation}
@@ -990,7 +1010,6 @@ This formulation treats each feature as a token generator---representing the pro
 
 \subsubsection{Computing the \zscore-Score}
 Next, the log-odds ratio of the feature's smoothed probability in the positive class versus the negative class is calculated. The \zscore-score normalizes this log-odds ratio by its standard error:
-
 \begin{equation}
 	\zscore = \frac{\ln\frac{\smoothedprob{\positive}}{\smoothedprob{\negative}}}{\sqrt{\frac{1}{\Count{\positive} + \smoothparam} + \frac{1}{\Count{\negative} + \smoothparam}}}
 \end{equation}
@@ -1006,86 +1025,104 @@ Each $n$-gram in the vocabulary is encoded with this Sentence Transformer model.
 
 FAISS-accelerated K-Means clustering is utilized on these normalized, sentiment-aware vectors to partition the vocabulary into $\kconcepts$ discrete groups. Each cluster forms a ``concept'' that aggregates semantically and sentimentally related $n$-grams. The resulting mapping from each original $n$-gram to its concept identifier is stored. Concept-level feature matrices are then constructed by summing the term-frequency counts of all $n$-grams belonging to the same concept for each document. This produces a dense $D \times \kconcepts$ matrix that compresses the original high-dimensional vocabulary while preserving discriminative information. Statistical pruning via \zscore-scores can be applied to these concept features in exactly the same manner as to the original units, further reducing dimensionality and focusing the representation on the most sentiment-bearing concepts.
 
-\section{Machine Learning Models}
-
-The classification task is approached through a comparative analysis of traditional machine learning algorithms and a transformer-based deep neural network. All models are trained on the preprocessed training set, with hyperparameter selection and early stopping guided by a held-out validation partition.
-
-\subsection{Traditional Baselines}
-
-A linear SVM and \logreg{} are employed as computationally efficient baselines. Both classifiers are trained on the feature matrices produced by the preprocessing and feature engineering stages---specifically, the TF-IDF weighted $n$-gram vectors (BoW representations are also evaluated during experimentation, but the core pipeline converges on TF-IDF). The training procedure utilizes the scikit-learn implementations with the following configuration.
-
-\subsubsection{Linear Support Vector Machine}
-
-The linear SVM optimizes the squared hinge loss with L2 regularization. The default penalty strength $C=1.0$ is retained, and the solver is permitted up to $10\,000$ iterations to ensure convergence even on high-dimensional data. At inference time, the raw signed distance to the separating hyperplane is not a calibrated probability measure. To embed the SVM into the cascade architecture, which requires reliable confidence estimates, the distance scores are passed through a Platt scaling calibrator (\texttt{CalibratedClassifierCV}). This wrapper fits an internal \logreg{} on the SVM scores using $5$-fold cross-validation, thereby mapping unbounded decision values to the $[0,1]$ interval and producing well-calibrated posterior probabilities for the positive class.
-
-\subsubsection{Logistic Regression}
-
-\logreg{} directly models the conditional class probability $P(y=1 \mid \inputtext)$ by minimising the log-loss (cross-entropy) objective with an L2 penalty. It is configured with the L-BFGS solver, which approximates the Hessian for quasi-Newton optimisation and is well-suited to moderately sized problems. The regularization strength $C=1.0$ and a maximum of $1\,000$ iterations are used. Unlike the SVM, LR natively outputs probability estimates without an external calibration step. Both models are fitted on the same training split and evaluated on the same validation and test sets, ensuring fair comparison.
-	
-\subsection{Deep Learning Classifier}
-
-The deep learning component of the system is based on DistilBERT, a distilled, six-layer variant of the BERT architecture that preserves over 95\% of the original model’s performance while being substantially smaller and faster. Two separate training regimes are employed: a \textbf{basic fine-tuning} that yields a standalone sentiment classifier for benchmark comparisons, and a \textbf{specialist fine-tuning} that adapts the model to the ambiguous instances encountered in the cascade ensemble.
-
-\subsubsection{Basic Fine-Tuning}
-\label{sec:bert_basic}
-
-The checkpoint \texttt{distilbert-base-uncased-finetuned-sst-2-english}, which has been pre-trained on large English corpora and already fine-tuned on the Stanford Sentiment Treebank (SST-2), is loaded from the Hugging Face hub. Its classification head is further fine-tuned on the full IMDb training set. Input texts (the \code{text\_clean} field) are tokenized with the corresponding DistilBERT tokenizer, truncated or padded to a maximum length of $256$ tokens. Training is performed for $3$ epochs with a batch size of $16$, using the Adam optimizer with a learning rate of $2 \times 10^{-5}$. Mixed-precision (float16) computation is utilized to reduce memory consumption and accelerate training. Early stopping monitors the validation loss with a patience of $2$ epochs, and a learning rate reduction on plateau (factor $0.5$, patience $1$) is applied. A stratified $20\%$ hold-out from the training set serves as the validation partition. After training, the model outputs class probabilities via a softmax over the two logits. This basic DistilBERT serves two purposes: it provides a strong baseline for the standalone comparison of traditional models versus deep learning, and it is reused as the initialisation point for the specialist variant.
-
-\subsubsection{Specialist Fine-Tuning}
-\label{sec:bert_specialist}
-
-For the cascade ensemble, the basic DistilBERT model is further fine-tuned on the subset of validation instances that the base model could not classify with high confidence. The backbone of the transformer is partially frozen: the first $5$ layers are kept frozen, while the remaining layers and the classification head remain trainable. The specialist is trained for $10$ epochs with a lower learning rate of $2 \times 10^{-6}$, a batch size of $16$, and early stopping with a patience of $3$ epochs. All other training settings (mixed precision, tokenizer, maximum sequence length) remain identical to the basic fine-tuning. This targeted fine-tuning encourages the model to specialise in the ambiguous region of the decision boundary identified by the base model, without overfitting to the relatively small hard-sample set.
-
 \section{Cascade Ensemble}
 
-To balance the computational efficiency of traditional machine learning algorithms with the deep understanding capacity of transformer-based models, a cascade ensemble architecture is proposed. The design follows the 3WD paradigm, where each instance is assigned to one of three regions based on the predictive confidence of a lightweight base model. Instances classified with high confidence are accepted immediately, while those falling into a boundary region of uncertainty are deferred to a more powerful but computationally expensive specialist.
+To balance the computational efficiency of traditional machine learning algorithms with the deep understanding capacity of transformer-based models, a cascade ensemble architecture is proposed. The design follows the 3WD paradigm, where each instance is assigned to one of three regions based on the predictive confidence of a lightweight base model. Instances classified with high confidence are accepted immediately, while those falling into a boundary region of uncertainty are deferred to a more powerful but computationally expensive specialist. Finally, an attempt is made to employ the cascade architecture for a two-stage traditional model.
 
 \subsection{Architecture}
 
 The cascade operates in three stages:
 
 \begin{enumerate}
-	\item \textbf{Initial inference:} A computationally inexpensive base model---selected through the feature engineering and model selection pipeline---evaluates an input text $\inputtext$ and outputs a probability score $P(y=1 \mid \inputtext)_{\text{base}} \in [0,1]$.
-	
-	\item \textbf{Uncertainty delegation:} A threshold $t_{\text{lower}} \in [0, 0.5]$ is defined. If the base model's probability lies within the closed interval
+	\item \textbf{Initial inference:} A computationally inexpensive base model evaluates an input text $\inputtext$ and outputs a probability score
 	\begin{equation}
-		t_{\text{lower}} \le P(y=1 \mid \inputtext)_{\text{base}} \le 1 - t_{\text{lower}}
+		\probSmall{\mBase} = \probLarge{\mBase}{\inputtext} \in [0,1].
 	\end{equation}
-	the prediction is considered unreliable and the instance is placed in the boundary region. The complementary intervals $[0, t_{\text{lower}})$ and $(1-t_{\text{lower}}, 1]$ correspond to high-confidence negative and positive predictions, respectively, which are accepted without further processing.
+	
+	\item \textbf{Uncertainty delegation:} A threshold $\thresh \in [0, 0.5]$ is defined. The intervals $[0, \thresh)$ and $(1-\thresh, 1]$ correspond to high-confidence negative and positive predictions, respectively, which are accepted without further processing. If the base model's probability lies within the closed interval
+	\begin{equation}
+		\thresh \le \probSmall{\mBase} \le 1 - \thresh,
+	\end{equation}
+	the prediction is considered unreliable and $\inputtext$ is placed in the boundary region.
 	
 	\item \textbf{Specialist resolution:} Instances in the boundary region are forwarded to a specialist model. Three specialist configurations are evaluated:
 	\begin{itemize}
-		\item an SVM specialist trained exclusively on the boundary samples mined from the validation set;
-		\item a generic DistilBERT classifier (basic fine-tuning, Section~\ref{sec:bert_basic}) used as a black-box specialist;
-		\item a DistilBERT specialist fine-tuned on the same boundary samples with the backbone partially frozen (specialist fine-tuning, Section~\ref{sec:bert_specialist}).
+		\item a generic DistilBERT classifier used as a black-box specialist;
+		\item a DistilBERT specialist fine-tuned exclusively on the boundary samples mined from the validation set;
+		\item an SVM specialist trained on the same boundary samples to verify whether a two-stage traditional approach would work.
 	\end{itemize}
 \end{enumerate}
 
-The final prediction for each \inputtext{} is obtained by combining the outputs:
+Let $\probSmall{\mSpec} = \probLarge{\mSpec}{\inputtext}$ denote the probability output of the chosen specialist. The final cascaded probability, $\probSmall{\mCas}$, is obtained by combining the two models:
 \begin{equation}
-P(y=1 \mid \inputtext)_{\text{cascade}} =
-\begin{cases}
-	P(y=1 \mid \inputtext)_{\text{base}}, & \text{if \inputtext{} is in the acceptance region},\\[4pt]
-	P(y=1 \mid \inputtext)_{\text{specialist}}, & \text{if \inputtext{} is in the boundary region}.
-\end{cases}
+	\probSmall{\mCas} = \probLarge{\mCas}{\inputtext} =
+	\begin{cases} 
+		\probSmall{\mSpec}, & \probSmall{\mBase} \in [\thresh, 1 - \thresh], \\[4pt]
+		\probSmall{\mBase}, & \probSmall{\mBase} \notin [\thresh, 1 - \thresh].
+	\end{cases}
 \end{equation}
-The hard class label is derived by thresholding this probability at $0.5$.
+The hard class label is derived by thresholding $\probSmall{\mCas}$ at $0.5$: values strictly greater than $0.5$ are taken as positive, otherwise negative.
 
 \subsection{Threshold Selection}
 
-The delegation threshold $t_{\text{lower}}$ is a critical hyperparameter that governs the trade-off between coverage (the fraction of instances processed by the fast base model) and global accuracy (the overall performance of the hybrid system). To determine the optimal value, a sweep over possible thresholds is performed on the validation set. For each candidate $t_{\text{lower}}$, the cascade predictions are simulated using the base model and the specialist (the basic BERT variant is used as a placeholder during this sweep to avoid data leakage from the final specialist training). Two quantities are recorded: the coverage, i.e., the proportion of instances that are accepted by the base model, and the hybrid accuracy, which is the accuracy of the combined predictions on the entire validation set. The threshold that maximizes hybrid accuracy is selected, provided it does not delegate an excessive fraction of the data (practical coverage constraints are implicitly encoded in the sweep range). The optimal threshold found through this procedure is $t_{\text{lower}} = 0.254$, resulting in an acceptance region width of approximately $0.492$ ($0.254$ to $0.746$). At this operating point, roughly 25--30\% of the test instances are expected to be delegated to the specialist.
+The delegation threshold $\thresh$ governs the trade-off between the fraction of instances processed by the fast base model (coverage) and the overall performance of the hybrid system (global accuracy). To determine the optimal value, a sweep over $\thresh$ is performed on the validation set. For each candidate threshold, the cascade predictions are simulated using the base model and a placeholder specialist (the generic DistilBERT variant). Utilizing this placeholder serves as a heuristic to establish reasonable coverage boundaries.
 
-\subsection{Specialist Training}
+Let the validation set contain $\numVal$ instances. For instance $\idx$, denote the base model's output by $\probSmall{\mBase}^{(\idx)} = \probLarge{\mBase}{\inputtext_{\idx}}$, which corresponds to evaluating $\probSmall{\mBase}$ on that specific input. For a candidate threshold $\sweepthresh \in [0,0.5]$, the acceptance mask for instance $\idx$ is
+\begin{equation}
+	\acceptance{\sweepthresh} = \mathbf{1}\bigl[\probSmall{\mBase}^{(\idx)} \le \sweepthresh \;\lor\; \probSmall{\mBase}^{(\idx)} \ge 1-\sweepthresh \,\bigr].
+\end{equation}
+The coverage is defined as
+\begin{equation}
+	\coverage = \frac{1}{\numVal} \sum_{\idx=1}^{\numVal} \acceptance{\sweepthresh},
+\end{equation}
+and the hybrid accuracy is
+\begin{equation}
+	\hybridacc = \frac{1}{\numVal} \sum_{\idx=1}^{\numVal} \mathbf{1}\bigl[\, \cascadePred{\sweepthresh} = \predVal_\idx \,\bigr],
+\end{equation}
+where $\cascadePred{\sweepthresh}$ is the final cascade prediction for instance $\idx$ when using threshold $\sweepthresh$.  
 
-The specialist models are trained on the boundary region samples identified by the base model on the validation set.
+The optimal threshold is chosen as
+\begin{equation}
+	\thresh = \arg\max_{\sweepthresh \in [0,0.5]} \hybridacc,
+\end{equation}
+The sweep yields $\thresh = 0.254$, which defines an acceptance region of $[0,0.254) \cup (0.746,1]$ (width $\approx 0.492$). At this operating point, roughly 25~–~30\% of the test instances are expected to be delegated to the specialist.
 
-For the SVM specialist, the same linear SVM architecture and hyperparameters as the base model are employed, but the model is fitted exclusively on the TF-IDF representations of the validation documents whose base model prediction probability fell within $[t_{\text{lower}}, 1-t_{\text{lower}}]$. This creates a lightweight specialist that shares the same feature space and decision function type as the base model but is concentrated on the ambiguous region.
+\subsection{Models and Training}
 
-For the BERT specialist, the fine-tuning procedure detailed in Section~\ref{sec:bert_specialist} is applied to the same boundary subset. No additional data balancing is required, as the boundary region naturally contains an approximately equal number of positive and negative examples due to the symmetric thresholding.
+The cascade draws upon a collection of models that serve either as the fast base classifier or as the deep specialist. This subsection describes their architectures, training procedures, and the adjustments made for the cascade setting.
 
-\subsection{Evaluation}
+\subsubsection{Traditional Baselines}
+\label{sec:trad_models}
 
-The final cascade predictions are evaluated on the held-out test set. Performance is compared against the standalone base model, the standalone BERT baseline, and an ensemble that uses the basic BERT without specialist fine-tuning. McNemar's test is applied to the paired predictions to assess statistical significance. This architecture ensures that the majority of clear-cut reviews are processed rapidly by the linear SVM, while the GPU-intensive transformer inference is reserved exclusively for the small fraction of texts for which the base model's confidence is insufficient.
+A linear SVM and \logreg{} are employed as the computationally efficient baselines. Both are trained on the TF-IDF weighted $n$-gram vectors produced by the feature engineering pipeline (BoW representations are also evaluated during experimentation, but the final configuration converges on TF-IDF). The training utilizes the \code{scikit-learn} implementations with the following settings. Both models are fitted on the same training split and evaluated on the same validation and test sets.
+
+\begin{itemize}
+	\item \textbf{Linear SVM} optimizes the squared hinge loss with $L2$ regularisation. The default penalty $C=1.0$ is retained, and the solver is allowed up to $10\,000$ iterations to guarantee convergence on high-dimensional data. Because the cascade requires, a Platt scaling calibrator (\texttt{CalibratedClassifierCV}) is used. This post-processor maps the unbounded decision values to the $[0,1]$ interval and yields well-calibrated posterior probabilities for the positive class.
+	
+	\item \textbf{\logreg} directly models $\probLarge{}{\inputtext}$ by minimizing the log-loss (cross-entropy) with an $L2$ penalty. It is configured with the \code{L-BFGS} solver, $C=1.0$, and a maximum of $1\,000$ iterations. Unlike the SVM, \logreg{} natively outputs probability estimates without an external calibration step.
+\end{itemize}
+
+\subsubsection{Deep Learning Models}
+
+The deep learning component of the cascade is based on DistilBERT, a distilled six-layer variant of BERT (\code{distilbert-base-uncased-finetuned-sst-2-english}) that retains most of the original model's performance while being substantially smaller and faster. It is already pre-trained on large English corpora and fine‑tuned on the Stanford Sentiment Treebank (SST‑2) and is available on the Hugging Face hub.
+
+\begin{itemize}
+	\item \textbf{Basic Fine-Tuning:} In this study, the model is further fine-tuned on the full IMDb training. Input texts (\code{text\_clean}) are tokenized with the DistilBERT tokenizer, truncated or padded to a maximum length of $256$ tokens. Training is performed for $3$ epochs with a batch size of $16$, using the Adam optimizer with a learning rate of $2 \times 10^{-5}$. Mixed-precision (\code{float16}) computation is utilized to reduce memory consumption and accelerate training. Early stopping monitors the validation loss (patience $2$ epochs), and a learning rate reduction on plateau (factor $0.5$, patience $1$) is applied. A stratified $20\%$ hold-out from the training set serves as the validation partition. After training, the model outputs class probabilities through a softmax over the two logits.
+	
+	\item \textbf{Specialist Fine-Tuning:} For the cascade ensemble, the basic DistilBERT model is further fine-tuned on the subset of validation instances that the base model could not classify with high confidence (the boundary region). The backbone is partially frozen: the first $5$ transformer layers are kept frozen, while the remaining layers and the classification head remain trainable. The specialist is trained for $10$ epochs with a lower learning rate of $2 \times 10^{-6}$, batch size $16$, and early stopping (patience $3$ epochs). All other training settings (mixed precision, tokenizer, maximum sequence length) are identical to the basic fine-tuning. This procedure encourages the model to specialize in the ambiguous region of the decision boundary without over-fitting to the relatively small hard-sample set.
+\end{itemize}
+
+
+\subsubsection{Specialist Training for the Cascade}
+\label{sec:specialist_training}
+
+In addition to the DistilBERT specialist, a traditional SVM specialist is constructed to evaluate whether a two-stage classical approach can boost performance on the boundary region. Both specialists are trained exclusively on the validation documents whose base model prediction probability $\probSmall{\mBase}^{(\idx)}$ falls within $[\thresh, 1-\thresh]$.
+
+\begin{itemize}
+	\item \textbf{SVM Specialist:} The same linear SVM architecture and hyperparameters as the base model are employed, but the model is fitted solely on the TF-IDF representations of the boundary samples. This yields a lightweight specialist that shares the feature space and decision function type of the base model while concentrating on the ambiguous region.
+	
+	\item \textbf{BERT Specialist:} The fine-tuning procedure is applied to the same boundary subset. Because the boundary region naturally contains an approximately equal number of positive and negative examples (a consequence of symmetric thresholding), no additional data balancing is required.
+\end{itemize}
 
 \section{Implementation}
 
@@ -1100,7 +1137,7 @@ All experiments, data transformations, and statistical analyses are implemented 
 	
 	\item \textbf{Deep Learning:} the deep learning components of the cascade architecture are built upon the \code{TensorFlow} and \code{Keras} frameworks. The DistilBERT model and its tokenizer are sourced from the Hugging Face \code{transformers} library. The generation of dense semantic vectors prior to clustering is powered by the \code{sentence-transformers} library.
 	
-	\item \textbf{Statistical Testing and Visualization:} McNemar's test is computed using \code{statsmodels}. All graphical representations are generated with \code{matplotlib}, \code{seaborn}, and the \code{wordcloud} library.
+	\item \textbf{Statistical Testing and Visualization:} \code{statsmodels} is employed to perform McNemar's tests. All graphical representations are generated with \code{matplotlib}, \code{seaborn}, and the \code{wordcloud} library.
 \end{itemize}
 
 \chapter{Experiments}
