@@ -1299,82 +1299,90 @@ Tables~\ref{tab:McNemarE1a} through \ref{tab:McNemarE1d} provide a cross-configu
 	\item \textbf{Representation Impact:} TF-IDF features yield better performance than BoW.
 \end{enumerate}
 
-\begin{table}[htbp]
-	\centering
-	\caption{McNemar Test (Experiment 1 - a)}
-	\label{tab:McNemarE1a}
-	\begin{tabular}{llllrcc}
-		\toprule
-		& Text & Representation & Model & $Acc_{Model}$ & $\uparrow$/$\downarrow$ & $p$-value \\
-		\midrule
-		\textbf{0} & \textbf{Cased} & \textbf{TF-IDF} & \textbf{SVM} & \textbf{90.61\%} & \textbf{} & \textbf{Baseline} \\
-		\textbf{1} & \textbf{Cased} & \textbf{TF-IDF} & \textbf{\logreg{}} & \textbf{89.75\%} & \textbf{$\downarrow$} & \textbf{0.000000} \\
-		\textbf{2} & \textbf{Cased} & \textbf{BoW} & \textbf{SVM} & \textbf{89.36\%} & \textbf{$\downarrow$} & \textbf{0.000000} \\
-		3 & Lower & TF-IDF & SVM & 90.78\% &  & 0.164879 \\
-		4 & Expanded and Cased & TF-IDF & SVM & 90.76\% &  & 0.112399 \\
-		\bottomrule
-	\end{tabular}
-\end{table}
+Table~\ref{tab:McNemarE1b} and Figure~\ref{fig:casing-expansion-effect} highlight that a performance gain occurs when expansion is applied to lowercased text---\texttt{Expanded and Lower} configuration achieves the highest accuracy ($90.98\%$), and proves significantly better than the standard ``Lower'' baseline.
 
 \begin{table}[htbp]
 	\centering
-	\caption{McNemar Test (Experiment 1 - b)}
-	\label{tab:McNemarE1b}
-	\begin{tabular}{llllrcc}
-		\toprule
-		& Text & Representation & Model & $Acc_{Model}$ & $\uparrow$/$\downarrow$ & $p$-value \\
-		\midrule
-		\textbf{0} & \textbf{Expanded and Lower} & \textbf{TF-IDF} & \textbf{SVM} & \textbf{90.98\%} & \textbf{$\uparrow$} & \textbf{0.036879} \\
-		\textbf{1} & \textbf{Lower} & \textbf{TF-IDF} & \textbf{SVM} & \textbf{90.78\%} & \textbf{} & \textbf{Baseline} \\
-		\textbf{2} & \textbf{Lower} & \textbf{BoW} & \textbf{SVM} & \textbf{89.83\%} & \textbf{$\downarrow$} & \textbf{0.000000} \\
-		\textbf{3} & \textbf{Lower} & \textbf{TF-IDF} & \textbf{\logreg{}} & \textbf{89.82\%} & \textbf{$\downarrow$} & \textbf{0.000000} \\
-		4 & Cased & TF-IDF & SVM & 90.61\% &  & 0.164879 \\
-		\bottomrule
-	\end{tabular}
+	\caption{McNemar tests for the impact of casing and text expansion.}
+	\label{tab:McNemarE1_all}
+	\begin{subtable}{\textwidth}
+		\centering
+		\caption{McNemar Test}
+		\label{tab:McNemarE1a}
+		\begin{tabular}{llllrcc}
+			\toprule
+			& Text & Representation & Model & $Acc_{Model}$ & $\uparrow$/$\downarrow$ & $p$-value \\
+			\midrule
+			\textbf{0} & \textbf{Cased} & \textbf{TF-IDF} & \textbf{SVM} & \textbf{90.61\%} & \textbf{} & \textbf{Baseline} \\
+			\textbf{1} & \textbf{Cased} & \textbf{TF-IDF} & \textbf{\logreg{}} & \textbf{89.75\%} & \textbf{$\downarrow$} & \textbf{0.000000} \\
+			\textbf{2} & \textbf{Cased} & \textbf{BoW} & \textbf{SVM} & \textbf{89.36\%} & \textbf{$\downarrow$} & \textbf{0.000000} \\
+			3 & Lower & TF-IDF & SVM & 90.78\% &  & 0.164879 \\
+			4 & Expanded and Cased & TF-IDF & SVM & 90.76\% &  & 0.112399 \\
+			\bottomrule
+		\end{tabular}
+	\end{subtable}
+	
+	\vspace{0.5em}
+	
+	\begin{subtable}{\textwidth}
+		\centering
+		\caption{McNemar Test}
+		\label{tab:McNemarE1b}
+		\begin{tabular}{llllrcc}
+			\toprule
+			& Text & Representation & Model & $Acc_{Model}$ & $\uparrow$/$\downarrow$ & $p$-value \\
+			\midrule
+			\textbf{0} & \textbf{Expanded and Lower} & \textbf{TF-IDF} & \textbf{SVM} & \textbf{90.98\%} & \textbf{$\uparrow$} & \textbf{0.036879} \\
+			\textbf{1} & \textbf{Lower} & \textbf{TF-IDF} & \textbf{SVM} & \textbf{90.78\%} & \textbf{} & \textbf{Baseline} \\
+			\textbf{2} & \textbf{Lower} & \textbf{BoW} & \textbf{SVM} & \textbf{89.83\%} & \textbf{$\downarrow$} & \textbf{0.000000} \\
+			\textbf{3} & \textbf{Lower} & \textbf{TF-IDF} & \textbf{\logreg{}} & \textbf{89.82\%} & \textbf{$\downarrow$} & \textbf{0.000000} \\
+			4 & Cased & TF-IDF & SVM & 90.61\% &  & 0.164879 \\
+			\bottomrule
+		\end{tabular}
+	\end{subtable}
+	
+	\vspace{0.5em}
+	
+	\begin{subtable}{\textwidth}
+		\centering
+		\caption{McNemar Test}
+		\label{tab:McNemarE1c}
+		\begin{tabular}{llllrcc}
+			\toprule
+			& Text & Representation & Model & $Acc_{Model}$ & $\uparrow$/$\downarrow$ & $p$-value \\
+			\midrule
+			\textbf{0} & \textbf{Cased} & \textbf{TF-IDF} & \textbf{SVM} & \textbf{90.61\%} & \textbf{$\uparrow$} & \textbf{0.000000} \\
+			\textbf{1} & \textbf{Cased} & \textbf{TF-IDF} & \textbf{\logreg{}} & \textbf{89.75\%} & \textbf{} & \textbf{Baseline} \\
+			2 & Lower & TF-IDF & \logreg{} & 89.82\% &  & 0.546041 \\
+			3 & Cased & BoW & \logreg{} & 89.73\% &  & 0.898788 \\
+			4 & Expanded and Cased & TF-IDF & \logreg{} & 89.70\% &  & 0.513802 \\
+			\bottomrule
+		\end{tabular}
+	\end{subtable}
+	
+	\vspace{0.5em}
+	
+	\begin{subtable}{\textwidth}
+		\centering
+		\caption{McNemar Test}
+		\label{tab:McNemarE1d}
+		\begin{tabular}{llllrcc}
+			\toprule
+			& Text & Representation & Model & $Acc_{Model}$ & $\uparrow$/$\downarrow$ & $p$-value \\
+			\midrule
+			\textbf{0} & \textbf{Lower} & \textbf{TF-IDF} & \textbf{SVM} & \textbf{90.78\%} & \textbf{$\uparrow$} & \textbf{0.000000} \\
+			\textbf{1} & \textbf{Lower} & \textbf{TF-IDF} & \textbf{\logreg{}} & \textbf{89.82\%} & \textbf{} & \textbf{Baseline} \\
+			2 & Lower & Bow & \logreg{} & 90.04\% &  & 0.242561 \\
+			3 & Expanded and Lower & TF-IDF & \logreg{} & 89.98\% &  & 0.053784 \\
+			4 & Cased & TF-IDF & \logreg{} & 89.75\% &  & 0.546041 \\
+			\bottomrule
+		\end{tabular}
+	\end{subtable}
 \end{table}
-
-\begin{table}[htbp]
-	\centering
-	\caption{McNemar Test (Experiment 1 - c)}
-	\label{tab:McNemarE1c}
-	\begin{tabular}{llllrcc}
-		\toprule
-		& Text & Representation & Model & $Acc_{Model}$ & $\uparrow$/$\downarrow$ & $p$-value \\
-		\midrule
-		\textbf{0} & \textbf{Cased} & \textbf{TF-IDF} & \textbf{SVM} & \textbf{90.61\%} & \textbf{$\uparrow$} & \textbf{0.000000} \\
-		\textbf{1} & \textbf{Cased} & \textbf{TF-IDF} & \textbf{\logreg{}} & \textbf{89.75\%} & \textbf{} & \textbf{Baseline} \\
-		2 & Lower & TF-IDF & \logreg{} & 89.82\% &  & 0.546041 \\
-		3 & Cased & BoW & \logreg{} & 89.73\% &  & 0.898788 \\
-		4 & Expanded and Cased & TF-IDF & \logreg{} & 89.70\% &  & 0.513802 \\
-		\bottomrule
-	\end{tabular}
-\end{table}
-
-\begin{table}[htbp]
-	\centering
-	\caption{McNemar Test (Experiment 1 - d)}
-	\label{tab:McNemarE1d}
-	\begin{tabular}{llllrcc}
-		\toprule
-		& Text & Representation & Model & $Acc_{Model}$ & $\uparrow$/$\downarrow$ & $p$-value \\
-		\midrule
-		\textbf{0} & \textbf{Lower} & \textbf{TF-IDF} & \textbf{SVM} & \textbf{90.78\%} & \textbf{$\uparrow$} & \textbf{0.000000} \\
-		\textbf{1} & \textbf{Lower} & \textbf{TF-IDF} & \textbf{\logreg{}} & \textbf{89.82\%} & \textbf{} & \textbf{Baseline} \\
-		2 & Lower & Bow & \logreg{} & 90.04\% &  & 0.242561 \\
-		3 & Expanded and Lower & TF-IDF & \logreg{} & 89.98\% &  & 0.053784 \\
-		4 & Cased & TF-IDF & \logreg{} & 89.75\% &  & 0.546041 \\
-		\bottomrule
-	\end{tabular}
-\end{table}
-
-The most notable performance gain occurs when expansion is applied to lowercased text. Table~\ref{tab:McNemarE1b} highlights that ``Expanded and Lower'' configuration achieves the highest accuracy ($90.98\%$), representing a significant improvement over the standard ``Lower'' baseline---also depicted in the Figure~\ref{fig:casing-expansion-effect}.
 
 \subsection{Impact of Filtering}
 
-The results demonstrate that applying POS filtering---stop-words removal---reduces the overall dimensionality of the feature space by approximately 17\%. For example, the number of positive tokens decreased from 19,172 to 15,794, and the volume of discarded neutral tokens dropped from 102,665 to 85,174. In the word clouds (Figure~\ref{fig:tokens_lower_clouds} and Figure~\ref{fig:tokens_filtered_clouds}), the size of each word is proportional to its \zscore-score, which represents its correlation with the sentiment. By discarding neutral , the filtered approach amplifies the polarity of key sentiment indicators. For example, discriminative words such as \literal{worst} achieve notably higher \zscore-scores in the filtered configuration. Consequently, they appear visibly larger in Figure~\ref{fig:tokens_filtered_clouds}.
-
-\subsubsection{Observations}
-It is worth noting that the results are easily interpretable. Tokens such as \literal{great} or \literal{love} indicate positive sentiment, while \literal{bad}, \literal{worst}, or \literal{boring} indicate negative feelings towards movies. It is also interesting that \literal{his}, \literal{episodes}, or \literal{music} appear in the positive group, suggesting that people tend to be more descriptive when they write a positive review. Tokens such as \literal{?}, \literal{why}, and \literal{...} appear in the negative reviews.
+POS filtering reduces the overall dimensionality of the feature space by approximately 17\%. For example, the number of positive tokens decreased from $19,172$ to $15,794$, and the volume of discarded neutral tokens dropped from $102,665$ to $85,174$. In the word clouds (Figure~\ref{fig:tokens_lower_clouds} and Figure~\ref{fig:tokens_filtered_clouds}), the size of each word is proportional to its \zscore-score, which represents its correlation with the sentiment. By discarding neutral , the filtered approach amplifies the polarity of key sentiment indicators. For example, discriminative words such as \literal{worst} achieve notably higher \zscore-scores in the filtered configuration. Consequently, they appear visibly larger in Figure~\ref{fig:tokens_filtered_clouds}.
 
 \begin{figure}[htbp]
 	\centering
@@ -1427,27 +1435,29 @@ It is worth noting that the results are easily interpretable. Tokens such as \li
 	\label{fig:tokens_filtered_clouds}
 \end{figure}
 
-\subsection{Impact of Custom Vectorization and Statistical Pruning}
+\subsubsection{Observations}
+It is worth noting that the results are easily interpretable. Tokens such as \literal{great} or \literal{love} indicate positive sentiment, while \literal{bad}, \literal{worst}, or \literal{boring} indicate negative feelings towards a movie. It is also interesting that \literal{his}, \literal{episodes}, or \literal{music} appear in the positive group, suggesting that people tend to be more descriptive when they write a positive review. Tokens such as \literal{?}, \literal{why}, and \literal{...} appear in the negative reviews.
 
-Instead of relying on the default \code{CountVectorizer}, a custom implementation is utilized, bypassing the standard regular expression tokenization. Following the vectorization, neutral tokens are pruned based on their calculated \zscore-scores. The new approaches are Custom BoW (\custombow) and Custom TF-IDF (\customtfidf).
+\subsection{Impact of Custom Vectorization}
+
+Instead of relying on the default \code{CountVectorizer}, the standard regular expression tokenization is bypassed. After the vectorization, neutral tokens are pruned based on their calculated \zscore-scores resulting in Custom BoW (\custombow) and Custom TF-IDF (\customtfidf).
 
 The following experiment evaluates various tokenization representations to identify the optimal \zscore-score pruning threshold, utilizing the best-performing model from the previous stage as a baseline. As illustrated in Figure~\ref{fig:zscore_threshold}, the models' Macro F1-scores can remain highly stable even when pruning is applied. However, the effectiveness of pruning is dependent on the chosen feature representation. For the linear SVM utilizing a \custombow{}, statistical pruning proves not applicable; performance degrades immediately, making $\zscore=0$ (no pruning) the optimal threshold. For the \logreg{} model with \custombow{}, the performance remains stable up to a threshold of $\zscore=1$ before declining.
 
 A particularly interesting pattern emerges when utilizing the \customtfidf{} representation. For both the linear SVM and \logreg{} models, the optimal pruning threshold shifts significantly to $\zscore=2$. At this threshold, the SVM maintains its peak baseline performance despite a substantial reduction in the feature space. Notably, the \logreg{} model exhibits a slight increase in its F1-score, suggesting that the targeted removal of neutral features actively improves the model's ability to generalize.
 
-\begin{figure}
+\begin{figure}[htbp]
 	\centering
 	\includegraphics[width=1\textwidth]{./figures/analysis/zscore_threshold.png}
 	\caption{Impact of neutral vocabulary pruning on performance (green regions represent the optimal threshold before performance degradation).}
 	\label{fig:zscore_threshold}
 \end{figure}
 
-\subsubsection{Representation Choice}
+\subsubsection{Impact of Token Type}
 
-As detailed in Table~\ref{tab:McNemarE2}, the most effective token representations rely on stemming, lemmatization, and simple lowercasing. The optimal configuration utilizes stemmed tokens paired with a \zscore-score pruning threshold of $\zscore=2$, achieving a peak accuracy of $91.41\%$ ($p = 0.0125$). Lemmatization/Stemming collapses tokens to their morphological roots and thus reduces the feature dimensionality compared to standard tokenization. Additionally, the lemmatized representations at pruning thresholds $\zscore=0$ and $\zscore=2$ achieve a nearly identical accuracy---reducing the dimensionality even more.
+As detailed in Table~\ref{tab:McNemarE2}, the most effective token representations rely on stemming, lemmatization, and simple lowercasing. The optimal configuration utilizes stemmed tokens paired with a \zscore-score pruning threshold of $\zscore=2$, achieving a peak accuracy of $91.41\%$ ($p = 0.0125$). Lemmatization/Stemming collapses tokens to their morphological roots and thus reduces the feature dimensionality compared to standard tokenization. Additionally, the lemmatized representations at pruning thresholds $\zscore=0$ and $\zscore=2$ achieve a nearly identical accuracy---reducing the dimensionality even more---this shows that pruning can be employed without negatively affecting the accuracy.
 
-The statistical analysis reveals an important trend regarding feature pruning. While a few configurations at $\zscore=1$ and $\zscore=2$ yield statistically significant improvements over the baseline ($\uparrow$), the vast majority of combinations between $\zscore=0$ and $\zscore=3$ result in $p$-values greater than $0.05$. This indicates that for most representation strategies, moderate statistical pruning perfectly maintains classification performance on par with the unpruned baseline. Statistically significant degradation ($\downarrow$) only begins to manifest under aggressive pruning at $\zscore=4$.
-\begin{table}[htbp]
+\begin{table} [htbp]
 	\centering
 	\caption{McNemar Test (\customtfidf{} vs SVM Baseline)}
 	\label{tab:McNemarE2}
@@ -1490,10 +1500,11 @@ The statistical analysis reveals an important trend regarding feature pruning. W
 	\end{tabular}
 \end{table}
 
-As detailed in Table~\ref{tab:McNemarE2logreg}, the simplest representation is chosen as the baseline---retaining only alphabetic characters (Tokens Letters) without pruning ($\zscore=0$). Compared to this baseline, a statistically significant increase in accuracy is observed when utilizing more sophisticated representations combined with a pruning threshold of $\zscore=2$. 
+While a few configurations at $\zscore=1$ and $\zscore=2$ yield improvements over the baseline ($\uparrow$), the vast majority of combinations between $\zscore=0$ and $\zscore=3$ result in $p$-values greater than $0.05$. This indicates that for most representation strategies, moderate statistical pruning perfectly maintains classification performance on par with the unpruned baseline. Significant degradation ($\downarrow$) only begins to manifest under aggressive pruning at $\zscore=4$.
 
-Notably, the POS-filtered approach (Tokens Filtered) combined with $\zscore=2$ pruning achieves the highest overall accuracy for the \logreg{} model on this validation set ($90.72\%$). This outcome contrasts with the earlier findings for the linear SVM (where stemmed tokens proved optimal), emphasizing that feature selection strategies are highly model-dependent and cannot be universally applied across different classification algorithms.
-\begin{table}[]
+As detailed in Table~\ref{tab:McNemarE2logreg}, the simplest representation (Tokens Letters with $\zscore=0$) is chosen as the baseline. Compared to this baseline, a statistically significant increase in accuracy is observed when utilizing more sophisticated representations. 
+
+\begin{table}[htbp]
 	\centering
 	\caption{McNemar Test (Custom TF-IDF vs \logreg{} Baseline)}
 	\label{tab:McNemarE2logreg}
@@ -1535,9 +1546,11 @@ Notably, the POS-filtered approach (Tokens Filtered) combined with $\zscore=2$ p
 	\end{tabular}
 \end{table}
 
-\subsubsection{Impact of Vectorization Strategy}
+Notably, the filtered representation combined with $\zscore=2$ pruning achieves the highest overall accuracy for the \logreg{} model ($90.72\%$). This contrasts with the earlier findings for the linear SVM, emphasizing that feature selection strategies are highly model-dependent.
 
-This section demonstrates that the \customtfidf{} representation achieves significantly higher accuracy than the \texttt{\custombow{}} approach across all evaluated configurations. This outcome verifies that the pattern observed in the initial experiments---depicted in Tables~\ref{tab:McNemarE1a} through~\ref{tab:McNemarE1d}---holds true: TF-IDF fundamentally outperforms simple BoW for this classification task. Consequently, it can be concluded that the superiority of TF-IDF is robust and largely independent of the tokenization strategy employed. Consistent with the trends previously illustrated in Figure~\ref{fig:zscore_threshold}, aggressive pruning at $\zscore=4$ results in severe performance degradation across all representations.
+\subsubsection{Impact of Representation}
+
+The \customtfidf{} representation achieves higher accuracy than the \texttt{\custombow{}} approach across all tested configurations. This outcome verifies that the pattern observed in the initial experiments (Tables~\ref{tab:McNemarE1a} through~\ref{tab:McNemarE1d}) holds true: TF-IDF outperforms BoW for the sentiment analysis task. The superiority of TF-IDF is robust and largely independent of the tokenization strategy. Additionally, consistent with the trends previously illustrated in Figure~\ref{fig:zscore_threshold}, aggressive pruning at $\zscore=4$ results in performance degradation.
 
 \begin{table}[htbp]
 	\centering
@@ -1584,18 +1597,18 @@ This section demonstrates that the \customtfidf{} representation achieves signif
 
 \subsubsection{Ablation Study}
 
-In the ablation study depicted in Figure~\ref{fig:ablation_study}, the BoW and TF-IDF labels denote standard, unpruned token representations. On the other hand, \custombow{} and \customtfidf{} designate configurations where statistical pruning ($\zscore=2$) has been applied.
+In Figure~\ref{fig:ablation_study}, the BoW and TF-IDF labels denote the unpruned token representations. Meanwhile, \custombow{} and \customtfidf{} designate where pruning ($\zscore=2$) has been applied.
 
-For the standard BoW representations, the application of various tokenization strategies yields no statistically significant improvement over the \texttt{Expanded and Lower} baseline for either the linear SVM or \logreg{} models. Furthermore, when statistical pruning is introduced (\custombow{}), performance consistently degrades across all configurations; removing vocabulary features universally harms the predictive power of the raw BoW.
+For the BoW, various tokenization strategies yield no improvement over the \texttt{Expanded and Lower} baseline for either the linear SVM or \logreg{} models. Furthermore, when statistical pruning is introduced (\custombow{}), performance consistently degrades across all configurations; removing vocabulary features universally harms the predictive power of BoW.
 
-In contrast, the TF-IDF representations exhibit a lot of variance. For the linear SVM, only the lemmatized tokenization approach proves significantly better than the TF-IDF Baseline. However, the introduction of $\zscore=2$ pruning actively enhances the model's capabilities, significantly increasing the Macro F1-scores for the lowered and stemmed representations. The combination of stemming and \customtfidf{} achieves the highest overall performance metric ($91.41\%$).
+In contrast, the TF-IDF representations exhibit a lot of variance. For the linear SVM, only the lemmatized tokenization approach proves significantly better than the TF-IDF Baseline. However, the introduction of $\zscore=2$ pruning actively enhances the model's capabilities, increasing the Macro F1-scores for the lowered and stemmed representations. Combining stemming and \customtfidf{} achieves the highest overall performance ($91.41\%$).
 
-For the \logreg{} model, the overall classification scores are generally lower than those achieved by the SVM. For the BoW approach, pruning either degrades performance (as seen with cased and letter-only tokens) or has no statistically significant effect. However, the introduction of filtering combined with \customtfidf{} pruning proves highly effective. While isolated tokenization approaches do not have a clear impact on their own, the pruning strategy elevates almost all TF-IDF-based representations for \logreg{}, with the sole exception of the \texttt{Tokens Letters} configuration. The \texttt{Tokens Filtered} representation with $\zscore=2$ pruning outperforms the baseline by over 0.7 percentage points (rising from $89.98\%$ to $90.71\%$).
+For the \logreg{} model, the classification scores are generally lower than those achieved by the SVM. For the BoW approach, pruning either degrades performance (as seen with cased and letter-only tokens) or has no significant effect. However, the introduction of filtering combined with \customtfidf{} pruning proves effective. While isolated tokenization approaches do not have a clear impact on their own, the pruning strategy elevates almost all TF-IDF-based representations for \logreg{}, with the sole exception of the \texttt{Tokens Letters} configuration. The \texttt{Tokens Filtered} representation with $\zscore=2$ pruning outperforms the baseline by over 0.7 percentage points (rising from $89.98\%$ to $90.71\%$).
 
-\begin{figure}[tbp]
+\begin{figure}[htbp]
 	\centering
 	\includegraphics[width=1\textwidth]{./figures/analysis/ablation_study.png}
-	\caption{Ablation study of different token representations evaluating pre-tokenized representations without pruning ($\zscore=0$), and custom representations with statistical pruning ($\zscore=2$). These are compared against baseline \texttt{CountVectorizer} equivalents established in the initial experiments.}
+	\caption{Ablation study evaluating pre-tokenized representations without pruning ($\zscore=0$), and custom representations with statistical pruning ($\zscore=2$) compared to baseline \texttt{CountVectorizer} equivalents from the initial experiments.}
 	\label{fig:ablation_study}
 \end{figure}
 
@@ -1603,11 +1616,13 @@ For the \logreg{} model, the overall classification scores are generally lower t
 
 This experiment examines the importance of selecting the optimal  $n$-gram range---the vocabulary depth. As depicted in the left panel of Figure~\ref{fig:vocabulary_depth}, expanding the token representation from simple unigrams (1, 1) to include bigrams (1, 2) yields a substantial increase in the Macro F1-score for both the linear SVM and \logreg{} models. However, extending the depth further to include trigrams (1, 3) provides only marginal performance gains, illustrating a clear pattern of diminishing returns.
 
+\subsubsection{Dimensionality Problem}
 While deeper $n$-gram ranges capture richer sequential context, they introduce a severe structural challenge: the explosion of the feature space. The right panel of Figure~\ref{fig:vocabulary_depth} demonstrates that the base vocabulary grows aggressively, swelling from 18,471 unigrams to 139,015 total features when trigrams are included. Extrapolating this trajectory suggests that exploring even deeper ranges, such as $4$-grams (1, 4), would predictably push the raw feature count well beyond 190,000. Operating on such massive, highly sparse matrices becomes extremely memory-intensive.
 
+\subsubsection{Dimensionality Reduction}
 The implementation of statistical pruning ($\zscore=2.0$) effectively mitigates this dimensionality explosion. For the (1, 3) vocabulary range, pruning discards over 100,000 non-discriminative features, compressing the space from 139,015 down to manageable 36,350 features. This ensures that the classifiers can leverage the contextual richness of higher-order $n$-grams without suffering the standard computational penalties associated with high dimensionality.
 
-\begin{figure}[tbp]
+\begin{figure}[htbp]
 	\centering
 	\includegraphics[width=1\textwidth]{./figures/analysis/ngram_experiment_double.png}
 	\caption{Performance and dimensionality trends across varying $n$-gram ranges. The left panel illustrates model performance, while the right panel highlights the feature space reduction achieved via $\zscore=2.0$ statistical pruning.}
@@ -1616,9 +1631,7 @@ The implementation of statistical pruning ($\zscore=2.0$) effectively mitigates 
 
 \subsection{Impact of Semantic Clustering}
 
-Semantic clustering groups semantically related $n$-grams to capture conceptual representations and evaluate the combined impact of similar phrases. For example, as shown in Figure~\ref{fig:concepts_pos_10000_0}, the cluster containing \literal{great}, \literal{wonderful}, and \literal{amazing} forms the most discriminative positive concept, achieving a \zscore-score of 44.20. An interesting pattern emerges with clusters focused on structural phrases, such as \literal{his} or \literal{is an}, which also rank among the top positive concepts. This reinforces the earlier observation that reviewers tend to use more descriptive language when expressing a positive opinion.
-
-Conversely, Figure~\ref{fig:concepts_neg_10000_0} illustrates that negative clusters contain repeated punctuation. A significant advantage of clustering $n$-grams in this manner is that varying permutations of punctuation (e.g., \literal{?!} and \literal{!??}) are effectively grouped into a single conceptual feature, which theoretically could improve the model's ability to generalize noisy text. Other top negative concepts consist of direct negative descriptors (e.g., \literal{worst}, \literal{horrible}, \literal{awful}). The cluster containing the phrase \literal{bad, but} appears highly ranked for negativity, even though such phrasing often introduces a mitigating clause or mixed sentiment in natural language rather than pure negativity.
+Semantic clustering groups related $n$-grams to capture conceptual representations. As shown in Figure~\ref{fig:concepts_pos_10000_0}, the cluster containing \literal{great}, \literal{wonderful}, and \literal{amazing} forms the most discriminative positive concept, achieving a \zscore-score of $44.20$. Clusters focused on structural phrases, such as \literal{his} or \literal{is an} rank among the top positive concepts, reinforcing the earlier observation that reviewers tend to use more descriptive language when expressing a positive opinion.
 
 \begin{figure}[htbp]
 	\centering
@@ -1627,6 +1640,8 @@ Conversely, Figure~\ref{fig:concepts_neg_10000_0} illustrates that negative clus
 	\label{fig:concepts_pos_10000_0}
 \end{figure}
 
+Figure~\ref{fig:concepts_neg_10000_0} illustrates that negative clusters contain repeated punctuation. A significant advantage of clustering $n$-grams is that varying permutations of punctuation (e.g., \literal{?!} and \literal{!??}) are grouped into a single conceptual feature, which theoretically could improve the model's ability to generalize noisy text. Other top negative concepts contain direct negative descriptors (e.g., \literal{worst}, \literal{horrible}, \literal{awful}). The cluster containing the phrase \literal{bad, but} appears highly ranked for negativity, even though such phrasing depicts a mitigating clause or mixed sentiment in natural language rather than pure negativity.
+
 \begin{figure}[htbp]
 	\centering
 	\includegraphics[width=1\textwidth]{./figures/concepts/neg_wc_tokens_lower_k10000_w0.png}
@@ -1634,29 +1649,26 @@ Conversely, Figure~\ref{fig:concepts_neg_10000_0} illustrates that negative clus
 	\label{fig:concepts_neg_10000_0}
 \end{figure}
 
-This study further investigates the impact of augmenting the semantic clustering process with external sentiment scores provided by VADER. As demonstrated in Figures~\ref{fig:concepts_pos_10000_10} and \ref{fig:concepts_neg_10000_10}, incorporating lexicon-based polarity weights explicitly drives the \zscore-scores to higher absolute values. This indicates that sentiment-aware grouping produces more cohesive and discriminative clusters.
-
-Under this weighted approach, the clusters become semantically denser with respect to polarity. For instance, the primary positive cluster expands to seamlessly integrate \literal{excellent} alongside \literal{great}. Similarly, the \literal{bad} cluster becomes far more distinct and dominant in capturing negative connotations, confirming the effectiveness of the weighting strategy. Consequently, purely descriptive but sentiment-neutral concepts (such as the \literal{his} cluster) decrease in relative prominence and are successfully pushed down in the rankings, demonstrating that VADER-weighting effectively prioritizes genuine sentiment signals over contextual noise.
+\subsubsection{Weighted Approach}
+Figures~\ref{fig:concepts_pos_10000_10} and \ref{fig:concepts_neg_10000_10} depict that incorporating lexicon-based polarity increases the \zscore-score values, and thus produces more cohesive and discriminative clusters. For example, the primary positive cluster expands to integrate \literal{excellent} alongside \literal{great}. Similarly, the \literal{bad} cluster becomes more distinct and captures negative connotations, confirming the effectiveness of the weighting strategy. Descriptive but sentiment-neutral concepts (such as the \literal{his} cluster) decrease in prominence, demonstrating that VADER-weighting effectively prioritizes sentiment signals.
 
 \begin{figure}[htbp]
 	\centering
 	\includegraphics[width=1\textwidth]{./figures/concepts/pos_wc_tokens_lower_k10000_w10.png}
-	\caption{Top 5 positive concepts extracted via VADER-weighted semantic clustering ($w=10$).}
+	\caption{Top 5 positive concepts extracted via weighted semantic clustering ($w=10$).}
 	\label{fig:concepts_pos_10000_10}
 \end{figure}
 
 \begin{figure}[htbp]
 	\centering
 	\includegraphics[width=1\textwidth]{./figures/concepts/neg_wc_tokens_lower_k10000_w10.png}
-	\caption{Top 5 negative concepts extracted via VADER-weighted semantic clustering ($w=10$).}
+	\caption{Top 5 negative concepts extracted via weighted semantic clustering ($w=10$).}
 	\label{fig:concepts_neg_10000_10}
 \end{figure}
 
 \subsubsection{Concept Granularity}
 
-The results demonstrate that compressing the vocabulary to $n$ concepts results in performance degradation for both the linear SVM and \logreg{} models. As the number of clusters increases from $k=500$ to $k=5000$ and $k=10000$, the Macro F1-score improves, indicating that preserving nuances in wording is required for effective sentiment analysis. This performance trajectory appears bounded by the benchmark; even at 10,000 concepts, the clustered representations fail to surpass the unclustered baseline.
-
-Figure~\ref{fig:clustering_performance} highlights the benefit of sentiment weighting during the clustering phase at the lowest granularity ($k=500$). Seemingly, injecting external sentiment knowledge mitigates information loss when the feature space is heavily compressed.
+Compressing the vocabulary to $n$ concepts results in performance degradation for both the linear SVM and \logreg{} models. As the number of clusters increases from $\kconcepts=500$ to $\kconcepts=5000$ and $\kconcepts=10000$, the Macro F1-score improves, indicating that preserving nuances in vocabulary is required for effective sentiment analysis. This performance trajectory appears bounded by the benchmark; even at $\kconcepts=10,000$, the clustered representations fail to surpass the unclustered baseline. Figure~\ref{fig:clustering_performance} highlights the benefit of sentiment weighting, especially at the lowest granularity ($\kconcepts=500$). Seemingly, injecting external sentiment knowledge mitigates information loss when the feature space is heavily compressed.
 
 \begin{figure}[htbp]
 	\centering
@@ -1664,7 +1676,6 @@ Figure~\ref{fig:clustering_performance} highlights the benefit of sentiment weig
 	\caption{Performance comparison of clustered concepts across varying granularities ($k$) and sentiment weights ($w$), plotted against the unclustered $\zscore=2.0$ baseline.}
 	\label{fig:clustering_performance}
 \end{figure}
-
 
 \subsection{Impact of Certainty}
 
