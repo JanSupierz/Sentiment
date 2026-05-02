@@ -1228,11 +1228,11 @@ All three cascade variants are evaluated on the held-out test set, together with
 
 Because the data splits are exactly balanced through stratified sampling, accuracy and macro F1-score are equally reliable indicators of performance. Both are reported in the experiments. The primary metric for selecting the best configuration is accuracy, as it directly aligns with the statistical test used.
 
-\subsection{Statistical Significance Testing}
+\subsubsection{Statistical Significance Testing}
 
 All pairwise model comparisons are validated with McNemar's test at $\mcnemaralpha = 0.05$. The test evaluates whether the error distributions of two classifiers, computed on the same set of instances, differ significantly. In each experiment a baseline is chosen---typically the best-performing configuration from the previous test. The continuity-corrected variant of the test is employed (\code{statsmodels}), and raw $p$-values are reported without multiplicity correction, given the sequential, hypothesis-driven design.
 
-\subsection{Visualisation of Statistical Significance}
+\subsubsection{Visualisation of Statistical Significance}
 
 Every figure and table consistently encodes the outcome of McNemar's test:
 
