@@ -5,10 +5,21 @@ import matplotlib.pyplot as plt
 import matplotlib.ticker as mtick
 import seaborn as sns
 import yaml
+from dataclasses import dataclass
 
 from src.utils.paths import RESULTS_DIR, FIGURES_DIR, CONFIGS_DIR
 
 sns.set_theme(style="whitegrid", context="paper", font_scale=1.2)
+
+
+@dataclass(frozen=True)
+class PlotConfig:
+    """Struct to hold plot styling parameters."""
+    title_size: int = 22
+    subtitle_size: int = 18
+    label_size: int = 15
+    tick_size: int = 15
+    legend_size: int = 15
 
 
 def sweep_exact_cascade(svm_df, bert_preds, y_true):
@@ -44,7 +55,7 @@ def sweep_exact_cascade(svm_df, bert_preds, y_true):
     return pd.DataFrame(results, columns=['Certainty_Threshold', 'Coverage', 'Delegated', 'Local_Accuracy', 'Hybrid_Accuracy'])
 
 
-def plot_cascade_metrics(df_subset, model_name_label, bert_global_acc, fig_dir):
+def plot_cascade_metrics(df_subset, model_name_label, bert_global_acc, fig_dir, style: PlotConfig):
 
     if df_subset.empty:
         print(f"Skipping plots for {model_name_label}: No data found.")
@@ -64,8 +75,6 @@ def plot_cascade_metrics(df_subset, model_name_label, bert_global_acc, fig_dir):
     clean_top_models = [m.replace("linear_svm", "SVM").replace("logreg", "LR") for m in top_models]
 
     fig, (ax1, ax2, ax3) = plt.subplots(1, 3, figsize=(24, 7))
-    fig.suptitle(f"{model_name_label} Cascade Pipeline Analysis & Global System Optimization", fontsize=20, fontweight='bold', y=1.05)
-
     colors = sns.color_palette("tab10", len(clean_top_models))
     palette = {m: c for m, c in zip(clean_top_models, colors)}
 
@@ -73,11 +82,12 @@ def plot_cascade_metrics(df_subset, model_name_label, bert_global_acc, fig_dir):
     sns.lineplot(data=plot_df, x="Certainty_Threshold", y="Local_Accuracy", hue="Model", 
                  style="Model", dashes=True, alpha=0.8,
                  palette=palette, ax=ax1, linewidth=2.5, legend=False)
-    ax1.set_title(f"1. Local Accuracy ({model_name_label} on Retained Data)", fontsize=14)
-    ax1.set_xlabel(r"Model Prediction Certainty (%)", fontsize=12)
-    ax1.set_ylabel("Local Accuracy (%)", fontsize=12)
+    ax1.set_title("1. Local Accuracy on Retained Data", fontsize=style.subtitle_size)
+    ax1.set_xlabel(r"Model Prediction Certainty (%)", fontsize=style.label_size)
+    ax1.set_ylabel("Local Accuracy (%)", fontsize=style.label_size)
     ax1.xaxis.set_major_formatter(mtick.PercentFormatter(1.0))
     ax1.yaxis.set_major_formatter(mtick.PercentFormatter(1.0))
+    ax1.tick_params(axis='both', which='major', labelsize=style.tick_size)
     ax1.set_xlim(0.5, 1.0) 
     ymin, _ = ax1.get_ylim()
     ax1.set_ylim(ymin, 1.0)
@@ -86,11 +96,12 @@ def plot_cascade_metrics(df_subset, model_name_label, bert_global_acc, fig_dir):
     sns.lineplot(data=plot_df, x="Certainty_Threshold", y="Delegated", hue="Model", 
                  style="Model", dashes=True, alpha=0.8,
                  palette=palette, ax=ax2, linewidth=2.5, legend=False)
-    ax2.set_title("2. Workload Management (Deferral Curve)", fontsize=14)
-    ax2.set_xlabel(r"Model Prediction Certainty (%)", fontsize=12)
-    ax2.set_ylabel("Data Delegated to BERT (%)", fontsize=12)
+    ax2.set_title("2. Workload Management (Deferral Curve)", fontsize=style.subtitle_size)
+    ax2.set_xlabel(r"Model Prediction Certainty (%)", fontsize=style.label_size)
+    ax2.set_ylabel("Data Delegated to BERT (%)", fontsize=style.label_size)
     ax2.xaxis.set_major_formatter(mtick.PercentFormatter(1.0))
     ax2.yaxis.set_major_formatter(mtick.PercentFormatter(1.0))
+    ax2.tick_params(axis='both', which='major', labelsize=style.tick_size)
     ax2.set_xlim(0.5, 1.0)
     ax2.set_ylim(0.0, 1.0)
 
@@ -102,13 +113,14 @@ def plot_cascade_metrics(df_subset, model_name_label, bert_global_acc, fig_dir):
     ax3.axhline(bert_global_acc, color='black', linestyle='--', linewidth=2, label=f"BERT Global Baseline ({bert_global_acc:.1%})")
     ax3.plot(best_delegated, best_hybrid_acc, marker='*', markersize=18, color='gold', markeredgecolor='black', zorder=10, label=f"Optimal {model_name_label} Peak")
 
-    ax3.set_title("3. Global System Optimization Score", fontsize=14)
-    ax3.set_xlabel("Data Delegated to BERT (%)", fontsize=12)
-    ax3.set_ylabel("Combined Cascade Accuracy (%)", fontsize=12)
+    ax3.set_title("3. Global System Optimization Score", fontsize=style.subtitle_size)
+    ax3.set_xlabel("Data Delegated to BERT (%)", fontsize=style.label_size)
+    ax3.set_ylabel("Combined Cascade Accuracy (%)", fontsize=style.label_size)
     ax3.xaxis.set_major_formatter(mtick.PercentFormatter(1.0))
     ax3.yaxis.set_major_formatter(mtick.PercentFormatter(1.0))
+    ax3.tick_params(axis='both', which='major', labelsize=style.tick_size)
 
-    ax3.legend(fontsize='11', loc='upper right', bbox_to_anchor=(1.0, 0.95))
+    ax3.legend(fontsize=style.legend_size, loc='upper right', bbox_to_anchor=(1.0, 0.95))
     ax3.set_xlim(0.0, 1.0)
 
     plt.tight_layout()
@@ -227,13 +239,16 @@ def main(experiments, bert_exp):
     print(f"-> Required Model Certainty: {best_certainty:.1%} (Accepts probs >= {best_certainty:.3f} or <= {lower_bound:.3f})")
     print(f"-> Data Delegated to BERT: {best_delegated:.2%} (Base model handles {(1-best_delegated):.2%})\n")
 
+    # Initialize styling struct
+    style = PlotConfig()
+
     # Filter for SVM models and plot
     svm_df_subset = curve_df[curve_df['Model'].str.contains('svm', case=False, na=False)]
-    plot_cascade_metrics(svm_df_subset, "SVM", bert_global_acc, fig_dir)
+    plot_cascade_metrics(svm_df_subset, "SVM", bert_global_acc, fig_dir, style)
 
     # Filter for LogReg models and plot
     logreg_df_subset = curve_df[curve_df['Model'].str.contains('logreg', case=False, na=False)]
-    plot_cascade_metrics(logreg_df_subset, "LogReg", bert_global_acc, fig_dir)
+    plot_cascade_metrics(logreg_df_subset, "LogReg", bert_global_acc, fig_dir, style)
 
 
 if __name__ == "__main__":

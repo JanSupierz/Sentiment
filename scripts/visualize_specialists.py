@@ -1,100 +1,51 @@
 import argparse
 import yaml
 import pandas as pd
-import numpy as np
 import seaborn as sns
 import matplotlib.pyplot as plt
-import matplotlib.ticker as mtick
-import matplotlib.colors as mcolors
-from matplotlib.patches import Patch
+from sklearn.metrics import confusion_matrix
+from dataclasses import dataclass
 
 from src.utils.paths import PROJECT_ROOT, RESULTS_DIR, FIGURES_DIR
 
-# 1. Standardized Palette from your nice visualization
-CORRECT_NAVY = '#000080'
-ERROR_GREEN = '#00b894'
-ERROR_RED = '#d63031'
 
-CUSTOM_PALETTE = {
-    'Correctly Classified': CORRECT_NAVY,
-    'False Negative': ERROR_GREEN,
-    'False Positive': ERROR_RED,
-    'Unknown': '#95a5a6'
-}
+@dataclass(frozen=True)
+class PlotConfig:
+    """Struct to hold plot styling parameters."""
+    font_size: int = 15
+    title_size: int = 18  # font_size + 3 for hierarchy
+    pad: int = 15
+    cmap: str = 'Blues'
 
 
-def plot_axis_from_df(ax, df, title):
-    """Handles plotting for a single subplot axis directly from a DataFrame."""
+def plot_cm_from_df(ax, df, title, style: PlotConfig):
+    """Handles plotting a confusion matrix for a single subplot axis directly from a DataFrame."""
     df = df.copy()
     
-    # 2. Map Outcomes using the unified 3-category logic
-    conditions = [
-        (df['probability'] <= 0.5) & (df['true_label'] == 0), # True Negative
-        (df['probability'] > 0.5)  & (df['true_label'] == 1), # True Positive
-        (df['probability'] <= 0.5) & (df['true_label'] == 1), # False Negative
-        (df['probability'] > 0.5)  & (df['true_label'] == 0)  # False Positive
-    ]
-
-    choices = [
-        'Correctly Classified',
-        'Correctly Classified',
-        'False Negative',
-        'False Positive'
-    ]
-    df['Outcome'] = np.select(conditions, choices, default='Unknown')
-
-    # Calculate local accuracy on this specific subset
-    correct_mask = df['Outcome'] == 'Correctly Classified'
-    accuracy = correct_mask.mean()
+    # Binarize predictions based on the 0.5 threshold
+    y_true = df['true_label']
+    y_pred = (df['probability'] > 0.5).astype(int)
+    
+    # Calculate accuracy for the title
+    accuracy = (y_true == y_pred).mean()
     full_title = f"{title}\nAccuracy on subset: {accuracy:.1%}"
 
-    # Draw the Stacked Histogram
-    hue_order = [
-        'Correctly Classified', 
-        'False Negative', 
-        'False Positive'
-    ]
+    # Generate the confusion matrix
+    cm = confusion_matrix(y_true, y_pred, labels=[0, 1])
 
-    sns.histplot(
-        data=df, x='probability', hue='Outcome', hue_order=hue_order,
-        bins=40, multiple="stack", palette=CUSTOM_PALETTE,
-        edgecolor='white', linewidth=0.5, kde=False, ax=ax, zorder=2
+    # Draw the Heatmap
+    sns.heatmap(
+        cm, annot=True, fmt='d', cmap=style.cmap, ax=ax, 
+        cbar=False, square=True,
+        xticklabels=['Negative (0)', 'Positive (1)'],
+        yticklabels=['Negative (0)', 'Positive (1)'],
+        annot_kws={"size": style.font_size, "weight": "bold"}
     )
 
-    # 3. Apply Hatching to Misclassified (Removed gradient logic)
-    fn_rgb = mcolors.to_rgb(ERROR_GREEN)
-    fp_rgb = mcolors.to_rgb(ERROR_RED)
-
-    for patch in ax.patches:
-        if patch.get_width() == 0:
-            continue
-
-        facecolor = patch.get_facecolor()
-        
-        is_fn = np.allclose(facecolor[:3], fn_rgb, atol=0.05)
-        is_fp = np.allclose(facecolor[:3], fp_rgb, atol=0.05)
-
-        if is_fn or is_fp:
-            patch.set_hatch('////')
-            patch.set_edgecolor((1.0, 1.0, 1.0, 0.5))
-            patch.set_linewidth(0.5)
-
-    # Add Decision Boundary
-    ax.axvline(0.5, color='#333333', linestyle='--', linewidth=2.5, alpha=0.8, zorder=4)
-    
-    # Add Predicts Labels
-    ax.text(0.25, ax.get_ylim()[1]*0.95, 'Predicts NEGATIVE', ha='center', va='top', fontsize=12, color='#555555', fontweight='bold', alpha=0.7)
-    ax.text(0.75, ax.get_ylim()[1]*0.95, 'Predicts POSITIVE', ha='center', va='top', fontsize=12, color='#555555', fontweight='bold', alpha=0.7)
-
     # Axis Formatting
-    ax.set_title(full_title, fontsize=16, fontweight='bold', pad=15)
-    ax.set_xlabel("Predicted Probability", fontsize=12, fontweight='bold')
-    ax.xaxis.set_major_formatter(mtick.PercentFormatter(1.0))
-    ax.grid(axis='x', visible=False)
-    ax.set_xlim(0, 1.0)
-
-    if ax.get_legend() is not None:
-        ax.get_legend().remove()
+    ax.set_title(full_title, fontsize=style.font_size, fontweight='bold', pad=style.pad)
+    ax.set_xlabel("Predicted Label", fontsize=style.font_size, fontweight='bold')
+    ax.set_ylabel("True Label", fontsize=style.font_size, fontweight='bold')
 
 
 def main():
@@ -140,42 +91,31 @@ def main():
     hard_bert_basic = df_bert_basic[mask_hard]
     hard_bert_spec = df_bert_spec[mask_hard]
 
-    sns.set_theme(style="whitegrid", context="talk")
-    fig, axes = plt.subplots(1, 4, figsize=(32, 7), sharey=True)
+    # Initialize styling struct
+    style = PlotConfig()
 
-    fig.suptitle(f"Model Behaviors on the Hardest {mask_hard.mean():.1%} of Data\n"
-                 f"(Samples where Base Probability was between {lower:.2f} and {upper:.2f})", 
-                 fontsize=20, fontweight='bold', y=1.08)
+    sns.set_theme(style="white", context="talk")
 
-    plot_axis_from_df(axes[0], hard_base, "1. Original Base Model")
-    plot_axis_from_df(axes[1], hard_svm_spec, "2. SVM Specialist")
-    plot_axis_from_df(axes[2], hard_bert_basic, "3. Basic BERT")
-    plot_axis_from_df(axes[3], hard_bert_spec, "4. BERT Specialist")
+    fig, axes = plt.subplots(1, 4, figsize=(24, 6), sharey=True)
 
-    axes[0].set_ylabel("Number of Hard Samples", fontsize=14, fontweight='bold')
+    plot_cm_from_df(axes[0], hard_base, "1. Original Base Model", style)
+    plot_cm_from_df(axes[1], hard_svm_spec, "2. SVM Specialist", style)
+    plot_cm_from_df(axes[2], hard_bert_basic, "3. Basic BERT", style)
+    plot_cm_from_df(axes[3], hard_bert_spec, "4. BERT Specialist", style)
+
+    # Only show the y-axis label on the first plot to avoid clutter
     for ax in axes[1:]:
         ax.set_ylabel("")
 
-    # 4. Create a unified 3-column legend for the entire figure
-    legend_elements = [
-        Patch(facecolor=CORRECT_NAVY, label='Correctly Classified'),
-        Patch(facecolor=ERROR_GREEN, hatch='////', edgecolor=(1.0, 1.0, 1.0, 0.5), label='False Negative'),
-        Patch(facecolor=ERROR_RED, hatch='////', edgecolor=(1.0, 1.0, 1.0, 0.5), label='False Positive')
-    ]
-
-    fig.legend(handles=legend_elements, loc='lower center', bbox_to_anchor=(0.5, -0.05), ncol=3, frameon=False)
-
-    sns.despine(left=True)
     plt.tight_layout()
-    plt.subplots_adjust(bottom=0.15)
 
     # Save the figure
     out_dir = FIGURES_DIR / "thesis"
     out_dir.mkdir(parents=True, exist_ok=True)
-    out_path = out_dir / "all_models_hard_cases_analysis.png"
+    out_path = out_dir / "all_models_hard_cases_cm.png"
 
     plt.savefig(out_path, dpi=200, bbox_inches='tight')
-    print(f"Saved analysis plot to: {out_path}")
+    print(f"Saved confusion matrix plot to: {out_path}")
 
 
 if __name__ == "__main__":
