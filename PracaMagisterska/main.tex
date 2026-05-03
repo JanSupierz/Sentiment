@@ -1258,17 +1258,7 @@ Every figure and table consistently encodes the outcome of McNemar's test:
 
 \section{Results}
 
-*
-
-*
-
-* Intro and a conclusion
-
-*
-
-*
-
-*
+This section presents the evaluation of linear SVM and \logreg{} classifiers across various configurations. Initial experiments establish that linear SVMs consistently outperform \logreg{} models, with TF-IDF representations universally yielding superior predictive performance compared to standard BoW. The findings demonstrate that implementing statistical pruning effectively mitigates the dimensionality explosion associated with complex $n$-grams while preserving optimal classification accuracy. Ultimately, the results validate the proposed cascade ensemble methodology; delegating uncertain predictions from a highly efficient linear base model to a deep-semantic BERT specialist resolves non-linear contextual cues, achieving a peak combined Macro F1-score of approximately $92.3\%$ and significantly outperforming standalone baselines.
 
 \subsection{Impact of Casing and Text Expansion}
 
@@ -1741,21 +1731,61 @@ Despite this favorable error distribution, \logreg{} achieves a much smaller wor
 \end{table}
 \subsection{Impact of Cascade Ensemble}
 
-Cascade works
+The linear SVM cascade (Figure~\ref{fig:svm_acc_cov_trade-off}) demonstrates superior efficiency and performance when utilizing TF-IDF representations---top 4 representations can be found in the legend. The SVM begins with a high initial local accuracy (above $91.0\%$ at the $50\%$ certainty threshold) and scales smoothly to $100.0\%$ as the required confidence increases. Ultimately, the SVM cascade achieves a high overall combined accuracy, peaking at approximately $93.1\%$. Crucially, it attains this global optimization peak while delegating only $15\%$ to $20\%$ of the data to BERT. This visually confirms the earlier observation that the SVM provides a massive zone of high-precision coverage, allowing the system to rely heavily on the lightweight model without sacrificing accuracy.
 
 \begin{figure}[htbp]
 	\centering
-	\includegraphics[width=1\textwidth]{./figures/analysis/accuracy_coverage_tradeoff.png}
-	\caption{Overview of the proposed granular cascade pipeline.}
-	\label{fig:a}
+	\includegraphics[width=1\textwidth]{./figures/analysis/svm_accuracy_coverage_tradeoff.png}
+	\caption{Accuracy-Coverage trade-off for linear SVM cascade.}
+	\label{fig:svm_acc_cov_trade-off}
 \end{figure}
+
+The \logreg{} cascade (Figure~\ref{fig:lr_acc_cov_trade-off}), predominantly utilizing BoW representations, exhibits a higher dependency on the specialist model. The local accuracy on the retained data climbs steadily from roughly $90.0\%$ to $100.0\%$ as the prediction certainty threshold increases. Consequently, the deferral curve illustrates an exponential increase in the workload delegated to BERT. While the combined cascade accuracy still significantly outperforms the BERT global baseline of $91.3\%$, reaching an optimal peak at approximately $92.9\%$ to $93.0\%$, achieving this maximum performance requires delegating roughly $25\%$ to $30\%$ of the most uncertain data to the specialist model.
 
 \begin{figure}[htbp]
 	\centering
-	\includegraphics[width=1\textwidth]{./figures/thesis/thesis_final_results.png}
-	\caption{}
-	\label{fig:e}
+	\includegraphics[width=1\textwidth]{./figures/analysis/logreg_accuracy_coverage_tradeoff.png}
+	\caption{Accuracy-Coverage trade-off for \logreg{} cascade.}
+	\label{fig:lr_acc_cov_trade-off}
 \end{figure}
+
+Overall, both configurations validate the cascade methodology, proving that deferring uncertain predictions yields better accuracy than relying on the BERT baseline alone. Nevertheless, the linear SVM cascade is markedly superior to the \logreg{} cascade, as it achieves a higher maximum accuracy while delegating significantly less data to the computationally expensive specialist model.
+
+\subsubsection{Specialist Types}
+
+As shown in Figure~\ref{fig:cascade_comp}, introducing a specialist yields mixed results depending on its underlying mechanics---thus the choice of architecture for the specialist is crucial.
+
+\begin{figure}[htbp]
+	\centering
+	\includegraphics[width=1\textwidth]{./figures/thesis/cascade_comparison_f1_macro.png}
+	\caption{Accuracy comparison of cascade systems.}
+	\label{fig:cascade_comp}
+\end{figure}
+
+\begin{itemize}
+	\item Both BERT cascade systems successfully surpass the SVM baseline's Macro F1 score of $91.31\%$. Fine-tuning a BERT specialist specifically on ``hard cases'' mined from the validation set results in a negligible performance bump over a basic BERT model ($92.36\%$ versus $92.34\%$, $p=0.859684$). This lack of statistical significance likely stems from the relatively small volume of hard samples available for fine-tuning.
+	
+	\item The Basic BERT model alone struggled with this specific data shuffle, achieving only an $87.43\%$ F1-score on the test set, compared to its validation score of $91.27\%$. While this difficulty explains why the cascade approach dropped by almost $1\%$ overall, it highlights an interesting dynamic: combining two individually weaker models can still produce a more robust and improved overall score.
+	
+	\item Deploying a secondary SVM as the specialist model degrades the system's performance, dragging the Macro F1-score down to $0.9031$. This deterioration points to a structural limitation: the base classifier has already exploited the linear feature space. Any remaining uncertain predictions rely on subtle, highly contextual cues.
+\end{itemize}
+
+\subsubsection{The Linear Limitation}
+
+This structural barrier becomes apparent when isolating model performance strictly to the most challenging samples, as illustrated by the confusion matrices in Figure~\ref{fig:cascade_confusion}.
+
+\begin{figure}[htbp]
+	\centering
+	\includegraphics[width=1\textwidth]{./figures/thesis/all_models_hard_cases_cm.png}
+	\caption{Confusion matrix of cascade systems on hard samples.}
+	\label{fig:cascade_confusion}
+\end{figure}
+
+\begin{itemize}
+	\item \textbf{Base vs.\ SVM:} The original base model manages a $64.3\%$ accuracy rate on this difficult subset. When the SVM ``specialist'' attempts to re-evaluate these exact same cases, its accuracy actually plummets to $56.8\%$. This drop is primarily driven by a massive spike in false negatives, which surge from $179$ to $253$.
+	
+	\item \textbf{Semantic Capacity:} In sharp contrast, both BERT variants possess the deep semantic capacity necessary to untangle these non-linear, contextual cues. By successfully interpreting these complex patterns, the basic and specialist BERT models elevate the subset accuracy to $71.9\%$ and $72.1\%$, respectively.
+\end{itemize}
 
 %
 %This chapter presents the experiments. It is a crucial part of the thesis and has to dominate in the thesis. 
