@@ -123,25 +123,27 @@
 
 \newcommand{\literal}[1]{\textit{``#1''}}
 
-% Ensemble symbols
 \newcommand{\predVal}{y}
 \newcommand{\idx}{\iota}
 \newcommand{\mBase}{B}
 \newcommand{\mSpec}{S}
 \newcommand{\mCas}{C}
 \newcommand{\thresh}{\tau}
+\newcommand{\numVal}{N}
 
-% Probability notations
-\newcommand{\probSmall}[1]{p_{#1}}       % e.g., p_B, p_S
+\newcommand{\modelvar}{\mu}
+\newcommand{\sweepthresh}{t}
+
+\newcommand{\probSmall}[1]{p_{#1}}
 \newcommand{\probLarge}[2]{P_{#1}(\predVal=1 \mid #2)}
 
-% Sweep and metrics
-\newcommand{\numVal}{N}
-\newcommand{\sweepthresh}{t}
-\newcommand{\acceptance}[1]{A_{\idx}(#1)}   % acceptance mask for instance i with threshold #1
-\newcommand{\coverage}{\epsilon(\sweepthresh)}
-\newcommand{\hybridacc}{\aleph(\sweepthresh)}
-\newcommand{\cascadePred}[1]{\hat{\predVal}_{\idx}^{\,\mCas}(#1)} % cascade prediction for i with threshold #1
+\newcommand{\accMask}[3]{A_{#1,#2}(#3)}
+\newcommand{\coverage}[2]{\epsilon_{#1}(#2)}
+\newcommand{\hybridacc}[2]{\aleph(#1,#2)}
+
+\newcommand{\cascadePred}[3]{\hat{\predVal}_{#1,#2}^{\,\mCas}(#3)}
+\newcommand{\baseProb}[2]{\probSmall{\mBase_{\!#1}}^{(#2)}}
+\newcommand{\optimal}{o}
 
 % end of thesis customisation
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -905,7 +907,7 @@ This work addresses the two gaps with the following contributions:
 	
 \subsubsection{Bag-of-Concepts for Sentiment Analysis}
 
-\chapter{Cascade System for Granular Sentiment Analysis using Grid-Search} \label{chap:system}
+\chapter{Cascade System for Granular Sentiment Analysis using Combination Enumeration} \label{chap:system}
 \section{Overview of the Pipeline}
 
 The system operates at three levels. First, the raw data undergoes preprocessing to ensure consistency, and to create a basis for the experiments. Next, GrC approaches are utilized to find the most informative features, and the most robust representations and models. Finally, a cascade ensemble based on the 3WD paradigm is introduced: a traditional machine learning model provides rapid predictions for clear-cut cases, while a deep learning model is reserved for ambiguous instances that the base model cannot classify with high confidence.
@@ -1044,9 +1046,10 @@ The specific checkpoint \code{distilbert-base-uncased-finetuned-sst-2-english} o
 
 In this study, the model is further fine-tuned on the full IMDb training set. Input texts were cleaned (\code{text\_clean}) and subsequently tokenized with the DistilBERT tokenizer, and finally truncated or padded to a maximum length of $256$ tokens. Training is performed for $3$ epochs with a batch size of $16$, using the Adam optimizer with a learning rate of $2 \times 10^{-5}$. Mixed-precision (\code{float16}) computation is utilized to reduce memory consumption and accelerate training. Early stopping monitors the validation loss (patience $2$ epochs), and a learning rate reduction on plateau (factor $0.5$, patience $1$) is applied. A stratified $20\%$ hold-out from the training set serves as the validation partition. After training, the model outputs class probabilities through a softmax over the two logits.
 
-\subsection{Grid-Search Strategy} \label{sec:grid_strategy}
+\subsection{Configuration Enumeration}
+\label{sec:config_enum}
 
-To navigate the large design space created by the preceding options---token representations, $n$-gram ranges, pruning thresholds, clustering granularities, and sentiment weights---a structured grid search is employed. The search evaluates every combination of the following axes:
+The feature‑engineering options define a large design space---token representations, $n$-gram ranges, pruning thresholds, clustering granularities, and sentiment weights. To populate this space with trained classifiers, every combination of the following axes is enumerated and evaluated on the validation set:
 
 \begin{itemize}
 	\item \textbf{Token representation:} Cased, lowered, letter-only, filtered, stemmed, and lemmatized.
@@ -1057,7 +1060,7 @@ To navigate the large design space created by the preceding options---token repr
 	\item \textbf{Vectorisation type:} BoW and TF-IDF (custom implementations).
 	\item \textbf{Classifier:} linear SVM (with Platt scaling) and logistic regression.
 \end{itemize}
-Not all combinations are independent: when $\kconcepts=0$ the sentiment weight is irrelevant. The grid is executed in stages: first, a broad sweep identifies the most promising token representations and pruning thresholds; second, a focused search on the surviving configurations tests vocabulary depth and concept-based compression. The overall best configuration---a linear SVM with stemmed tokens, TF-IDF, and a \zscore-score threshold of $\zscore=2$—is then used as the base model in the cascade ensemble. DistilBERT is evaluated outside the grid, serving as a standalone deep-learning benchmark and, later, as a cascade specialist.
+Not all combinations are independent: for example; when $\kconcepts=0$ the sentiment weight is irrelevant. For every configuration, the model is trained on the training set and its raw prediction vectors and classification reports are saved to disk. At this stage no representation is selected; the pool of candidate classifiers is merely created for subsequent cascade‑oriented analysis. 
 
 \section{Cascade Ensemble} \label{sec:cascade}
 
@@ -1099,28 +1102,24 @@ The hard class label is derived by thresholding $\probSmall{\mCas}$ at $0.5$: va
 
 \subsection{Threshold Selection} \label{sec:threshold_selection}
 
-The delegation threshold $\thresh$ governs the trade-off between the fraction of instances processed by the fast base model (coverage) and the overall performance of the hybrid system (global accuracy). To determine the optimal value, a sweep over $\thresh$ is performed on the validation set. For each candidate threshold, the cascade predictions are simulated using the best base model achieved from the grid search and the generic DistilBERT variant. The generic model serves as a heuristic to establish reasonable coverage boundaries.
-
-Let the validation set contain $\numVal$ instances. For instance $\idx$, denote the base model's output by $\probSmall{\mBase}^{(\idx)} = \probLarge{\mBase}{\inputtext_{\idx}}$, which corresponds to evaluating $\probSmall{\mBase}$ on that specific input. For a candidate threshold $\sweepthresh \in [0,0.5]$, the acceptance mask for instance $\idx$ is
+The delegation threshold $\thresh$ governs the trade‑off between the fraction of instances processed by the base model $\mBase$ (coverage) and the overall performance of the hybrid system (global accuracy). To determine both the optimal base model $\mBase_{\!\optimal}$ and the optimal threshold $\thresh_{\!\optimal}$, a joint sweep is performed on the validation set. For every candidate base model $\modelvar$ obtained from the configuration enumeration and for every candidate threshold $\sweepthresh \in [0,0.5]$, the cascade is simulated using the generic DistilBERT. The hybrid accuracy $\hybridacc{\modelvar}{\sweepthresh}$ is computed as defined below, and the pair $(\modelvar,\sweepthresh)$ that maximizes this metric is selected. Let the validation set contain $\numVal$ instances, indexed by $\idx = 1,\dots,\numVal$. For a fixed candidate base model $\modelvar$, denote the predicted probability for instance $\idx$ by $\probSmall{\mBase_{\!\modelvar}}^{(\idx)}$. For a candidate threshold $\sweepthresh$, the acceptance mask for instance $\idx$ under model $\modelvar$ is:
 \begin{equation}
-	\acceptance{\sweepthresh} = \mathbf{1}\bigl[\probSmall{\mBase}^{(\idx)} \le \sweepthresh \;\lor\; \probSmall{\mBase}^{(\idx)} \ge 1-\sweepthresh \,\bigr].
+	\accMask{\modelvar}{\idx}{\sweepthresh} = \mathbf{1}\bigl[ \baseProb{\modelvar}{\idx} \le \sweepthresh \;\lor\; \baseProb{\modelvar}{\idx} \ge 1-\sweepthresh \bigr].
 \end{equation}
-The coverage is defined as
+The coverage of model $\modelvar$ at threshold $\sweepthresh$ is the fraction of instances it accepts:
+\begin{equation}	
+	\coverage{\modelvar}{\sweepthresh} = \frac{1}{\numVal}\sum_{\idx=1}^{\numVal} A_{\modelvar,\idx}(\sweepthresh).
+\end{equation}
+The hybrid accuracy of the cascade when using model $\mu$ and threshold $\sweepthresh$ is:
 \begin{equation}
-	\coverage = \frac{1}{\numVal} \sum_{\idx=1}^{\numVal} \acceptance{\sweepthresh},
+	\hybridacc{\modelvar}{\sweepthresh} = \frac{1}{\numVal}\sum_{\idx=1}^{\numVal} \mathbf{1}\bigl[ \cascadePred{\modelvar}{\idx}{\sweepthresh} = \predVal_{\idx} \bigr].
 \end{equation}
-and the hybrid accuracy is
+where $\hat{y}_{\iota}^{\,\mCas}(\sweepthresh)$ is the cascade's final prediction for instance $\iota$ under the given model and threshold. The optimal base model and the optimal threshold are chosen simultaneously:
 \begin{equation}
-	\hybridacc = \frac{1}{\numVal} \sum_{\idx=1}^{\numVal} \mathbf{1}\bigl[\, \cascadePred{\sweepthresh} = \predVal_\idx \,\bigr],
+	(\mBase_{\!\optimal},\;\thresh_{\!\optimal}) =
+	\arg\max_{\mu,\;\sweepthresh \in [0,0.5]}
+	\aleph(\mu,\sweepthresh).
 \end{equation}
-where $\cascadePred{\sweepthresh}$ is the final cascade prediction for instance $\idx$ when using threshold $\sweepthresh$.  
-
-The optimal threshold is chosen as
-\begin{equation}
-	\thresh = \arg\max_{\sweepthresh \in [0,0.5]} \hybridacc,
-\end{equation}
-
-The sweep yields $\thresh = 0.254$, which defines an acceptance region of $[0,0.254) \cup (0.746,1]$ (width $\approx 0.492$). At this operating point, roughly 25~–~30\% of the test instances are expected to be delegated to the specialist.
 
 \subsection{Specialist Training} \label{sec:specialist_training}
 
@@ -1186,12 +1185,12 @@ The text is labeled as negative within the dataset, but is overly positive. This
 
 The experiments follow an refinement protocol that mirrors the three-level pipeline described in Chapter~\ref{chap:system}. At each stage one component is isolated---preprocessing, token representation, feature pruning, vocabulary depth, semantic compression, and finally the cascade ensemble---and the configuration that yields the highest validation accuracy is adopted as the baseline for the next stage. The test set is never used until the final cascade evaluation.
 
-\subsection{Experimental Sequence of the Grid Search}
+\subsection{Experimental Sequence of the Enumeration}
 
-The grid-search space defined in Section~\ref{sec:grid_strategy} is explored through a sequence of experiments. Each experiment produces a ranking of configurations from which the single best-performing model is selected.
+The enumeration space defined in Section~\ref{sec:config_enum} is explored through a sequence of experiments. Each experiment produces a ranking of configurations from which the best representations are selected, and the nuances are detailed.
 
 \begin{enumerate}
-	\item \textbf{Preprocessing and basic representation.} Using the default \texttt{CountVectorizer} with $(1,3)$ $n$-grams, the four combinations of text variant (clean vs.\ expanded) and casing (cased vs.\ lowercased) are evaluated with both BoW and TF-IDF for the linear SVM and \logreg{}. This stage identifies the best preprocessing choice (expanded, lowercased, TF-IDF) and confirms the superiority of the linear SVM.
+	\item \textbf{Preprocessing and basic representation.} Using the default \texttt{CountVectorizer} with $(1,3)$ $n$-grams, the four combinations of text variant (clean vs.\ expanded) and casing (cased vs.\ lowercased) are evaluated with both BoW and TF-IDF for the linear SVM and \logreg{}. This stage identifies the best preprocessing choice (expanded, lowercased, TF-IDF).
 	
 	\item \textbf{Custom vectorization and \zscore-score pruning.} All six token representations (cased, lower, letters, filtered, stemmed, lemmatized) are combined with \zscore-score thresholds $\zscore \in \{0,1,2,3,4\}$ and both BoW and TF-IDF, using the custom space-tokenizer described in Section~\ref{sec:custom_vec}. The best token representation and pruning level are chosen for each model.
 	
@@ -1199,7 +1198,7 @@ The grid-search space defined in Section~\ref{sec:grid_strategy} is explored thr
 	
 	\item \textbf{Semantic clustering.} For $\kconcepts \in \{500, 5000, 10000\}$ and sentiment weights $\weightparam \in \{0, 1, 10\}$, concept matrices are built from the optimal unit features (Section~\ref{sec:semantic_clustering}) and evaluated with both SVM and \logreg. This gauges whether concept compression can match the unclustered baseline.
 	
-	\item \textbf{Cascade threshold sweep.} The best SVM configuration from the grid search is used as the base model. A sweep over $\thresh \in [0,0.5]$ is performed on the validation set, simulating the cascade with the generic DistilBERT variant (Section~\ref{sec:threshold_selection}). The threshold that maximizes hybrid accuracy, $\thresh = 0.254$, is selected.
+	\item \textbf{Cascade threshold sweep.} For every candidate base model from the configuration enumeration (Section~\ref{sec:config_enum}), a sweep over $\thresh \in [0,0.5]$ is performed on the validation set, simulating the cascade. The pair (base model, $\thresh$) that maximizes the hybrid accuracy is selected, and identifying the optimal base model (Section~\ref{sec:threshold_selection}).
 \end{enumerate}
 
 All intermediate results are computed on the validation set. Raw prediction files and classification reports are saved for every run, enabling post-hoc statistical analysis.
@@ -1210,11 +1209,11 @@ The cascade architecture depends on the assumption that the base model's predict
 
 \subsubsection{Confidence Analysis}
 
-To verify that the delegation threshold $\thresh$ genuinely isolates difficult cases, the base model's predicted probabilities are binned and the empirical accuracy in each bin is examined. For instances with probabilities close to $0$ or $1$ (the acceptance regions), the observed accuracy is substantially higher than for instances with probabilities near $0.5$ (the boundary region). This confirms that the SVM's Platt-scaled outputs are well-calibrated and that the interval $[\thresh,\,1-\thresh]$ captures cases where the base model is most error-prone.
+To verify that the delegation threshold $\thresh$ genuinely isolates difficult cases, the base model's predicted probabilities are binned and the empirical accuracy in each bin is examined. For instances with probabilities close to $0$ or $1$ (the acceptance regions), the observed accuracy and coverage should be substantially higher than for instances with probabilities near $0.5$ (the boundary region) to confirms that the interval $[\thresh,\,1-\thresh]$ captures cases where the base model is most error-prone.
 
 \subsubsection{Specialist Comparison}
 
-Three cascade variants are evaluated to assess which specialist configuration yields the best performance. The base model is fixed to the optimal linear SVM identified by the grid search (Section~\ref{sec:grid_strategy}), and the delegation threshold is set to $\thresh = 0.254$ (Section~\ref{sec:threshold_selection}). Three specialist variants are tested:
+Three cascade variants are evaluated to assess which specialist configuration yields the best performance. The base model is fixed to the optimal linear SVM identified by the sweep (Section~\ref{sec:threshold_selection}), and the delegation threshold is set to $\thresh = 0.254$ (Section~\ref{sec:threshold_selection}). Three specialist variants are tested:
 
 \begin{itemize}
 	\item \textbf{Base DistilBERT}: the generic DistilBERT model (Section~\ref{sec:distilbert_model}).
@@ -1679,15 +1678,67 @@ Compressing the vocabulary to $n$ concepts results in performance degradation fo
 
 \subsection{Impact of Certainty}
 
-The tested models have an interesting feature---the certainity(probability) of the positive class can be used to...
+In a cascade design the delegation decision depends on whether the predicted probability reflects genuine confidence. Figure~\ref{fig:certainty_dist} shows the probability distributions of the linear SVM and \logreg{} on the validation set. While both models concentrate predictions near the extremes, the SVM places a markedly larger share in the $[0.0,0.1]\cup[0.9,1.0]$ interval, whereas \logreg{} spreads predictions more evenly across intermediate bins.
 
 \begin{figure}[htbp]
 	\centering
-	\includegraphics[width=1\textwidth]{./figures/analysis/model_comparison_certainty_dist.png}
+	\includegraphics[width=\textwidth]{./figures/analysis/model_comparison_certainty_dist.png}
 	\caption{Certainty analysis for linear SVM and \logreg{} models.}
-	\label{fig:a}
+	\label{fig:certainty_dist}
 \end{figure}
 
+
+Table~\ref{tab:certainty} partitions the probability range into five symmetric zones and reports for each zone the number of predictions, the number of misclassified samples, the local accuracy, the workload (fraction of the whole validation set falling into that zone), and the percentage of all model errors that occur specifically in that zone.
+
+\begin{itemize}
+\item For the linear SVM, the two most certain zones alone cover $71.26\% + 11.61\% = 82.87\%$ of the data with local accuracies of $97.70\%$ and $87.10\%$, respectively. The SVM's errors, however, are distributed relatively evenly across all bins; no single interval concentrates a disproportionate share of mistakes.
+
+\item \logreg{} exhibits a pronounced error concentration in the center: $42.12\%$ of all misclassifications occur in the $[0.4,0.6]$ band, and the error share drops sharply towards the extremes (only $2.35\%$ in the outermost bin). This pattern is ideal for a cascade, because a narrow delegation window around the decision boundary would capture the bulk of the model's errors.
+
+\end{itemize}
+
+Despite this favorable error distribution, \logreg{} achieves a much smaller workload in its high‑precision zone ($35.72\%$ vs.\ SVM's $71.26\%$). To match the SVM's $70\%$ coverage, three \logreg{} bins must be combined, yielding a lower average precision. The cascade therefore can benefit more from the SVM's massive high‑precision coverage, using the specialist to correct the modest, spread‑out errors.
+
+\begin{table}[htbp]
+	\centering
+	\caption{Comparison of certainty ranges.}
+	\label{tab:certainty}
+	\begin{subtable}{\textwidth}
+		\centering
+		\caption{Certainty Analysis - \logreg}
+		\label{tab:certainty_lr}
+		\begin{tabular}{l r r r | r r}
+			\toprule
+			Probability Range & Predictions & Incorrect & Local Accuracy & Workload & Error \\
+			\midrule
+			$[0.4, 0.6]$                 & $1747$ & $681$ & $61.02\%$ & $10.07\%$ & $42.12\%$ \\
+			$[0.3, 0.4) \cup (0.6, 0.7]$ & $2080$ & $443$ & $78.70\%$ & $11.99\%$ & $27.40\%$ \\
+			$[0.2, 0.3) \cup (0.7, 0.8]$ & $2803$ & $295$ & $89.48\%$ & $16.15\%$ & $18.24\%$ \\
+			$[0.1, 0.2) \cup (0.8, 0.9]$ & $4524$ & $160$ & $96.46\%$ & $26.07\%$ & $9.89\%$ \\
+			$[0.0, 0.1) \cup (0.9, 1.0]$ & $6199$ & $38$ & $99.39\%$ & $35.72\%$ & $2.35\%$ \\
+			\bottomrule
+		\end{tabular}
+	\end{subtable}
+	
+	\vspace{0.5em}
+	
+	\begin{subtable}{\textwidth}
+		\centering
+		\caption{Certainty Analysis - SVM}
+		\label{tab:certainty_svm}
+		\begin{tabular}{l r r r | r r}
+			\toprule
+			Certainty Range & Predictions & Incorrect & Local Accuracy & Workload & Error \\
+			\midrule
+			$[0.4, 0.6]$                 & $834$ & $372$ & $55.40\%$ & $4.81\%$ & $24.77\%$ \\
+			$[0.3, 0.4) \cup (0.6, 0.7]$ & $929$ & $286$ & $69.21\%$ & $5.35\%$ & $19.04\%$ \\
+			$[0.2, 0.3) \cup (0.7, 0.8]$ & $1210$ & $299$ & $75.29\%$ & $6.97\%$ & $19.91\%$ \\
+			$[0.1, 0.2) \cup (0.8, 0.9]$ & $2015$ & $260$ & $87.10\%$ & $11.61\%$ & $17.31\%$ \\
+			$[0.0, 0.1) \cup (0.9, 1.0]$ & $12365$ & $285$ & $97.70\%$ & $71.26\%$ & $18.97\%$ \\
+			\bottomrule
+		\end{tabular}
+	\end{subtable}
+\end{table}
 \subsection{Impact of Cascade Ensemble}
 
 Cascade works
