@@ -1185,11 +1185,15 @@ The text is labeled as negative within the dataset, but is overly positive. This
 
 \section{Methodology} \label{sec:methodology}
 
+\ksremark{The aim is …}
 The experiments follow an refinement protocol that mirrors the three-level pipeline described in Chapter~\ref{chap:system}. At each stage one component is isolated---preprocessing, token representation, feature pruning, vocabulary depth, semantic compression, and finally the cascade ensemble---and the configuration that yields the highest validation accuracy is adopted as the baseline for the next stage. The test set is never used until the final cascade evaluation.
+\ksremark{Tutaj trzeba napisać jakie będą przeprowadzone eksperymenty.}
+\ksremark{Co będziemy porównywać z czym? Co jest użyte w zwykłym podejściu?}
 
 \subsection{Experimental Sequence of the Enumeration}
 
 The enumeration space defined in Section~\ref{sec:config_enum} is explored through a sequence of experiments. Each experiment produces a ranking of configurations from which the best representations are selected, and the nuances are detailed.
+\ksremark{To, co Pan mi powiedział, trzeba tutaj napisać :-)}
 
 \begin{enumerate}
 	\item \textbf{Preprocessing and basic representation.} Using the default \texttt{CountVectorizer} with $(1,3)$ $n$-grams, the four combinations of text variant (clean vs.\ expanded) and casing (cased vs.\ lowercased) are evaluated with both BoW and TF-IDF for the linear SVM and \logreg{}. This stage identifies the best preprocessing choice (expanded, lowercased, TF-IDF).
@@ -1225,7 +1229,7 @@ Three cascade variants are evaluated to assess which specialist configuration yi
 
 All three cascade variants are evaluated on the held-out test set, together with the standalone base SVM and the standalone DistilBERT baseline. The final cascade prediction follows the combination rule defined in Section~\ref{sec:cascade_architecture}: the base model's output is used for instances outside the boundary region, and the specialist's output is used for instances inside it.
 
-\subsection{Evaluation Metrics}
+\section{Evaluation Metrics}
 
 Because the data splits are exactly balanced through stratified sampling, accuracy and macro F1-score are equally reliable indicators of performance. Both are reported in the experiments. The primary metric for selecting the best configuration is accuracy, as it directly aligns with the statistical test used.
 
@@ -1263,7 +1267,14 @@ Every figure and table consistently encodes the outcome of McNemar's test:
 
 This section presents the evaluation of linear SVM and \logreg{} classifiers across various configurations. Initial experiments establish that linear SVMs consistently outperform \logreg{} models, with TF-IDF representations universally yielding superior predictive performance compared to standard BoW. The findings demonstrate that implementing statistical pruning effectively mitigates the dimensionality explosion associated with complex $n$-grams while preserving optimal classification accuracy. Ultimately, the results validate the proposed cascade ensemble methodology; delegating uncertain predictions from a highly efficient linear base model to a deep-semantic BERT specialist resolves non-linear contextual cues, achieving a peak combined Macro F1-score of approximately $92.3\%$ and significantly outperforming standalone baselines.
 
+The analysis is split into several cases:
+\begin{itemize}
+	\item impact of casing and text expansion (Sec. \ref{sec:Impact-of-Casing-and-Text-Expansion}),
+	\item …
+\end{itemize}
+
 \subsection{Impact of Casing and Text Expansion}
+\label{sec:Impact-of-Casing-and-Text-Expansion}
 
 In this experiment, the performance of two classical classifiers---linear SVM and \logreg{}---is evaluated across varying preprocessing and feature representation configurations. All models were trained on the training set. The evaluation metrics (Macro F1-score and Accuracy) are computed on the validation set. The experimental conditions are categorized as follows:
 \begin{itemize}
@@ -1294,6 +1305,7 @@ Tables~\ref{tab:McNemarE1a} through \ref{tab:McNemarE1d} provide a cross-configu
 
 Table~\ref{tab:McNemarE1b} and Figure~\ref{fig:casing-expansion-effect} highlight that a performance gain occurs when expansion is applied to lowercased text---\texttt{Expanded and Lower} configuration achieves the highest accuracy ($90.98\%$), and proves significantly better than the standard ``Lower'' baseline.
 
+\ksremark{Tab. \ref{tab:McNemarE1_all}:  Trzeba dokładniej w nagłówkach napisać, o co chodzi.}
 \begin{table}[tbp]%[htbp]
 	\centering
 	\caption{McNemar tests for the impact of casing and text expansion.}
