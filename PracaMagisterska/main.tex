@@ -67,7 +67,6 @@
 
 % Please customise your thesis with the macros below.
 
-% TODO
 % author:
 \newcommand{\FirstNameAuthor}{Jan}
 \newcommand{\SurnameAuthor}{Supierz}
@@ -99,52 +98,6 @@
 % ... else leave the braces empty:
 %\newcommand{\Consultant}{} % no consultant
 
-\newcommand{\zscore}{Z}
-\newcommand{\logreg}{LR}
-\newcommand{\postag}[1]{\texttt{#1}}
-\newcommand{\code}[1]{\texttt{#1}}
-
-\newcommand{\customtfidf}{CTf-IDF}
-\newcommand{\custombow}{CBoW}
-
-\newcommand{\positive}{p}
-\newcommand{\negative}{n}
-\newcommand{\smoothedprob}[1]{s(#1)}
-\newcommand{\Count}[1]{\|{#1}\|}
-
-\newcommand{\vocabsize}{V}
-\newcommand{\tokenclass}{c}
-\newcommand{\numbertokens}[1]{T_{#1}}
-\newcommand{\smoothparam}{\beta}
-\newcommand{\kconcepts}{k}
-\newcommand{\inputtext}{X}
-\newcommand{\mcnemaralpha}{\alpha}
-\newcommand{\weightparam}{w}
-
-\newcommand{\literal}[1]{\textit{``#1''}}
-
-\newcommand{\predVal}{y}
-\newcommand{\idx}{\iota}
-\newcommand{\mBase}{B}
-\newcommand{\mSpec}{S}
-\newcommand{\mCas}{C}
-\newcommand{\thresh}{\tau}
-\newcommand{\numVal}{N}
-
-\newcommand{\modelvar}{\mu}
-\newcommand{\sweepthresh}{t}
-
-\newcommand{\probSmall}[1]{p_{#1}}
-\newcommand{\probLarge}[2]{P_{#1}(\predVal=1 \mid #2)}
-
-\newcommand{\accMask}[3]{A_{#1,#2}(#3)}
-\newcommand{\coverage}[2]{\epsilon_{#1}(#2)}
-\newcommand{\hybridacc}[2]{\aleph(#1,#2)}
-
-\newcommand{\cascadePred}[3]{\hat{\predVal}_{#1,#2}^{\,\mCas}(#3)}
-\newcommand{\baseProb}[2]{\probSmall{\mBase_{\!#1}}^{(#2)}}
-\newcommand{\optimal}{o}
-
 % end of thesis customisation
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
@@ -169,7 +122,7 @@
 \usepackage[utf8]{inputenc}                                      
 \usepackage[T1]{fontenc}  
 \usepackage{amsmath,amsfonts,amssymb,amsthm}
-\usepackage[polish,british]{babel} 
+\usepackage[polish, british]{babel} 
 \usepackage{indentfirst}
 \usepackage{xurl}
 \usepackage{xstring}
@@ -242,15 +195,6 @@
 {\color{brickred}{[#1]}}}%
 \addcontentsline{rks}{uwagas}{\protect{#1}}%
 }
-
-
-
-
-
-
-
-
-
 
 %%%%%%%%%%%%%% END OF TODO LIST GENERATOR %%%%%%%%%%%  
 
@@ -370,6 +314,112 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 % Put your packages, macros, setting here.
+\newcommand{\zscore}{Z}
+\newcommand{\logreg}{LR}
+\newcommand{\postag}[1]{\texttt{#1}}
+\newcommand{\code}[1]{\texttt{#1}}
+
+\newcommand{\customtfidf}{CTf-IDF}
+\newcommand{\custombow}{CBoW}
+
+\newcommand{\positive}{p}
+\newcommand{\negative}{n}
+\newcommand{\smoothedprob}[1]{s(#1)}
+\newcommand{\Count}[1]{\|{#1}\|}
+
+\newcommand{\vocabsize}{V}
+\newcommand{\tokenclass}{c}
+\newcommand{\numbertokens}[1]{T_{#1}}
+\newcommand{\smoothparam}{\beta}
+\newcommand{\kconcepts}{k}
+\newcommand{\conceptWeight}{w}
+\newcommand{\inputtext}{X}
+\newcommand{\mcnemaralpha}{\rho}
+\newcommand{\weightparam}{w}
+
+\newcommand{\literal}[1]{\textit{``#1''}}
+
+\newcommand{\predVal}{y}
+\newcommand{\idx}{\iota}
+\newcommand{\mBase}{B}
+\newcommand{\mSpec}{S}
+\newcommand{\mCas}{C}
+\newcommand{\thresh}{\tau}
+\newcommand{\numVal}{N}
+
+\newcommand{\modelvar}{\mu}
+\newcommand{\sweepthresh}{t}
+
+\newcommand{\probSmall}[1]{p_{#1}}
+\newcommand{\probLarge}[2]{P_{#1}(\predVal=1 \mid #2)}
+
+\newcommand{\accMask}[3]{A_{#1,#2}(#3)}
+\newcommand{\coverage}[2]{\epsilon_{#1}(#2)}
+\newcommand{\hybridacc}[2]{\aleph(#1,#2)}
+
+\newcommand{\cascadePred}[3]{\hat{\predVal}_{#1,#2}^{\,\mCas}(#3)}
+\newcommand{\baseProb}[2]{\probSmall{\mBase_{\!#1}}^{(#2)}}
+\newcommand{\optimal}{o}
+
+% Grafika
+\usepackage{pgfplots}
+\pgfplotsset{compat=1.18}
+
+\usetikzlibrary{
+	positioning,
+	arrows.meta,
+	shadows,
+	backgrounds,
+	fit,
+	babel    
+}
+
+\definecolor{stepcolor}{HTML}{4A90E2} 
+\definecolor{datacolor}{HTML}{50E3C2}
+\definecolor{arrowcolor}{HTML}{333333}
+
+\tikzset{
+	stepnode/.style={
+		draw=stepcolor!70!black,
+		fill=stepcolor!15,
+		rounded corners=4pt,
+		minimum width=2.5cm,
+		minimum height=0.9cm,
+		drop shadow,
+		thick,
+		align=center,
+		font=\sffamily\small
+	},
+	datanode/.style={
+		draw=datacolor!70!black,
+		fill=datacolor!15,
+		shape=rectangle,
+		minimum width=2.0cm,
+		minimum height=0.8cm,
+		thick,
+		align=center,
+		font=\sffamily\small
+	},
+	finalnode/.style={
+		stepnode,
+		fill=blue!10,
+		draw=blue!50,
+		font=\sffamily\small\bfseries
+	},
+	arrow/.style={
+		->,
+		>=Stealth,
+		color=arrowcolor!80,
+		line width=0.8pt,
+	},
+	dasharrow/.style={
+		->,
+		>=Stealth,
+		dashed,
+		color=arrowcolor!60,
+		line width=0.7pt,
+	}
+}
  
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % listings
@@ -907,11 +957,86 @@ This work addresses the two gaps with the following contributions:
 	
 \subsubsection{Bag-of-Concepts for Sentiment Analysis}
 
-\chapter{Cascade System for Granular Sentiment Analysis using Combination Enumeration} \label{chap:system}
+\chapter{Granular Cascade System for Sentiment Analysis using Enumerations} \label{chap:system}
 \section{Overview of the Pipeline}
 
 The system operates at three levels. First, the raw data undergoes preprocessing to ensure consistency, and to create a basis for the experiments. Next, GrC approaches are utilized to find the most informative features, and the most robust representations and models. Finally, a cascade ensemble based on the 3WD paradigm is introduced: a traditional machine learning model provides rapid predictions for clear-cut cases, while a deep learning model is reserved for ambiguous instances that the base model cannot classify with high confidence.
-\ksremark{Tu by się przydał schemat.}
+
+\begin{figure}[htbp]
+	\centering
+	\begin{tikzpicture}[node distance=0.6cm and 1.2cm]
+		
+		% Row 1
+		\node[datanode] (imdb) {IMDb Dataset};
+		
+		\node[stepnode, right=of imdb] (prep)
+		{Data Preprocessing\\
+			\scriptsize cleaning, \\
+			\scriptsize tokenization };
+		
+		\node[stepnode, right=of prep] (vector)
+		{Custom Vectorization\\
+			\scriptsize $n$-gram range, \\
+			\scriptsize $\zscore$-score pruning};
+		
+		% row 2
+		\node[stepnode, below=1.2cm of vector, dashed] (gran)
+		{Granulation\\
+			\scriptsize \code{FAISS} $K$-Means,\\
+			\scriptsize \code{VADER} weight \\
+			\scriptsize (Optional)};
+		
+		\node[stepnode, left=2cm of gran] (base)
+		{Base Model\\
+			\scriptsize SVM or \logreg{}};
+		
+		\node[stepnode, left=1.8cm of base] (specialist)
+		{Specialist\\
+			\scriptsize BERT (or SVM)};
+		
+		% row 3
+		\node[finalnode, below=1.2cm of base] (pred)
+		{Sentiment Prediction};
+		
+		% Arrows
+		\draw[arrow] (imdb)   -- (prep);
+		\draw[arrow] (prep)   -- (vector);
+		
+		% Connection between Row 1 and Row 2
+		\draw[arrow] (vector.south) -- (gran.north);
+		
+		\draw[arrow] (gran)   -- (base);
+		
+		% Cascade
+		\draw[dasharrow] (base) -- (specialist) 
+		node[midway, above, font=\tiny\bfseries] {if uncertain};
+		
+		% Output
+		\draw[arrow] (base.south) -- (pred.north)
+		node[midway, right, font=\tiny] {certain};
+		
+		% BERT to Prediction
+		\draw[arrow] (specialist.south) |- (pred.west);
+		
+		% Background
+		\begin{scope}[on background layer]
+			% Feature Box
+			\node[draw=gray!30, fill=gray!5, rounded corners=6pt, inner sep=15pt,
+			fit=(vector) (gran)] (feBox) {};
+			\node[font=\sffamily\bfseries\scriptsize, anchor=north west] at (feBox.north west) {Feature Engineering};
+		\end{scope}
+		
+		\begin{scope}[on background layer]
+			% Cascade Box
+			\node[draw=blue!20, fill=blue!2, rounded corners=6pt, inner sep=15pt,
+			fit=(base) (specialist)] (ccBox) {};
+			\node[font=\sffamily\bfseries\scriptsize, anchor=north west] at (ccBox.north west) {Cascade Classifier};
+		\end{scope}
+		
+	\end{tikzpicture}
+	\caption{High-level pipeline of the cascade sentiment analysis system.}
+	\label{fig:pipeline}
+\end{figure}
 
 \section{Data Preprocessing} \label{sec:preprocessing}
 
@@ -932,7 +1057,7 @@ While the original IMDb dataset is perfectly balanced and pre-divided into equal
 	
 	\item \textbf{Lowercasing} converts each token in \code{tokens\_cased} to the lowercase form, resulting in \code{tokens\_lower}.
 	
-	\item \textbf{POS-filtered tokenization} processes the expanded text by filtering \code{tokens\_lower} based on their Part-Of-Speech (POS) tags; the result is stored as \code{tokens\_filtered}. \ksremark{Czy dobrze rozumiem, że tutaj nie ma stop-word removal (Sec. \ref{sec:stop-word-removal})?}
+	\item \textbf{POS-filtered tokenization} replaces the standard stop-word removal (Sec.~\ref{sec:stop-word-removal}); the expanded text (\code{tokens\_lower}) is filtered based on the Part-Of-Speech (POS) tags; the result is stored as \code{tokens\_filtered}.
 	
 	\item \textbf{Alphabetic filtering} removes any character that is not a letter (a–z, A–Z) from \code{tokens\_lower}; tokens that become empty after this removal are discarded. The result is \code{tokens\_letters}.
 	
@@ -946,7 +1071,11 @@ After processing, each review is stored as a dictionary containing the various t
 \subsection{Stop-Word Removal}
 \label{sec:stop-word-removal}
 
-During the POS-filtered tokenization step, the dimensionality of the $n$-gram feature space can be reduced by removing words that carry little sentiment value---commonly termed as stop words. However, because this step is inherently subjective and risks discarding subtle contextual cues, the standard stop-word removal using the English stop-word list provided by scikit-learn's \code{CountVectorizer} is bypassed. That list contains words such as \literal{well}, whose presence may be informative (e.g., \literal{well filmed}). Instead, stop-word filtering is kept to a minimum by utilizing a targeted POS-based approach. The approach relies on the POS tags assigned by the spaCy library: coarse-grained Universal POS (UPOS) tags\footnote{\url{https://universaldependencies.org/u/pos/}} and fine-grained Penn Treebank tags\footnote{\url{https://www.ling.upenn.edu/courses/Fall_2003/ling001/penn_treebank_pos.html}}. SpaCy's English model is used with parser and Named Entity Recognizer disabled to avoid computational overhead. The POS filtering removes tokens that satisfy any of three specific criteria:
+During the POS-filtering step, the dimensionality of the $n$-gram feature space can be reduced by removing words that carry little sentiment value---commonly termed as stop words. However, because this step is inherently subjective and risks discarding subtle contextual cues, the standard stop-word removal using the English stop-word list provided by scikit-learn's \code{CountVectorizer} is bypassed as that list contains words such as \literal{well}, whose presence may be informative (e.g., \literal{well filmed}). 
+
+Instead, stop-word filtering is kept to a minimum by utilizing a custom POS-based approach. The approach relies on the tags assigned by the spaCy library: coarse-grained Universal POS (UPOS) tags\footnote{\url{https://universaldependencies.org/u/pos/}} and fine-grained Penn Treebank tags\footnote{\url{https://www.ling.upenn.edu/courses/Fall_2003/ling001/penn_treebank_pos.html}}. (To avoid computational overhead parser and Named Entity Recognizer (NER) of the SpaCy's English model are disabled.) 
+
+The POS filtering removes tokens that satisfy any of three specific criteria:
 
 \begin{itemize}
 	\item \textbf{Auxiliary verbs (except modals)}: tokens with the coarse tag \postag{AUX} (auxiliary) are removed, unless their fine-grained tag is \postag{MD} (modal auxiliary). Thus, words such as \literal{is}, \literal{are}, \literal{was}, and \literal{have} are removed, while modals like \literal{can}, \literal{will}, and \literal{must} are retained.
@@ -958,7 +1087,7 @@ The application of these rules is demonstrated in Table~\ref{tab:pos-filtering}.
 
 \begin{table}[tbp]%[htbp]
 	\centering
-	\caption{Example of POS filtering.}
+	\caption{Example of POS filtering. Tokens intended for removal are depicted in bold.}
 	\label{tab:pos-filtering}
 	\begin{tabular}{l l l l}
 		\toprule
@@ -1037,7 +1166,7 @@ The system employs both linear classifiers and a distilled transformer model. Al
 A linear SVM and \logreg{} are employed as the computationally efficient baselines. Both are trained on the TF-IDF and BoW $n$-gram vectors produced by the feature engineering pipeline. Both models are fitted on the same training split and evaluated on the same validation and test sets. The training utilizes the \code{scikit-learn} implementations with the following settings:
 
 \begin{itemize}
-	\item \textbf{Linear SVM} \ksremark{Czy będę użyte SVM-y z innym jądrem niż liniowe?} optimizes the squared hinge loss with $L_2$ regularisation. The default penalty $C=1.0$ is retained, and the solver is allowed up to $10\,000$ iterations to guarantee convergence on high-dimensional data. Because the eventual cascade design requires calibrated probabilities, a Platt scaling calibrator (\texttt{CalibratedClassifierCV}) wraps the SVM. This post-processor maps the unbounded decision values to $[0,1]$ and produces posterior probabilities for the positive class.
+	\item \textbf{Linear SVM} \ksremark{Czy będą użyte SVM-y z innym jądrem niż liniowe?} optimizes the squared hinge loss with $L_2$ regularisation. The default penalty $C=1.0$ is retained, and the solver is allowed up to $10\,000$ iterations to guarantee convergence on high-dimensional data. Because the eventual cascade design requires calibrated probabilities, a Platt scaling calibrator (\texttt{CalibratedClassifierCV}) wraps the SVM. This post-processor maps the unbounded decision values to $[0,1]$ and produces posterior probabilities for the positive class.
 	
 	\item \textbf{\logreg} directly models $\probLarge{}{\inputtext}$ by minimizing the log-loss (cross-entropy) with an $L_2$ penalty. It is configured with the \code{L-BFGS} solver, $C=1.0$, and a maximum of $1\,000$ iterations. Unlike the SVM, \logreg{} natively outputs probability estimates without an external calibration step.
 \end{itemize}
@@ -1070,7 +1199,60 @@ To balance the computational efficiency of traditional machine learning algorith
 
 \subsection{Architecture} \label{sec:cascade_architecture}
 
-The cascade operates in three stages: \ksremark{Tu by się przydał schemat.}
+The cascade operates in three stages:
+
+\begin{figure}[htbp]
+	\centering
+	\begin{tikzpicture}[node distance=1cm and 2.5cm]
+		
+		% Nodes
+		% Left side: input
+		\node[datanode] (input) {Input Text $\inputtext$};
+		
+		% Middle column: cascade
+		\node[stepnode, right=of input] (base)
+		{\textbf{1. Initial inference}\\
+			\scriptsize Base Model\\
+			\scriptsize Output: $\probSmall{\mBase}$};
+		
+		\node[stepnode, below=of base] (delegation)
+		{\textbf{2. Uncertainty delegation}\\
+			\scriptsize Boundary check:\\
+			\scriptsize $\thresh \le \probSmall{\mBase} \le 1 - \thresh$};
+		
+		\node[stepnode, below=of delegation] (specialist)
+		{\textbf{3. Specialist resolution}\\
+			\scriptsize Specialist Model\\
+			\scriptsize Output: $\probSmall{\mSpec}$};
+		
+		% Right side: output
+		\path (delegation) -- (specialist) coordinate[midway] (mid_del_spec);
+		\node[finalnode, right=4cm of mid_del_spec] (pred) 
+		{Final Probability $\probSmall{\mCas}$\\
+			\scriptsize Hard label (threshold at $0.5$)};
+		
+		% Arrows
+		% Input to base
+		\draw[arrow] (input) -- (base);
+		
+		% Base to delegation
+		\draw[arrow] (base) -- (delegation);
+		
+		% delegation to specialist
+		\draw[dasharrow] (delegation) -- (specialist) 
+		node[midway, right, font=\tiny\bfseries] {if true (uncertain)};
+		
+		% delegation to output
+		\draw[arrow] (delegation.east) -| (pred.north) 
+		node[pos=0.25, above, font=\tiny] {if false (certain)};
+		
+		% specialist to output
+		\draw[arrow] (specialist.east) -| (pred.south);
+		
+	\end{tikzpicture}
+	\caption{Architecture of the three-stage cascade showing initial inference, uncertainty delegation, and specialist resolution.}
+	\label{fig:cascade_architecture_diagram}
+\end{figure}
 
 \begin{enumerate}
 	\item \textbf{Initial inference:} A computationally inexpensive base model evaluates an input text $\inputtext$ and outputs a probability score
@@ -1185,15 +1367,11 @@ The text is labeled as negative within the dataset, but is overly positive. This
 
 \section{Methodology} \label{sec:methodology}
 
-\ksremark{The aim is …}
-The experiments follow an refinement protocol that mirrors the three-level pipeline described in Chapter~\ref{chap:system}. At each stage one component is isolated---preprocessing, token representation, feature pruning, vocabulary depth, semantic compression, and finally the cascade ensemble---and the configuration that yields the highest validation accuracy is adopted as the baseline for the next stage. The test set is never used until the final cascade evaluation.
-\ksremark{Tutaj trzeba napisać jakie będą przeprowadzone eksperymenty.}
-\ksremark{Co będziemy porównywać z czym? Co jest użyte w zwykłym podejściu?}
+The aim is to define the impact of each individual step in the pipeline described in Chapter~\ref{chap:system} and to determine if a cascade system further improves upon those results. To do so, two experiments, \textbf{Experimental Evaluation Sequence} (Sec.~\ref{sec:ExperimentalEvalSeq}) and \textbf{Cascade System Experiment} (Sec.~\ref{sec:CascadeSysExp}), are constructed. Both experiments consist of sub-stages where the configuration that yields the highest validation metric is considered the best setting and is adopted as the baseline for the next stage. The test set is never used until the final cascade evaluation. The experiments are outlined in the next sections.
 
-\subsection{Experimental Sequence of the Enumeration}
+\subsection{Experimental Evaluation Sequence} \label{sec:ExperimentalEvalSeq}
 
-The enumeration space defined in Section~\ref{sec:config_enum} is explored through a sequence of experiments. Each experiment produces a ranking of configurations from which the best representations are selected, and the nuances are detailed.
-\ksremark{To, co Pan mi powiedział, trzeba tutaj napisać :-)}
+The enumeration space defined in Section~\ref{sec:config_enum} is explored through a series of sub-experiments on the validation set. Each step refines the process and provides insights into its individual impact on the overall pipeline. Ultimately, the best standalone model is identified---this model is not necessarily selected for the cascade system, as peak standalone performance may not translate to optimal combined performance. The predictions from all intermediate models during this phase are used to simulate the cascade in the subsequent experiment detailed in Section~\ref{sec:CascadeSysExp}.
 
 \begin{enumerate}
 	\item \textbf{Preprocessing and basic representation.} Using the default \texttt{CountVectorizer} with $(1,3)$ $n$-grams, the four combinations of text variant (clean vs.\ expanded) and casing (cased vs.\ lowercased) are evaluated with both BoW and TF-IDF for the linear SVM and \logreg{}. This stage identifies the best preprocessing choice (expanded, lowercased, TF-IDF).
@@ -1207,9 +1385,7 @@ The enumeration space defined in Section~\ref{sec:config_enum} is explored throu
 	\item \textbf{Cascade threshold sweep.} For every candidate base model from the configuration enumeration (Section~\ref{sec:config_enum}), a sweep over $\thresh \in [0,0.5]$ is performed on the validation set, simulating the cascade. The pair (base model, $\thresh$) that maximizes the hybrid accuracy is selected, and identifying the optimal base model (Section~\ref{sec:threshold_selection}).
 \end{enumerate}
 
-All intermediate results are computed on the validation set. Raw prediction files and classification reports are saved for every run, enabling post-hoc statistical analysis.
-
-\subsection{Cascade Experiments}
+\subsection{Cascade System Experiment} \label{sec:CascadeSysExp}
 
 The cascade architecture depends on the assumption that the base model's predictive confidence correlates with correctness, so that delegating uncertain instances to a specialist can improve overall performance. The experiments in this subsection first validate this confidence assumption. Then, three alternative specialist strategies are compared to determine whether a computationally heavy model is required, or whether the same model type trained on the boundary region is sufficient.
 
@@ -1231,28 +1407,28 @@ All three cascade variants are evaluated on the held-out test set, together with
 
 \section{Evaluation Metrics}
 
-Because the data splits are exactly balanced through stratified sampling, accuracy and macro F1-score are equally reliable indicators of performance. Both are reported in the experiments. The primary metric for selecting the best configuration is accuracy, as it directly aligns with the statistical test used.
+Because the data splits are exactly balanced through stratified sampling, accuracy and macro F1-score are equally reliable indicators of performance. Both are reported in the experiments. The primary metric for selecting the best configuration is accuracy, as it directly aligns with the McNemar test.
 
 \subsubsection{Statistical Significance Testing}
 
-All pairwise model comparisons are validated with McNemar's test at $\mcnemaralpha = 0.05$. The test evaluates whether the error distributions of two classifiers, computed on the same set of instances, differ significantly. In each experiment a baseline is chosen---typically the best-performing configuration from the previous test. The continuity-corrected variant of the test is employed (\code{statsmodels}), and raw $p$-values are reported without multiplicity correction, given the sequential, hypothesis-driven design.
+All pairwise model comparisons are validated with McNemar's test at $\mcnemaralpha = 0.05$. The test evaluates whether the error distributions of two classifiers, computed on the same set of instances, differ significantly. In each experiment a baseline is chosen---typically the best-performing configuration from the previous test. The continuity-corrected variant of the test is employed (\code{statsmodels}), and raw $\mcnemaralpha$-values are reported without multiplicity correction, given the sequential, hypothesis-driven design.
 
 \subsubsection{Visualisation of Statistical Significance}
 
 Every figure and table consistently encodes the outcome of McNemar's test:
 
 \begin{itemize}
-	\item \textbf{Graphs.} Significant comparisons ($p < 0.05$) are drawn with full colour saturation, thick lines, and solid markers; non-significant ones use low opacity, thinner lines, and hollow markers. The legend carries the tags ``Sig.\ Diff'' and ``Not Sig.'' where appropriate.
-	\item \textbf{Tabular reports.} Rows with $p < 0.05$ are set in bold and accompanied by a directional arrow ($\uparrow$ for improvement, $\downarrow$ for degradation). The baseline row is also bold. Rows with $p \ge 0.05$ use regular weight and no arrow, as illustrated in Table~\ref{tab:McNemarExample}. \ksremark{Table~\ref{tab:McNemarExample}: W nagłówku trzeba napisać, do czego odnoszą się wyniki.}
+	\item \textbf{Graphs.} Significant comparisons ($\mcnemaralpha < 0.05$) are drawn with full colour saturation, thick lines, and solid markers; non-significant ones use low opacity, thinner lines, and hollow markers. The legend carries the tags ``Sig.\ Diff'' and ``Not Sig.'' where appropriate.
+	\item \textbf{Tabular reports.} Rows with $\mcnemaralpha < 0.05$ are set in bold and accompanied by a directional arrow ($\uparrow$ for improvement, $\downarrow$ for degradation). The baseline row is also bold. Rows with $\mcnemaralpha \ge 0.05$ use regular weight and no arrow, as illustrated in Table~\ref{tab:McNemarExample}.
 \end{itemize}
 
-\begin{table}[tbp]%[htbp]
+\begin{table}[htbp]
 	\centering
-	\caption{McNemar Test (Example)}
+	\caption{Example results of the McNemar test. Bold text indicates statistical significance, while directional arrows denote a significant increase or decrease in accuracy of the challenger model relative to the baseline.}
 	\label{tab:McNemarExample}
 	\begin{tabular}{lllrc}
 		\toprule
-		Model Description & $Acc_{Model}$ & Direction & $p$-value \\
+		Model Description & $Acc_{Model}$ & Direction & $\mcnemaralpha$-value \\
 		\midrule
 		\textbf{Challenger A (significantly better)} & \textbf{0.8542} & \textbf{$\uparrow$} & \textbf{0.001} \\
 		\textbf{Baseline model}                      & \textbf{0.8310} &                      & \textbf{---}  \\
@@ -1265,18 +1441,32 @@ Every figure and table consistently encodes the outcome of McNemar's test:
 \section{Results}
 \label{sec:results}
 
-This section presents the evaluation of linear SVM and \logreg{} classifiers across various configurations. Initial experiments establish that linear SVMs consistently outperform \logreg{} models, with TF-IDF representations universally yielding superior predictive performance compared to standard BoW. The findings demonstrate that implementing statistical pruning effectively mitigates the dimensionality explosion associated with complex $n$-grams while preserving optimal classification accuracy. Ultimately, the results validate the proposed cascade ensemble methodology; delegating uncertain predictions from a highly efficient linear base model to a deep-semantic BERT specialist resolves non-linear contextual cues, achieving a peak combined Macro F1-score of approximately $92.3\%$ and significantly outperforming standalone baselines.
+This section presents the evaluation of linear SVM and \logreg{} classifiers across various configurations. Initial tests establish that linear SVMs consistently outperform \logreg{} models, with TF-IDF representations universally yielding superior predictive performance compared to standard BoW. The findings demonstrate that implementing statistical pruning effectively mitigates the dimensionality explosion associated with complex $n$-grams while preserving optimal classification accuracy. Ultimately, the results validate the proposed cascade ensemble methodology; delegating uncertain predictions from a highly efficient linear base model to a deep-semantic BERT specialist resolves non-linear contextual cues, achieving a peak combined Macro F1-score of approximately $92.3\%$ and significantly outperforming standalone baselines.
 
-The analysis is split into several cases:
-\begin{itemize}
-	\item impact of casing and text expansion (Sec. \ref{sec:Impact-of-Casing-and-Text-Expansion}),
-	\item …
-\end{itemize}
+The analysis is split into several stages, each describing an individual impact:
+
+\begin{enumerate}
+	\item \textbf{Experimental Evaluation Sequence:}
+	\begin{itemize}
+		\item Impact of casing and text expansion (Sec.~\ref{sec:Impact-of-Casing-and-Text-Expansion})
+		\item Impact of filtering (Sec.~\ref{sec:Impact-of-Filtering})
+		\item Impact of custom vectorization (Sec.~\ref{sec:Impact-of-Custom-Vectorization})
+		\item Impact of vocabulary depth (Sec.~\ref{sec:Impact-of-Vocabulary-Depth})
+		\item Impact of semantic clustering (Sec.~\ref{sec:Impact-of-Semantic-Clustering})
+	\end{itemize}
+	
+	\item \textbf{Cascade System Experiment:}
+	\begin{itemize}
+		\item Impact of certainty (Sec.~\ref{sec:Impact-of-Certainty})
+		\item Impact of cascade ensemble (Sec.~\ref{sec:Impact-of-Cascade-Ensemble})
+	\end{itemize}
+\end{enumerate}
+
 
 \subsection{Impact of Casing and Text Expansion}
 \label{sec:Impact-of-Casing-and-Text-Expansion}
 
-In this experiment, the performance of two classical classifiers---linear SVM and \logreg{}---is evaluated across varying preprocessing and feature representation configurations. All models were trained on the training set. The evaluation metrics (Macro F1-score and Accuracy) are computed on the validation set. The experimental conditions are categorized as follows:
+In this test, the performance of two classical classifiers---linear SVM and \logreg{}---is evaluated across varying preprocessing and feature representation configurations. All models were trained on the training set. The evaluation metrics (Macro F1-score and Accuracy) are computed on the validation set. The experimental conditions are categorized as follows:
 \begin{itemize}
 	\item Minimal preprocessing (Clean) vs. Contraction expansion (Expanded),
 	\item Original capitalization (Cased) vs. Lowercased (Lower),
@@ -1286,9 +1476,8 @@ In this experiment, the performance of two classical classifiers---linear SVM an
 \begin{figure}[tbp]
 	\centering
 	\includegraphics[width=\textwidth]{./figures/analysis/casing-effect-slopegraph.png}
-	\caption{Impact of expansion on classical machine learning models and representations}
+	\caption{Macro F1 scores comparing clean versus expanded text. The left and right panels display results for cased and lowercased text, respectively. Line colors differentiate the machine learning models (blue for Linear SVM, orange for Logistic Regression), while line styles denote the text representation (solid for TF-IDF, dashed for BoW). Full line opacity indicates a statistically significant difference ($\mcnemaralpha < 0.05$), with faded lines denoting insignificant changes. Only the lowercased Linear SVM utilizing TF-IDF demonstrated a significant performance impact upon expansion.}
 	\label{fig:casing-expansion-effect}
-	\ksremark{Fig. \ref{fig:casing-expansion-effect}: Trzeba w podpisie rysunku dokładnie napisać, czego dotyczy.}
 \end{figure}
 
 As illustrated in Figure~\ref{fig:casing-expansion-effect}, the transition from cleaned to expanded text provides a statistically significant benefit for lower-cased text, as demonstrated by McNemar's test applied to the pairwise predictions. Other transitions are not found to be statistically significant and are thus grayed out on the graph.
@@ -1305,18 +1494,17 @@ Tables~\ref{tab:McNemarE1a} through \ref{tab:McNemarE1d} provide a cross-configu
 
 Table~\ref{tab:McNemarE1b} and Figure~\ref{fig:casing-expansion-effect} highlight that a performance gain occurs when expansion is applied to lowercased text---\texttt{Expanded and Lower} configuration achieves the highest accuracy ($90.98\%$), and proves significantly better than the standard ``Lower'' baseline.
 
-\ksremark{Tab. \ref{tab:McNemarE1_all}:  Trzeba dokładniej w nagłówkach napisać, o co chodzi.}
 \begin{table}[tbp]%[htbp]
 	\centering
-	\caption{McNemar tests for the impact of casing and text expansion.}
+	\caption{McNemar test results analyzing the impact of casing, text expansion, representation, and model choice. Across all subtables, bold text indicates a statistically significant difference ($\mcnemaralpha < 0.05$) relative to the baseline, with arrows denoting the direction of the change in accuracy.}
 	\label{tab:McNemarE1_all}
 	\begin{subtable}{\textwidth}
 		\centering
-		\caption{McNemar Test}
+		\caption{Baseline: SVM with TF-IDF on cased text. Evaluated variations: model (\logreg{}), representation (BoW), and text lower-casing/expansion.}
 		\label{tab:McNemarE1a}
 		\begin{tabular}{llllrcc}
 			\toprule
-			& Text & Representation & Model & $Acc_{Model}$ & $\uparrow$/$\downarrow$ & $p$-value \\
+			& Text & Representation & Model & $Acc_{Model}$ & $\uparrow$/$\downarrow$ & $\mcnemaralpha$-value \\
 			\midrule
 			\textbf{0} & \textbf{Cased} & \textbf{TF-IDF} & \textbf{SVM} & \textbf{90.61\%} & \textbf{} & \textbf{Baseline} \\
 			\textbf{1} & \textbf{Cased} & \textbf{TF-IDF} & \textbf{\logreg{}} & \textbf{89.75\%} & \textbf{$\downarrow$} & \textbf{0.000000} \\
@@ -1331,11 +1519,11 @@ Table~\ref{tab:McNemarE1b} and Figure~\ref{fig:casing-expansion-effect} highligh
 	
 	\begin{subtable}{\textwidth}
 		\centering
-		\caption{McNemar Test}
+		\caption{Baseline: SVM with TF-IDF on lowered text. Evaluated variations: model (\logreg{}), representation (BoW), and text casing/expansion.}
 		\label{tab:McNemarE1b}
 		\begin{tabular}{llllrcc}
 			\toprule
-			& Text & Representation & Model & $Acc_{Model}$ & $\uparrow$/$\downarrow$ & $p$-value \\
+			& Text & Representation & Model & $Acc_{Model}$ & $\uparrow$/$\downarrow$ & $\mcnemaralpha$-value \\
 			\midrule
 			\textbf{0} & \textbf{Expanded and Lower} & \textbf{TF-IDF} & \textbf{SVM} & \textbf{90.98\%} & \textbf{$\uparrow$} & \textbf{0.036879} \\
 			\textbf{1} & \textbf{Lower} & \textbf{TF-IDF} & \textbf{SVM} & \textbf{90.78\%} & \textbf{} & \textbf{Baseline} \\
@@ -1350,11 +1538,11 @@ Table~\ref{tab:McNemarE1b} and Figure~\ref{fig:casing-expansion-effect} highligh
 	
 	\begin{subtable}{\textwidth}
 		\centering
-		\caption{McNemar Test}
+		\caption{Baseline: \logreg{} with TF-IDF on cased text. Evaluated variations: model (SVM), representation (BoW), and text lower-casing/expansion.}
 		\label{tab:McNemarE1c}
 		\begin{tabular}{llllrcc}
 			\toprule
-			& Text & Representation & Model & $Acc_{Model}$ & $\uparrow$/$\downarrow$ & $p$-value \\
+			& Text & Representation & Model & $Acc_{Model}$ & $\uparrow$/$\downarrow$ & $\mcnemaralpha$-value \\
 			\midrule
 			\textbf{0} & \textbf{Cased} & \textbf{TF-IDF} & \textbf{SVM} & \textbf{90.61\%} & \textbf{$\uparrow$} & \textbf{0.000000} \\
 			\textbf{1} & \textbf{Cased} & \textbf{TF-IDF} & \textbf{\logreg{}} & \textbf{89.75\%} & \textbf{} & \textbf{Baseline} \\
@@ -1369,11 +1557,11 @@ Table~\ref{tab:McNemarE1b} and Figure~\ref{fig:casing-expansion-effect} highligh
 	
 	\begin{subtable}{\textwidth}
 		\centering
-		\caption{McNemar Test}
+		\caption{Baseline: \logreg{} with TF-IDF on lowered text. Evaluated variations: model (SVM), representation (BoW), and text casing/expansion.}
 		\label{tab:McNemarE1d}
 		\begin{tabular}{llllrcc}
 			\toprule
-			& Text & Representation & Model & $Acc_{Model}$ & $\uparrow$/$\downarrow$ & $p$-value \\
+			& Text & Representation & Model & $Acc_{Model}$ & $\uparrow$/$\downarrow$ & $\mcnemaralpha$-value \\
 			\midrule
 			\textbf{0} & \textbf{Lower} & \textbf{TF-IDF} & \textbf{SVM} & \textbf{90.78\%} & \textbf{$\uparrow$} & \textbf{0.000000} \\
 			\textbf{1} & \textbf{Lower} & \textbf{TF-IDF} & \textbf{\logreg{}} & \textbf{89.82\%} & \textbf{} & \textbf{Baseline} \\
@@ -1386,6 +1574,7 @@ Table~\ref{tab:McNemarE1b} and Figure~\ref{fig:casing-expansion-effect} highligh
 \end{table}
 
 \subsection{Impact of Filtering}
+\label{sec:Impact-of-Filtering}
 
 POS filtering reduces the overall dimensionality of the feature space by approximately 17\%. For example, the number of positive tokens decreased from $19,172$ to $15,794$, and the volume of discarded neutral tokens dropped from $102,665$ to $85,174$. In the word clouds (Figure~\ref{fig:tokens_lower_clouds} and Figure~\ref{fig:tokens_filtered_clouds}), the size of each word is proportional to its \zscore-score, which represents its correlation with the sentiment. By discarding neutral , the filtered approach amplifies the polarity of key sentiment indicators. For example, discriminative words such as \literal{worst} achieve notably higher \zscore-scores in the filtered configuration. Consequently, they appear visibly larger in Figure~\ref{fig:tokens_filtered_clouds}.
 
@@ -1443,32 +1632,31 @@ POS filtering reduces the overall dimensionality of the feature space by approxi
 \subsubsection{Observations}
 It is worth noting that the results are easily interpretable. Tokens such as \literal{great} or \literal{love} indicate positive sentiment, while \literal{bad}, \literal{worst}, or \literal{boring} indicate negative feelings towards a movie. It is also interesting that \literal{his}, \literal{episodes}, or \literal{music} appear in the positive group, suggesting that people tend to be more descriptive when they write a positive review. Tokens such as \literal{?}, \literal{why}, and \literal{...} appear in the negative reviews.
 
-\subsection{Impact of Custom Vectorization}
+\subsection{Impact of Custom Vectorization} \label{sec:Impact-of-Custom-Vectorization}
 
 Instead of relying on the default \code{CountVectorizer}, the standard regular expression tokenization is bypassed. After the vectorization, neutral tokens are pruned based on their calculated \zscore-scores resulting in Custom BoW (\custombow) and Custom TF-IDF (\customtfidf).
 
-The following experiment evaluates various tokenization representations to identify the optimal \zscore-score pruning threshold, utilizing the best-performing model from the previous stage as a baseline. As illustrated in Figure~\ref{fig:zscore_threshold}, the models' Macro F1-scores can remain highly stable even when pruning is applied. However, the effectiveness of pruning is dependent on the chosen feature representation. For the linear SVM utilizing a \custombow{}, statistical pruning proves not applicable; performance degrades immediately, making $\zscore=0$ (no pruning) the optimal threshold. For the \logreg{} model with \custombow{}, the performance remains stable up to a threshold of $\zscore=1$ before declining.
+The following test evaluates various tokenization representations to identify the optimal \zscore-score pruning threshold, utilizing the best-performing model from the previous stage as a baseline. As illustrated in Figure~\ref{fig:zscore_threshold}, the models' Macro F1-scores can remain highly stable even when pruning is applied. However, the effectiveness of pruning is dependent on the chosen feature representation. For the linear SVM utilizing a \custombow{}, statistical pruning proves not applicable; performance degrades immediately, making $\zscore=0$ (no pruning) the optimal threshold. For the \logreg{} model with \custombow{}, the performance remains stable up to a threshold of $\zscore=1$ before declining.
 
 A particularly interesting pattern emerges when utilizing the \customtfidf{} representation. For both the linear SVM and \logreg{} models, the optimal pruning threshold shifts significantly to $\zscore=2$. At this threshold, the SVM maintains its peak baseline performance despite a substantial reduction in the feature space. Notably, the \logreg{} model exhibits a slight increase in its F1-score, suggesting that the targeted removal of neutral features actively improves the model's ability to generalize.
 
-\begin{figure}[tbp]%[htbp]
+\begin{figure}[htbp]%[htbp]
 	\centering
 	\includegraphics[width=1\textwidth]{./figures/analysis/zscore_threshold.png}
-	\caption{Impact of neutral vocabulary pruning on performance (green regions represent the optimal threshold before performance degradation).}
+	\caption{Impact of neutral vocabulary pruning on Macro F1-Score. The $2 \times 2$ grid compares CustomBow (top row) and CustomTfidf (bottom row) representations across SVM (left column) and \logreg{} (right column) models. Line colors distinguish the six tokenization strategies. Vertical dotted lines annotate the optimal pruning threshold, with the shaded green regions highlighting the acceptable threshold range prior to performance loss.}
 	\label{fig:zscore_threshold}
 \end{figure}
 
 \subsubsection{Impact of Token Type}
 
-As detailed in Table~\ref{tab:McNemarE2}, the most effective token representations rely on stemming, lemmatization, and simple lowercasing. The optimal configuration utilizes stemmed tokens paired with a \zscore-score pruning threshold of $\zscore=2$, achieving a peak accuracy of $91.41\%$ ($p = 0.0125$). Lemmatization/Stemming collapses tokens to their morphological roots and thus reduces the feature dimensionality compared to standard tokenization. Additionally, the lemmatized representations at pruning thresholds $\zscore=0$ and $\zscore=2$ achieve a nearly identical accuracy---reducing the dimensionality even more---this shows that pruning can be employed without negatively affecting the accuracy.
+As detailed in Table~\ref{tab:McNemarE2}, the most effective token representations rely on stemming, lemmatization, and simple lowercasing. The optimal configuration utilizes stemmed tokens paired with a \zscore-score pruning threshold of $\zscore=2$, achieving a peak accuracy of $91.41\%$ ($\mcnemaralpha = 0.0125$). Lemmatization/Stemming collapses tokens to their morphological roots and thus reduces the feature dimensionality compared to standard tokenization. Additionally, the lemmatized representations at pruning thresholds $\zscore=0$ and $\zscore=2$ achieve a nearly identical accuracy---reducing the dimensionality even more---this shows that pruning can be employed without negatively affecting the accuracy.
 
 \begin{table} [tbp]%[htbp]
 	\centering
-	\caption{McNemar Test (\customtfidf{} vs SVM Baseline)}
-	\label{tab:McNemarE2}
+	\caption{McNemar test results comparing the baseline TF-IDF representation against custom (\customtfidf{}) representations with different $\zscore$-score pruning values. Only SVM models are considered. Bold text indicates a statistically significant difference ($\mcnemaralpha < 0.05$) relative to the baseline, with arrows denoting the direction of the change in accuracy.}	\label{tab:McNemarE2}
 	\begin{tabular}{llllrcc}
 		\toprule
-		& Text & Representation & Model & $Acc_{Model}$ & $\uparrow$/$\downarrow$ & $p$-value \\
+		& Text & Representation & Model & $Acc_{Model}$ & $\uparrow$/$\downarrow$ & $\mcnemaralpha$-value \\
 		\midrule
 		\textbf{0} & \textbf{Tokens Stemmed} & \textbf{\customtfidf{} (\zscore2)} & \textbf{SVM} & \textbf{91.41\%} & \textbf{$\uparrow$} & \textbf{0.012517} \\
 		\textbf{1} & \textbf{Tokens Lemmatized} & \textbf{\customtfidf{} (\zscore2)} & \textbf{SVM} & \textbf{91.37\%} & \textbf{$\uparrow$} & \textbf{0.020340} \\
@@ -1505,17 +1693,17 @@ As detailed in Table~\ref{tab:McNemarE2}, the most effective token representatio
 	\end{tabular}
 \end{table}
 
-While a few configurations at $\zscore=1$ and $\zscore=2$ yield improvements over the baseline ($\uparrow$), the vast majority of combinations between $\zscore=0$ and $\zscore=3$ result in $p$-values greater than $0.05$. This indicates that for most representation strategies, moderate statistical pruning perfectly maintains classification performance on par with the unpruned baseline. Significant degradation ($\downarrow$) only begins to manifest under aggressive pruning at $\zscore=4$.
+While a few configurations at $\zscore=1$ and $\zscore=2$ yield improvements over the baseline ($\uparrow$), the vast majority of combinations between $\zscore=0$ and $\zscore=3$ result in $\mcnemaralpha$-values greater than $0.05$. This indicates that for most representation strategies, moderate statistical pruning perfectly maintains classification performance on par with the unpruned baseline. Significant degradation ($\downarrow$) only begins to manifest under aggressive pruning at $\zscore=4$.
 
 As detailed in Table~\ref{tab:McNemarE2logreg}, the simplest representation (Tokens Letters with $\zscore=0$) is chosen as the baseline. Compared to this baseline, a statistically significant increase in accuracy is observed when utilizing more sophisticated representations. 
 
 \begin{table}[tbp]%[htbp]
 	\centering
-	\caption{McNemar Test (Custom TF-IDF vs \logreg{} Baseline)}
+	\caption{McNemar test results comparing the simplest representation baseline (alphabetical filtering, \customtfidf{} with no pruning) against custom representations with different $\zscore$-score pruning values. Only \logreg{} models are considered. Bold text indicates a statistically significant difference ($\mcnemaralpha < 0.05$) relative to the baseline, with arrows denoting the direction of the change in accuracy.}
 	\label{tab:McNemarE2logreg}
 	\begin{tabular}{llllrcc}
 		\toprule
-		& Text & Representation & Model & $Acc_{Model}$ & $\uparrow$/$\downarrow$ & $p$-value \\
+		& Text & Representation & Model & $Acc_{Model}$ & $\uparrow$/$\downarrow$ & $\mcnemaralpha$-value \\
 		\midrule
 		\textbf{0} & \textbf{Tokens Filtered} & \textbf{\customtfidf{} (\zscore2)} & \textbf{\logreg{}} & \textbf{90.72\%} & \textbf{$\uparrow$} & \textbf{0.000007} \\
 		\textbf{1} & \textbf{Tokens Lower} & \textbf{\customtfidf{} (\zscore2)} & \textbf{\logreg{}} & \textbf{90.68\%} & \textbf{$\uparrow$} & \textbf{0.000003} \\
@@ -1555,17 +1743,17 @@ Notably, the filtered representation combined with $\zscore=2$ pruning achieves 
 
 \subsubsection{Impact of Representation}
 
-The \customtfidf{} representation achieves higher accuracy than the \texttt{\custombow{}} approach across all tested configurations. This outcome verifies that the pattern observed in the initial experiments (Tables~\ref{tab:McNemarE1a} through~\ref{tab:McNemarE1d}) holds true: TF-IDF outperforms BoW for the sentiment analysis task. The superiority of TF-IDF is robust and largely independent of the tokenization strategy. Additionally, consistent with the trends previously illustrated in Figure~\ref{fig:zscore_threshold}, aggressive pruning at $\zscore=4$ results in performance degradation.
+The \customtfidf{} representation achieves higher accuracy than the \texttt{\custombow{}} approach across all tested configurations. This outcome verifies that the pattern observed in the initial tests (Tables~\ref{tab:McNemarE1a} through~\ref{tab:McNemarE1d}) holds true: TF-IDF outperforms BoW for the sentiment analysis task. The superiority of TF-IDF is robust and largely independent of the tokenization strategy. Additionally, consistent with the trends previously illustrated in Figure~\ref{fig:zscore_threshold}, aggressive pruning at $\zscore=4$ results in performance degradation.
 
 \begin{table}[tbp]%[htbp]
 	\centering
-	\caption{McNemar Test (\customtfidf{} vs \customtfidf{} \zscore=2)}
+	\caption{McNemar test results comparing the baseline SVM model (lowered tokens, \customtfidf{}, $\zscore=2$) against Custom Bag-of-Words (\custombow{}) representations. Only SVM models are considered. Bold text indicates a statistically significant difference ($\mcnemaralpha < 0.05$) relative to the baseline, with arrows denoting the direction of the change in accuracy.}
 	\label{tab:McNemar}
 	\begin{tabular}{llllrcc}
 		\toprule
-		& Text & Representation & Model & $Acc_{Model}$ & $\uparrow$/$\downarrow$ & $p$-value \\
+		& Text & Representation & Model & $Acc_{Model}$ & $\uparrow$/$\downarrow$ & $\mcnemaralpha$-value \\
 		\midrule
-		\textbf{0} & \textbf{Lower} & \textbf{\customtfidf{} (\zscore2)} & \textbf{SVM} & \textbf{91.34\%} & \textbf{} & \textbf{Baseline} \\
+		\textbf{0} & \textbf{Tokens Lower} & \textbf{\customtfidf{} (\zscore2)} & \textbf{SVM} & \textbf{91.34\%} & \textbf{} & \textbf{Baseline} \\
 		\textbf{1} & \textbf{Tokens Lower} & \textbf{\custombow{} (\zscore0)} & \textbf{SVM} & \textbf{90.07\%} & \textbf{$\downarrow$} & \textbf{0.000000} \\
 		\textbf{2} & \textbf{Tokens Lower} & \textbf{\custombow{} (\zscore1)} & \textbf{SVM} & \textbf{89.98\%} & \textbf{$\downarrow$} & \textbf{0.000000} \\
 		\textbf{3} & \textbf{Tokens Cased} & \textbf{\custombow{} (\zscore1)} & \textbf{SVM} & \textbf{89.90\%} & \textbf{$\downarrow$} & \textbf{0.000000} \\
@@ -1613,13 +1801,13 @@ For the \logreg{} model, the classification scores are generally lower than thos
 \begin{figure}[tbp]%[htbp]
 	\centering
 	\includegraphics[width=1\textwidth]{./figures/analysis/ablation_study.png}
-	\caption{Ablation study evaluating pre-tokenized representations without pruning ($\zscore=0$), and custom representations with statistical pruning ($\zscore=2$) compared to baseline \texttt{CountVectorizer} equivalents from the initial experiments.}
+	\caption{Ablation study evaluating standard tokenized representations versus custom representations with statistical pruning across various preprocessing steps. Bar colors distinguish the representation family (blues for TF-IDF, reds for BoW), vertical lines mark the baseline performance on lower-cased expanded text. Hashed bars indicate results that are not statistically significantly different from their respective baseline ($\mcnemaralpha \ge 0.05$). The top-performing configurations for each model are outlined and annotated with a star.}
 	\label{fig:ablation_study}
 \end{figure}
 
-\subsection{Impact of Vocabulary Depth}
+\subsection{Impact of Vocabulary Depth} \label{sec:Impact-of-Vocabulary-Depth}
 
-This experiment examines the importance of selecting the optimal  $n$-gram range---the vocabulary depth. As depicted in the left panel of Figure~\ref{fig:vocabulary_depth}, expanding the token representation from simple unigrams (1, 1) to include bigrams (1, 2) yields a substantial increase in the Macro F1-score for both the linear SVM and \logreg{} models. However, extending the depth further to include trigrams (1, 3) provides only marginal performance gains, illustrating a clear pattern of diminishing returns.
+This test examines the importance of selecting the optimal  $n$-gram range---the vocabulary depth. As depicted in the left panel of Figure~\ref{fig:vocabulary_depth}, expanding the token representation from simple unigrams (1, 1) to include bigrams (1, 2) yields a substantial increase in the Macro F1-score for both the linear SVM and \logreg{} models. However, extending the depth further to include trigrams (1, 3) provides only marginal performance gains, illustrating a clear pattern of diminishing returns.
 
 \subsubsection{Dimensionality Problem}
 While deeper $n$-gram ranges capture richer sequential context, they introduce a severe structural challenge: the explosion of the feature space. The right panel of Figure~\ref{fig:vocabulary_depth} demonstrates that the base vocabulary grows aggressively, swelling from 18,471 unigrams to 139,015 total features when trigrams are included. Extrapolating this trajectory suggests that exploring even deeper ranges, such as $4$-grams (1, 4), would predictably push the raw feature count well beyond 190,000. Operating on such massive, highly sparse matrices becomes extremely memory-intensive.
@@ -1630,18 +1818,18 @@ The implementation of statistical pruning ($\zscore=2.0$) effectively mitigates 
 \begin{figure}[tbp]%[htbp]
 	\centering
 	\includegraphics[width=1\textwidth]{./figures/analysis/ngram_experiment_double.png}
-	\caption{Performance and dimensionality trends across varying $n$-gram ranges. The left panel illustrates model performance, while the right panel highlights the feature space reduction achieved via $\zscore=2.0$ statistical pruning.}
+	\caption{Performance and dimensionality trends across varying $n$-gram ranges. The left panel illustrates model performance (Macro F1-Score), where dashed lines indicate the respective baselines for Linear SVM (blue) and \logreg{} (red). Hollow markers denote results that are not statistically significantly different from their baseline ($\mcnemaralpha \ge 0.05$), and a star highlights the overall best-performing configuration. The right panel highlights the feature space reduction, comparing the base vocabulary size (green bars) against the pruned vocabulary using $\zscore=2.0$ (orange bars).}
 	\label{fig:vocabulary_depth}
 \end{figure}
 
-\subsection{Impact of Semantic Clustering}
+\subsection{Impact of Semantic Clustering} \label{sec:Impact-of-Semantic-Clustering}
 
 Semantic clustering groups related $n$-grams to capture conceptual representations. As shown in Figure~\ref{fig:concepts_pos_10000_0}, the cluster containing \literal{great}, \literal{wonderful}, and \literal{amazing} forms the most discriminative positive concept, achieving a \zscore-score of $44.20$. Clusters focused on structural phrases, such as \literal{his} or \literal{is an} rank among the top positive concepts, reinforcing the earlier observation that reviewers tend to use more descriptive language when expressing a positive opinion.
 
 \begin{figure}[tbp]%[htbp]
 	\centering
 	\includegraphics[width=1\textwidth]{./figures/concepts/pos_wc_tokens_lower_k10000_w0.png}
-	\caption{Top 5 positive concepts extracted via baseline semantic clustering ($w=0$).}
+	\caption{Top 5 positive concepts extracted via baseline semantic clustering ($\conceptWeight=0$).}
 	\label{fig:concepts_pos_10000_0}
 \end{figure}
 
@@ -1650,7 +1838,7 @@ Figure~\ref{fig:concepts_neg_10000_0} illustrates that negative clusters contain
 \begin{figure}[tbp]%[htbp]
 	\centering
 	\includegraphics[width=1\textwidth]{./figures/concepts/neg_wc_tokens_lower_k10000_w0.png}
-	\caption{Top 5 negative concepts extracted via baseline semantic clustering ($w=0$).}
+	\caption{Top 5 negative concepts extracted via baseline semantic clustering ($\conceptWeight=0$).}
 	\label{fig:concepts_neg_10000_0}
 \end{figure}
 
@@ -1660,14 +1848,14 @@ Figures~\ref{fig:concepts_pos_10000_10} and \ref{fig:concepts_neg_10000_10} depi
 \begin{figure}[tbp]%[htbp]
 	\centering
 	\includegraphics[width=1\textwidth]{./figures/concepts/pos_wc_tokens_lower_k10000_w10.png}
-	\caption{Top 5 positive concepts extracted via weighted semantic clustering ($w=10$).}
+	\caption{Top 5 positive concepts extracted via weighted semantic clustering ($\conceptWeight=10$).}
 	\label{fig:concepts_pos_10000_10}
 \end{figure}
 
 \begin{figure}[tbp]%[htbp]
 	\centering
 	\includegraphics[width=1\textwidth]{./figures/concepts/neg_wc_tokens_lower_k10000_w10.png}
-	\caption{Top 5 negative concepts extracted via weighted semantic clustering ($w=10$).}
+	\caption{Top 5 negative concepts extracted via weighted semantic clustering ($\conceptWeight=10$).}
 	\label{fig:concepts_neg_10000_10}
 \end{figure}
 
@@ -1678,18 +1866,18 @@ Compressing the vocabulary to $n$ concepts results in performance degradation fo
 \begin{figure}[tbp]%[htbp]
 	\centering
 	\includegraphics[width=1\textwidth]{./figures/concepts/cluster_comparison.pdf}
-	\caption{Performance comparison of clustered concepts across varying granularities ($k$) and sentiment weights ($w$), plotted against the unclustered $\zscore=2.0$ baseline.}
+	\caption{Performance comparison of clustered concepts across varying  number of concepts ($\kconcepts$) and sentiment weights ($\conceptWeight$). The left and right panels detail results for the Linear SVM and \logreg{} models, respectively. Marker colors denote the applied sentiment weight ($\conceptWeight \in \{0, 1, 10\}$), while the horizontal dashed line represents the unclustered $\zscore=2.0$ baseline performance for each respective model.}
 	\label{fig:clustering_performance}
 \end{figure}
 
-\subsection{Impact of Certainty}
+\subsection{Impact of Certainty} \label{sec:Impact-of-Certainty}
 
 In a cascade design the delegation decision depends on whether the predicted probability reflects genuine confidence. Figure~\ref{fig:certainty_dist} shows the probability distributions of the linear SVM and \logreg{} on the validation set. While both models concentrate predictions near the extremes, the SVM places a markedly larger share in the $[0.0,0.1]\cup[0.9,1.0]$ interval, whereas \logreg{} spreads predictions more evenly across intermediate bins.
 
 \begin{figure}[tbp]%[htbp]
 	\centering
 	\includegraphics[width=\textwidth]{./figures/analysis/model_comparison_certainty_dist.png}
-	\caption{Certainty analysis for linear SVM and \logreg{} models.}
+	\caption{Distribution of prediction certainty for the Linear SVM (left) and \logreg{} (right) models. The vertical dashed line at 50\% denotes the decision boundary separating negative and positive predictions. Bar colors indicate classification outcomes: dark blue represents correctly classified samples, teal indicates false negatives, and red indicates false positives.}
 	\label{fig:certainty_dist}
 \end{figure}
 
@@ -1707,11 +1895,11 @@ Despite this favorable error distribution, \logreg{} achieves a much smaller wor
 
 \begin{table}[tbp]%[htbp]
 	\centering
-	\caption{Comparison of certainty ranges.}
+	\caption{Prediction outcomes across varying certainty ranges. The tables compare the performance of the \logreg{} and SVM models, detailing the number of predictions, local accuracy, proportional workload, and relative error contribution within each symmetric probability bracket.}
 	\label{tab:certainty}
 	\begin{subtable}{\textwidth}
 		\centering
-		\caption{Certainty Analysis - \logreg}
+		\caption{Certainty distribution and performance metrics for the \logreg{} model.}
 		\label{tab:certainty_lr}
 		\begin{tabular}{l r r r | r r}
 			\toprule
@@ -1730,7 +1918,7 @@ Despite this favorable error distribution, \logreg{} achieves a much smaller wor
 	
 	\begin{subtable}{\textwidth}
 		\centering
-		\caption{Certainty Analysis - SVM}
+		\caption{Certainty distribution and performance metrics for the SVM model.}
 		\label{tab:certainty_svm}
 		\begin{tabular}{l r r r | r r}
 			\toprule
@@ -1745,14 +1933,15 @@ Despite this favorable error distribution, \logreg{} achieves a much smaller wor
 		\end{tabular}
 	\end{subtable}
 \end{table}
-\subsection{Impact of Cascade Ensemble}
+
+\subsection{Impact of Cascade Ensemble} \label{sec:Impact-of-Cascade-Ensemble}
 
 The linear SVM cascade (Figure~\ref{fig:svm_acc_cov_trade-off}) demonstrates superior efficiency and performance when utilizing TF-IDF representations---top 4 representations can be found in the legend. The SVM begins with a high initial local accuracy (above $91.0\%$ at the $50\%$ certainty threshold) and scales smoothly to $100.0\%$ as the required confidence increases. Ultimately, the SVM cascade achieves a high overall combined accuracy, peaking at approximately $93.1\%$. Crucially, it attains this global optimization peak while delegating only $15\%$ to $20\%$ of the data to BERT. This visually confirms the earlier observation that the SVM provides a massive zone of high-precision coverage, allowing the system to rely heavily on the lightweight model without sacrificing accuracy.
 
 \begin{figure}[tbp]%[htbp]
 	\centering
 	\includegraphics[width=1\textwidth]{./figures/analysis/svm_accuracy_coverage_tradeoff.png}
-	\caption{Accuracy-Coverage trade-off for linear SVM cascade.}
+	\caption{Accuracy-coverage trade-off and delegation dynamics for the SVM cascade system. The left panel illustrates the local accuracy on retained data relative to the model prediction certainty threshold. The center panel presents the deferral curve, detailing the percentage of data delegated to BERT model across varying certainty thresholds. The right panel plots the combined cascade accuracy against the delegated workload, where the horizontal dashed line indicates the BERT global baseline and the star marker highlights the optimal system configuration.}
 	\label{fig:svm_acc_cov_trade-off}
 \end{figure}
 
@@ -1761,7 +1950,7 @@ The \logreg{} cascade (Figure~\ref{fig:lr_acc_cov_trade-off}), predominantly uti
 \begin{figure}[tbp]%[htbp]
 	\centering
 	\includegraphics[width=1\textwidth]{./figures/analysis/logreg_accuracy_coverage_tradeoff.png}
-	\caption{Accuracy-Coverage trade-off for \logreg{} cascade.}
+	\caption{Accuracy-coverage trade-off and delegation dynamics for the \logreg{} cascade system. The left panel illustrates the local accuracy on retained data relative to the model prediction certainty threshold. The center panel presents the deferral curve, detailing the percentage of data delegated to BERT model across varying certainty thresholds. The right panel plots the combined cascade accuracy against the delegated workload, where the horizontal dashed line indicates the BERT global baseline and the star marker highlights the optimal system configuration.}
 	\label{fig:lr_acc_cov_trade-off}
 \end{figure}
 
@@ -1774,7 +1963,7 @@ As shown in Figure~\ref{fig:cascade_comp}, introducing a specialist yields mixed
 \begin{figure}[tbp]%[htbp]
 	\centering
 	\includegraphics[width=1\textwidth]{./figures/thesis/cascade_comparison_f1_macro.png}
-	\caption{Accuracy comparison of cascade systems.}
+	\caption{Comparison of Macro F1 scores across different cascade system configurations. The horizontal dashed line denotes the SVM baseline performance (0.9131). Bar colors indicate statistical significance relative to the baseline (blue for $\mcnemaralpha < 0.05$, grey for insignificant results), and exact scores are annotated above each bar. A star marker highlights the top-performing system configuration.}
 	\label{fig:cascade_comp}
 \end{figure}
 
@@ -1793,7 +1982,7 @@ This structural barrier becomes apparent when isolating model performance strict
 \begin{figure}[tbp]%[htbp]
 	\centering
 	\includegraphics[width=1\textwidth]{./figures/thesis/all_models_hard_cases_cm.png}
-	\caption{Confusion matrix of cascade systems on hard samples.}
+	\caption{Confusion matrices evaluating model performance on a subset of hard samples. From left to right, the panels display the classification results for the Original Base Model, SVM Specialist, Basic BERT, and BERT Specialist. The intensity of the blue shading within each cell corresponds to the absolute number of samples, and the overall subset accuracy for each configuration is annotated above its respective matrix.}
 	\label{fig:cascade_confusion}
 \end{figure}
 
