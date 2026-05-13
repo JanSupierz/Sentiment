@@ -13,7 +13,7 @@ from src.utils.paths import PROJECT_ROOT, RESULTS_DIR, FIGURES_DIR
 class PlotConfig:
     """Struct to hold plot styling parameters."""
     font_size: int = 15
-    title_size: int = 18  # font_size + 3 for hierarchy
+    title_size: int = 18
     pad: int = 15
     cmap: str = 'Blues'
 
@@ -103,7 +103,7 @@ def main():
     plot_cm_from_df(axes[2], hard_bert_basic, "3. Basic BERT", style)
     plot_cm_from_df(axes[3], hard_bert_spec, "4. BERT Specialist", style)
 
-    # Only show the y-axis label on the first plot to avoid clutter
+    # Only show the y-axis label on the first plot
     for ax in axes[1:]:
         ax.set_ylabel("")
 

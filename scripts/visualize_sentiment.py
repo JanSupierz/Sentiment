@@ -121,7 +121,7 @@ def plot_top_cluster_grid(concept_data, logodds, class_id, label, weight, top_n=
     plt.tight_layout()
     plt.savefig(out_path, dpi=150)
     plt.close()
-    print(f"✅ Saved {label} cluster grid to {out_path}")
+    print(f"Saved {label} cluster grid to {out_path}")
 
 
 def main():

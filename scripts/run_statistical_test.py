@@ -37,7 +37,7 @@ def main():
     results = []
 
     for target in args.targets:
-        # --- NOWA LOGIKA: Wydobywanie 3 parametrów po znaku '=' oddzielonych '|' ---
+        # --- Wydobywanie 3 parametrów po znaku '=' oddzielonych '|' ---
         if "=" in target:
             query, custom_meta = target.split("=", 1)
             meta_parts = custom_meta.split("|")
@@ -94,14 +94,14 @@ def main():
             acc_base = np.mean(preds_base == y_true_base)
             acc_comp = np.mean(preds_comp == y_true_comp)
 
-            # Fallback dla modelu, jeśli użytkownik nie podał parametrów
+            # Fallback dla modelu, jeśli nie podano parametrów
             final_model_val = model_val if model_val else csv_file.stem
 
             results.append({
                 "Experiment": exp,
-                "Text": text_val,               # Zapis do osobnej kolumny
-                "Representation": rep_val,      # Zapis do osobnej kolumny
-                "Model": final_model_val,       # Zapis do osobnej kolumny
+                "Text": text_val,               
+                "Representation": rep_val,      
+                "Model": final_model_val,
                 "Baseline": baseline_name,
                 "Acc_Model": float(acc_comp),
                 "Acc_Baseline": float(acc_base),
