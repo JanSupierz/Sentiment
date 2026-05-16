@@ -1391,7 +1391,7 @@ The cascade architecture depends on the assumption that the base model's predict
 
 \subsubsection{Confidence Analysis}
 
-To verify that the delegation threshold $\thresh$ genuinely isolates difficult cases, the base model's predicted probabilities are binned and the empirical accuracy in each bin is examined. For instances with probabilities close to $0$ or $1$ (the acceptance regions), the observed accuracy and coverage should be substantially higher than for instances with probabilities near $0.5$ (the boundary region) to confirms that the interval $[\thresh,\,1-\thresh]$ captures cases where the base model is most error-prone.
+To verify that the delegation threshold $\thresh$ genuinely isolates difficult cases, the base model's predicted probabilities are binned and the empirical accuracy in each bin is examined. For instances with probabilities close to $0$ or $1$ (the acceptance regions), the observed accuracy and coverage should be substantially higher than for instances with probabilities near $0.5$ (the boundary region) to confirm that the interval $[\thresh,\,1-\thresh]$ captures cases where the base model is most error-prone.
 
 \subsubsection{Specialist Comparison}
 
@@ -1407,11 +1407,11 @@ All three cascade variants are evaluated on the held-out test set, together with
 
 \section{Evaluation Metrics}
 
-Because the data splits are exactly balanced through stratified sampling, accuracy and macro F1-score are equally reliable indicators of performance. Both are reported in the experiments. The primary metric for selecting the best configuration is accuracy, as it directly aligns with the McNemar test.
+Because the data splits are exactly balanced through stratified sampling, accuracy and macro F1-score \ksremark{Trzeba podać wzory na accuracy i macro $F_1$-score.} are equally reliable indicators of performance. Both are reported in the experiments. The primary metric for selecting the best configuration is accuracy, as it directly aligns with the McNemar test.
 
 \subsubsection{Statistical Significance Testing}
 
-All pairwise model comparisons are validated with McNemar's test at $\mcnemaralpha = 0.05$. The test evaluates whether the error distributions of two classifiers, computed on the same set of instances, differ significantly. In each experiment a baseline is chosen---typically the best-performing configuration from the previous test. The continuity-corrected variant of the test is employed (\code{statsmodels}), and raw $\mcnemaralpha$-values are reported without multiplicity correction, given the sequential, hypothesis-driven design.
+All pairwise model comparisons are validated with McNemar's test at $\mcnemaralpha = 0.05$. The test evaluates whether the error distributions of two classifiers, computed on the same set of instances, differ significantly. In each experiment a baseline is chosen---typically the best-performing configuration from the previous test. The continuity-corrected variant of the test is employed (\code{statsmodels}), and raw $\mcnemaralpha$-values \ksremark{$p$-values?} are reported without multiplicity correction, given the sequential, hypothesis-driven design.
 
 \subsubsection{Visualisation of Statistical Significance}
 
@@ -1419,7 +1419,7 @@ Every figure and table consistently encodes the outcome of McNemar's test:
 
 \begin{itemize}
 	\item \textbf{Graphs.} Significant comparisons ($\mcnemaralpha < 0.05$) are drawn with full colour saturation, thick lines, and solid markers; non-significant ones use low opacity, thinner lines, and hollow markers. The legend carries the tags ``Sig.\ Diff'' and ``Not Sig.'' where appropriate.
-	\item \textbf{Tabular reports.} Rows with $\mcnemaralpha < 0.05$ are set in bold and accompanied by a directional arrow ($\uparrow$ for improvement, $\downarrow$ for degradation). The baseline row is also bold. Rows with $\mcnemaralpha \ge 0.05$ use regular weight and no arrow, as illustrated in Table~\ref{tab:McNemarExample}.
+	\item \textbf{Tabular reports.} Rows with $\mcnemaralpha < 0.05$ are set in bold and accompanied by a directional arrow ($\uparrow$ for improvement, $\downarrow$ for degradation \ksremark{Czy ten test jest na pewno symetryczny? Tzn. czy sprawdzamy, czy $A > B$ (ale nie $A < B$) czy $A \neq B$?}). The baseline row is also bold. Rows with $\mcnemaralpha \ge 0.05$ use regular weight and no arrow, as illustrated in Table~\ref{tab:McNemarExample}.
 \end{itemize}
 
 \begin{table}[htbp]
@@ -1466,7 +1466,7 @@ The analysis is split into several stages, each describing an individual impact:
 \subsection{Impact of Casing and Text Expansion}
 \label{sec:Impact-of-Casing-and-Text-Expansion}
 
-In this test, the performance of two classical classifiers---linear SVM and \logreg{}---is evaluated across varying preprocessing and feature representation configurations. All models were trained on the training set. The evaluation metrics (Macro F1-score and Accuracy) are computed on the validation set. The experimental conditions are categorized as follows:
+In this test, the performance of two classical classifiers---linear SVM and \logreg{}---is evaluated across varying preprocessing and feature representation configurations. All models were trained on the training set. The evaluation metrics (Macro \ksremark{małą literą} F1-score and Accuracy \ksremark{małą literą}) are computed on the validation set. The experimental conditions are categorized as follows:
 \begin{itemize}
 	\item Minimal preprocessing (Clean) vs. Contraction expansion (Expanded),
 	\item Original capitalization (Cased) vs. Lowercased (Lower),
@@ -1479,6 +1479,7 @@ In this test, the performance of two classical classifiers---linear SVM and \log
 	\caption{Macro F1 scores comparing clean versus expanded text. The left and right panels display results for cased and lowercased text, respectively. Line colors differentiate the machine learning models (blue for Linear SVM, orange for Logistic Regression), while line styles denote the text representation (solid for TF-IDF, dashed for BoW). Full line opacity indicates a statistically significant difference ($\mcnemaralpha < 0.05$), with faded lines denoting insignificant changes. Only the lowercased Linear SVM utilizing TF-IDF demonstrated a significant performance impact upon expansion.}
 	\label{fig:casing-expansion-effect}
 \end{figure}
+\ksremark{Fig. \ref{fig:casing-expansion-effect}: Czy w podpisie rysunku tu na pewno ma być $\mcnemaralpha < 0.05$, czy $p < 0.05$?}
 
 As illustrated in Figure~\ref{fig:casing-expansion-effect}, the transition from cleaned to expanded text provides a statistically significant benefit for lower-cased text, as demonstrated by McNemar's test applied to the pairwise predictions. Other transitions are not found to be statistically significant and are thus grayed out on the graph.
 
@@ -1492,7 +1493,6 @@ Tables~\ref{tab:McNemarE1a} through \ref{tab:McNemarE1d} provide a cross-configu
 	\item \textbf{Representation Impact:} TF-IDF features yield better performance than BoW.
 \end{enumerate}
 
-Table~\ref{tab:McNemarE1b} and Figure~\ref{fig:casing-expansion-effect} highlight that a performance gain occurs when expansion is applied to lowercased text---\texttt{Expanded and Lower} configuration achieves the highest accuracy ($90.98\%$), and proves significantly better than the standard ``Lower'' baseline.
 
 \begin{table}[tbp]%[htbp]
 	\centering
@@ -1573,10 +1573,13 @@ Table~\ref{tab:McNemarE1b} and Figure~\ref{fig:casing-expansion-effect} highligh
 	\end{subtable}
 \end{table}
 
+
+
+Table~\ref{tab:McNemarE1b} and Figure~\ref{fig:casing-expansion-effect} highlight that a performance gain occurs when expansion is applied to lowercased text---\texttt{Expanded and Lower} configuration achieves the highest accuracy ($90.98\%$), and proves significantly better than the standard ``Lower'' baseline.
 \subsection{Impact of Filtering}
 \label{sec:Impact-of-Filtering}
 
-POS filtering reduces the overall dimensionality of the feature space by approximately 17\%. For example, the number of positive tokens decreased from $19,172$ to $15,794$, and the volume of discarded neutral tokens dropped from $102,665$ to $85,174$. In the word clouds (Figure~\ref{fig:tokens_lower_clouds} and Figure~\ref{fig:tokens_filtered_clouds}), the size of each word is proportional to its \zscore-score, which represents its correlation with the sentiment. By discarding neutral , the filtered approach amplifies the polarity of key sentiment indicators. For example, discriminative words such as \literal{worst} achieve notably higher \zscore-scores in the filtered configuration. Consequently, they appear visibly larger in Figure~\ref{fig:tokens_filtered_clouds}.
+POS filtering reduces the overall dimensionality of the feature space by approximately 17\%. For example, the number of positive tokens decreased from $19,172$ \ksremark{$19{,}172$ Trzeba dodać klamry, bo w trybie matematycznym \LaTeX\ po przecinku wstawia półspację.} to $15,794$, and the volume of discarded neutral tokens dropped from $102,665$ to $85,174$. In the word clouds (Figure~\ref{fig:tokens_lower_clouds} and Figure~\ref{fig:tokens_filtered_clouds}), the size of each word is proportional to its \zscore-score, which represents its correlation with the sentiment. By discarding neutral, the filtered approach amplifies the polarity of key sentiment indicators. For example, discriminative words such as \literal{worst} achieve notably higher \zscore-scores in the filtered configuration. Consequently, they appear visibly larger in Figure~\ref{fig:tokens_filtered_clouds}.
 
 \begin{figure}[tbp]%[htbp]
 	\centering
@@ -1745,6 +1748,7 @@ Notably, the filtered representation combined with $\zscore=2$ pruning achieves 
 
 The \customtfidf{} representation achieves higher accuracy than the \texttt{\custombow{}} approach across all tested configurations. This outcome verifies that the pattern observed in the initial tests (Tables~\ref{tab:McNemarE1a} through~\ref{tab:McNemarE1d}) holds true: TF-IDF outperforms BoW for the sentiment analysis task. The superiority of TF-IDF is robust and largely independent of the tokenization strategy. Additionally, consistent with the trends previously illustrated in Figure~\ref{fig:zscore_threshold}, aggressive pruning at $\zscore=4$ results in performance degradation.
 
+\ksremark{Tab. \ref{tab:McNemar} nie ma odnośnika w tekście.}
 \begin{table}[tbp]%[htbp]
 	\centering
 	\caption{McNemar test results comparing the baseline SVM model (lowered tokens, \customtfidf{}, $\zscore=2$) against Custom Bag-of-Words (\custombow{}) representations. Only SVM models are considered. Bold text indicates a statistically significant difference ($\mcnemaralpha < 0.05$) relative to the baseline, with arrows denoting the direction of the change in accuracy.}
@@ -1804,6 +1808,8 @@ For the \logreg{} model, the classification scores are generally lower than thos
 	\caption{Ablation study evaluating standard tokenized representations versus custom representations with statistical pruning across various preprocessing steps. Bar colors distinguish the representation family (blues for TF-IDF, reds for BoW), vertical lines mark the baseline performance on lower-cased expanded text. Hashed bars indicate results that are not statistically significantly different from their respective baseline ($\mcnemaralpha \ge 0.05$). The top-performing configurations for each model are outlined and annotated with a star.}
 	\label{fig:ablation_study}
 \end{figure}
+
+\ksremark{dotąd}
 
 \subsection{Impact of Vocabulary Depth} \label{sec:Impact-of-Vocabulary-Depth}
 
