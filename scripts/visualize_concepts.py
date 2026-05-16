@@ -109,16 +109,16 @@ def plot_cluster_wordclouds(unit_to_cluster, stats, sentiment_weight, class_id=1
     if top_n == 1:
         axes = [axes]
     label = "Positive" if class_id == 1 else "Negative"
-    fig.suptitle(f"Top {top_n} {label} Clusters (weight={sentiment_weight})", fontsize=15)  # suptitle size 15
+    fig.suptitle(f"Top {top_n} {label} Clusters (weight={sentiment_weight})", fontsize=15)
 
     for i, cid in enumerate(top_clusters):
         words = cluster_to_words.get(cid, ["empty"])
-        freq = {w: 1 for w in words}   # equal weight; could use counts if available
+        freq = {w: 1 for w in words}
         wc = WordCloud(width=400, height=400, background_color='white',
                        colormap='Greens' if class_id == 1 else 'Reds',
                        max_words=max_words).generate_from_frequencies(freq)
         axes[i].imshow(wc, interpolation='bilinear')
-        axes[i].set_title(f"Cluster {cid}\nZ={class_df.iloc[i]['zscore']:.2f}", fontsize=15)  # subplot title size 15
+        axes[i].set_title(f"Cluster {cid}\nZ={class_df.iloc[i]['zscore']:.2f}", fontsize=15) 
         axes[i].axis('off')
 
     plt.tight_layout()

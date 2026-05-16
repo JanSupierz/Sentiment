@@ -63,8 +63,6 @@ def plot_cluster_comparison_polished(reports_dir="results/val/grid_search/classi
 
     results_df = pd.DataFrame(records)
     results_df = results_df.sort_values(by="k")
-
-    # --- AESTHETIC UPGRADES START HERE ---
     
     # 1. Set a clean theme with horizontal grid lines
     sns.set_theme(style="whitegrid", rc={"axes.edgecolor": "0.15", "axes.linewidth": 1.25})
@@ -74,7 +72,7 @@ def plot_cluster_comparison_polished(reports_dir="results/val/grid_search/classi
                            key=lambda x: float(x.split('=')[1]))
     palette = sns.color_palette("viridis", len(weights_order))
 
-    # 2. Enhanced dot aesthetics (larger size, white borders for contrast)
+    # 2. larger size, white borders for contrast
     g = sns.relplot(
         data=results_df,
         x="k",
@@ -84,19 +82,19 @@ def plot_cluster_comparison_polished(reports_dir="results/val/grid_search/classi
         palette=palette,
         col="Model",
         kind="scatter",
-        height=7,        # Slightly reduced height for better proportions
+        height=7,
         aspect=1.25,
         legend=False,
-        s=130,           # Increased marker size
-        edgecolor="white", # Added white border to dots
-        linewidth=1.2,     # Border thickness
+        s=130,
+        edgecolor="white",
+        linewidth=1.2,
         alpha=0.9
     )
 
     g.set_titles("{col_name}", size=16, pad=15)
     g.set_axis_labels("Number of Concepts (k)", "Macro F1-Score")
 
-    # 3. Force X-axis to only show ticks where you actually have data
+    # 3. Force X-axis to only show ticks where there is data
     unique_k_values = sorted(results_df['k'].unique())
     g.set(xticks=unique_k_values)
 
@@ -122,7 +120,7 @@ def plot_cluster_comparison_polished(reports_dir="results/val/grid_search/classi
     g.fig.legend(
         handles=legend_handles,
         loc='center left',
-        bbox_to_anchor=(0.98, 0.5), # Tucked slightly closer to the plot
+        bbox_to_anchor=(0.98, 0.5),
         title="Sentiment Weight",
         frameon=True,
         framealpha=0.9,
@@ -137,7 +135,7 @@ def plot_cluster_comparison_polished(reports_dir="results/val/grid_search/classi
     # Remove top/right spines, keep bottom/left
     g.despine(left=False, bottom=False) 
 
-    # ----- Export as PDF with dpi=300 -----
+    # ----- Export as PDF ---
     output_dir = Path("results/figures/analysis")
     output_dir.mkdir(parents=True, exist_ok=True)
     out_path = output_dir / "cluster_comparison.pdf"

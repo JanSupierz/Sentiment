@@ -63,7 +63,7 @@ def main():
             p_spec = spec_df['probability'].values
 
             # Create Hybrid Probability Array
-            # We take base probs for certain samples, and specialist probs for uncertain ones
+            # Take base probs for certain samples, and specialist probs for uncertain ones
             hybrid_probs = p_base.copy()
             hybrid_probs[mask_uncertain] = p_spec[mask_uncertain]
 

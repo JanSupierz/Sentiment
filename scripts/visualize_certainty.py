@@ -100,7 +100,6 @@ def plot_model_comparison(svm_file, logreg_file, experiment_name):
     if len(axes) > 1:
         axes[1].set_ylabel("")
 
-    # 4. Remove the duplicate patch and update ncol to 3
     legend_elements = [
         Patch(facecolor=CORRECT_NAVY, label='Correctly Classified'),
         Patch(facecolor=ERROR_GREEN, hatch='////', edgecolor=(1.0, 1.0, 1.0, 0.5), label='False Negative'),

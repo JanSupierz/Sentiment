@@ -169,7 +169,7 @@ def plot_ablation_study(base_dir="results/val", run_names=None, mcnemar_files=No
                 if filepath:
                     df = pd.read_csv(filepath, index_col=0)
                     records.append({
-                        "Token Processing": TOKEN_DISPLAY_MAP[token_col],  # human‑readable name
+                        "Token Processing": TOKEN_DISPLAY_MAP[token_col],  # readable name
                         "Representation": rep,
                         "Model": model_label,
                         "Macro F1-Score": df.loc["macro avg", "f1-score"],
@@ -225,7 +225,7 @@ def plot_ablation_study(base_dir="results/val", run_names=None, mcnemar_files=No
             y='Token Processing',
             hue='Representation',
             hue_order=hue_order,
-            order=display_order,   # <-- use display names
+            order=display_order,
             dodge=True,
             ax=ax,
             palette=color_map,
@@ -236,7 +236,7 @@ def plot_ablation_study(base_dir="results/val", run_names=None, mcnemar_files=No
         obecne_reprezentacje = [r for r in hue_order if r in df_model['Representation'].unique()]
         patch_idx = 0
         for rep in obecne_reprezentacje:
-            for token_display in display_order:   # <-- iterate over display names
+            for token_display in display_order:
                 if patch_idx >= len(ax.patches):
                     break
                 patch = ax.patches[patch_idx]
@@ -258,7 +258,6 @@ def plot_ablation_study(base_dir="results/val", run_names=None, mcnemar_files=No
                     patch.set_hatch('////')
 
         for rep, score in baselines.get(model_label, {}).items():
-            # Updated the fallback color here to match the dark red CustomBow color
             style = {'color': '#1F77B4' if rep == 'TF-IDF' else '#CC0000',
                      'ls': '--' if rep == 'TF-IDF' else ':'}
             ax.axvline(x=score, color=style['color'], linestyle=style['ls'],
@@ -277,7 +276,7 @@ def plot_ablation_study(base_dir="results/val", run_names=None, mcnemar_files=No
                 best_patch.get_y() + best_patch.get_height() / 2,
                 f"★ {best_width:.4f}",
                 color='#333333',
-                fontsize=FONT_SIZE, # Explicitly keeping this here as a fallback
+                fontsize=FONT_SIZE,
                 fontweight='bold',
                 ha='left',
                 va='center'
@@ -306,21 +305,17 @@ def plot_ablation_study(base_dir="results/val", run_names=None, mcnemar_files=No
     handles.append(Patch(facecolor='none', edgecolor='#555555', hatch='////',
                          label='Insignificant (p >= 0.05)'))
     for rep in baseline_reps:
-        # Updated the fallback color here to match the dark red CustomBow color
         style = {'color': '#1F77B4', 'ls': '--'} if rep == 'TF-IDF' else {'color': '#CC0000', 'ls': ':'}
         line = mlines.Line2D([], [], color=style['color'], linestyle=style['ls'], linewidth=2.5)
         handles.append(line)
 
-    # =========================================================================
-    # CHANGED: Making the baseline legend highly descriptive based on variables
-    # =========================================================================
     labels = [r for r in hue_order] + ['Insignificant (p >= 0.05)'] + \
              [f"{rep} Baseline (Expanded and Lower)" for rep in baseline_reps]
 
     fig.legend(handles=handles, labels=labels,
                loc='upper center', ncol=3,
                bbox_to_anchor=(0.5, 0), frameon=False,
-               fontsize=FONT_SIZE) # Explicitly keeping this here as a fallback
+               fontsize=FONT_SIZE)
 
     sns.despine()
     plt.tight_layout()
@@ -337,7 +332,6 @@ if __name__ == "__main__":
     parser.add_argument("--auto-run-mcnemar", action="store_true")
     parser.add_argument("--force", action="store_true")
     
-    # NEW ARGUMENT HERE
     parser.add_argument("--z-threshold", type=float, default=2.0, help="Z-score threshold used in file names (default: 2)")
 
     group = parser.add_mutually_exclusive_group()
