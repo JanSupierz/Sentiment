@@ -22,9 +22,9 @@ class LinearSVMClassifier(BaseModel):
 
 class RbfSVMClassifier(BaseModel):
 
-    def __init__(self, C=1.0, gamma='scale', name="rbf_svm"):
+    def __init__(self, C=1.0, gamma='scale', name="rbf_svm", max_iter=10000):
         super().__init__(name)
-        self.svm = SVC(C=C, kernel='rbf', gamma=gamma, probability=False, random_state=42, verbose=True)
+        self.svm = SVC(C=C, kernel='rbf', gamma=gamma, probability=False, random_state=42, verbose=True, max_iter=max_iter)
         self.model = CalibratedClassifierCV(self.svm)
 
     def train(self, X, y):
