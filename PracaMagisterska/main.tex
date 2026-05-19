@@ -1824,7 +1824,7 @@ For the \logreg{} model, the classification scores are generally lower than thos
 	\label{fig:ablation_study}
 \end{figure}
 
-\ksremark{dotąd}
+ 
 
 \subsection{Impact of Vocabulary Depth} \label{sec:Impact-of-Vocabulary-Depth}
 
@@ -1845,7 +1845,7 @@ The implementation of statistical pruning ($\zscore=2.0$) effectively mitigates 
 
 \subsection{Impact of Kernel} \label{sec:Impact-of-Kernel}
 
-To assess the influence of the kernel function, a linear SVM is compared against an RBF SVM, using the best previously determined text representation and preprocessing settings (see Table~\ref{tab:McNemarSvms}). Both models are trained with $5$-fold cross-validation and a fixed \code{max\_iter} limit. The linear SVM with \code{max\_iter=$10,000$} converges in only $1.89$ seconds, achieving $91.34\%$ accuracy.
+To assess the influence of the kernel function, a linear SVM is compared against an RBF SVM, using the best previously determined text representation and preprocessing settings (see Table~\ref{tab:McNemarSvms}). Both models are trained with $5$-fold cross-validation and a fixed \code{max\_iter} limit. The linear SVM with \code{max\_iter=$10,000$} converges in only $1.89$ seconds, achieving $91.34\%$ accuracy. \ksremark{Mamy 5-krotną walidację krzyżową. I mamy średnią dokładność. A jakie jest odchylenie standardowe?}
 In contrast, the RBF kernel with the same iteration limit trains for $2042.05$ seconds (over $34$ minutes) and reaches $91.15\%$ accuracy.
 However, the RBF solver did not converge: it exhausted the maximum number of iterations before reaching the stopping criterion.
 This indicates that the RBF kernel's optimization landscape is harder to navigate, and requires more time for proper convergence.
@@ -2040,6 +2040,9 @@ This structural barrier becomes apparent when isolating model performance strict
 \end{itemize}
 
 \chapter{Summary} \label{chap:summary}
+
+\ksremark{Trzeba tutaj napisać, o co w ogóle w pracy chodzi.} 
+
 \section{Summary of Work}
 
 This thesis addressed the problem that GrC approaches had not been systematically verified in the SA pipeline. Through an enumeration of preprocessing, representation, and modeling choices, the most effective configurations were identified. The work demonstrated that a statistical $\zscore$-based pruning technique can discard the ``neutral'' granule---the $n$-grams that do not discriminate between positive and negative classes---thereby reducing the feature space while preserving or even improving accuracy. Building on this, a hybrid cascade ensemble was proposed: a lightweight linear SVM acts as a base model, handling the majority of instances with high confidence, while a deep learning specialist (DistilBERT) resolves the remaining uncertain cases. The cascade achieved a macro $F1$-score of approximately $92.3\%$, outperforming both standalone baselines while delegating only $15\%$–$20\%$ of the data to the expensive model.
@@ -2055,13 +2058,13 @@ The positive aspects of the proposed approaches are lower computational cost and
 	
 	\item \textbf{POS-based filtering (stop-word removal) is not advised.} Although it reduces the feature space, it imposes a ceiling on performance and is not among the best-performing representations for SVM.
 	
-	\item \textbf{SVMs are a much better choice than \logreg{} as baseline models.} SVMs achieve higher standalone accuracy and, critically, separate easy from difficult cases more effectively, making them more suitable for cascade architectures.
+	\item \textbf{SVMs are a much better choice than \logreg{} as baseline models.} SVMs achieve higher standalone accuracy and, critically, separate easy from difficult cases more effectively, making them more suitable for cascade architectures. 
+	\item \textbf{The linear kernel is fast and reliable.} The RBF kernel trains much longer and does not converge in an acceptable time, while offering no accuracy benefit.
 	
 	\item \textbf{Custom Bag-of-Words (BoW) does not benefit from pruning, but $\mathbf{\zscore}$-based pruning works well with TF-IDF.} A pruning threshold of $\zscore = 2.0$ retains or even improves accuracy while discarding over $60\%$ of the feature space.
 	
 	\item \textbf{There is no statistically significant difference between $\mathbf{(1,2)}$-grams and $\mathbf{(1,3)}$-grams.} Unigrams alone are not enough to capture sufficient understanding.
 	
-	\item \textbf{The linear kernel is fast and reliable.} The RBF kernel trains much longer and does not converge in an acceptable time, while offering no accuracy benefit.
 	
 	\item \textbf{Semantic clustering works for topic classification, but is not useful for SA.} Even when external sentiment values are injected, concept-level representations erase too many polarity cues and underperform token-level features.
 	
