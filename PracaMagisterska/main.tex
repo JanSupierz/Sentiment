@@ -574,7 +574,7 @@ escapeinside={@*}{*@},%
 \Title
 
 \subsubsection*{Abstract} 
-(Thesis abstract – to be copied into an appropriate field during an electronic submission – in English.)
+(Thesis abstract -- to be copied into an appropriate field during an electronic submission --- in English.)
 
 \subsubsection*{Key words}  
 (2-5 keywords, separated by commas)
@@ -586,7 +586,7 @@ escapeinside={@*}{*@},%
 
 \subsubsection*{Streszczenie} 
 \begin{otherlanguage}{polish}
-(Streszczenie pracy – odpowiednie pole w systemie APD powinno zawierać kopię tego streszczenia.)
+(Streszczenie pracy - odpowiednie pole w systemie APD powinno zawierać kopię tego streszczenia.)
 \end{otherlanguage}
 
 \subsubsection*{Słowa kluczowe} 
@@ -613,23 +613,37 @@ escapeinside={@*}{*@},%
 
 %%%%%%%%%%%%%% body of the thesis %%%%%%%%%%%%%%%%%
 
-% TODO
-\chapter{Introduction}
+\chapter{Introduction} \label{chap:introduction}
+\section{Sentiment Analysis} %introduction into the problem domain
 
-%\begin{itemize}
-%\item introduction into the problem domain
-%\item settling of the problem in the domain
-%\item objective of the thesis 
-%\item scope of the thesis
-%\item short description of chapters
-%\item clear description of contribution of the thesis's author
-%\end{itemize}
+This work explores the Sentiment Analysis (SA) task. The main goal is determining whether opinions expressed in text are positive or negative. SA has many diverse applications, ranging from gathering information from movie reviews---which will be explored in this work---to fields such as political analysis, where it can determine whether a candidate is liked by the public based on posted tweets.
 
+\section{Problem Statement} %settling of the problem in the domain
 
-% TODO
+Despite the advances in SA, a tension persists between accuracy and computational efficiency. Deep learning models achieve state-of-the-art performance, but require more computational resources, limiting their deployment in resource-constrained or real-time environments. On the other hand, traditional machine learning models are efficient, but often fail to capture the nuanced, context-dependent sentiment expressed through sarcasm, negation, and implicit opinions; unless the feature space explodes. These trade-offs raise the following research questions:
 
-\chapter{State of the Art}
+\paragraph{RQ1:}
+\emph{Can granular approaches be used to optimize the sentiment analysis pipeline?}
 
+\paragraph{RQ2:}
+\emph{Can a hybrid system be designed to combine the efficiency of lightweight classifiers with the semantic understanding of transformer models?}
+
+\section{Scope}
+This thesis explores the application of machine learning techniques, deep learning models, and a cascade system architecture to the task of binary sentiment analysis on the Internet Movie Database (IMDb) movie review dataset. The investigation evaluates the impact of preprocessing choices, (granular) feature engineering strategies, and classifier selection. The primary aim is to determine best practices for building accurate yet efficient sentiment analysis systems, with a particular focus on the final cascade ensemble.
+
+\section{Thesis Outline}
+
+\textbf{Chapter~\ref{chap:introduction}~(\nameref{chap:introduction})} provides the motivation for the work and defines the research problem and scope. \textbf{Chapter~\ref{chap:state-of-the-art}~(\nameref{chap:state-of-the-art})} surveys the existing literature on sentiment analysis, covering its levels, tasks, challenges, and solution methods (lexicon-based, classic machine learning, and deep learning), followed by an introduction to granular computing, three-way decisions, and prototype theory, and concludes with a gap analysis that identifies two specific research gaps this thesis addresses. \textbf{Chapter~\ref{chap:system}~(\nameref{chap:system})} describes the proposed pipeline in detail, including data preprocessing, custom vectorization, statistical pruning, semantic clustering, and the cascade ensemble architecture. \textbf{Chapter~\ref{chap:experiments}~(\nameref{chap:experiments})} presents the experimental methodology, evaluation metrics, and results across each stage of the pipeline, culminating in an evaluation of the full cascade system. \textbf{Chapter~\ref{chap:summary}~(\nameref{chap:summary})} summarises the findings, discusses limitations, and suggests directions for future work.
+
+\section{Author's Contribution} %description of contribution of the thesis's author
+
+The contributions of this thesis are twofold: 
+
+\paragraph{First,} an evaluation of GrC methods for SA is performed. Statistical $\zscore$-score pruning of $n$-gram features is shown to reduce the feature space while preserving or even improving classification accuracy. In contrast, semantic clustering into concept granules produces interpretable, but accuracy-limited representations; even when augmented with sentiment lexicon scores. 
+
+\paragraph{Second,} a cascade ensemble architecture is proposed that uses three-way decisions paradigm at the model level. A lightweight base model handles confident predictions, and a specialist resolves uncertain cases. On the IMDb dataset, this cascade achieves a macro $F1$-score of approximately $92.3\%$, outperforming standalone baselines, while delegating only $15-20\%$ of instances to the deep-learning model.
+
+\chapter{State of the Art} \label{chap:state-of-the-art}
 \section{Sentiment Analysis}
 
 Sentiment analysis (or opinion mining) is an umbrella term for the computational study of people's opinions, sentiments, emotions, and attitudes expressed in written language \cite{Liu2012sentiment}. The term includes field names and slightly different tasks associated with them: sentiment analysis, opinion mining, opinion extraction, sentiment mining, subjectivity analysis, affect analysis, emotion analysis, review mining, etc. \cite{Liu2012sentiment} However, the main terms in academia remain both: sentiment analysis and opinion mining \cite{Liu2012sentiment}.
@@ -735,7 +749,7 @@ Tools such as WordNet-Affect and SentiWordNet provide foundational lexical resou
 
 Comparative studies have evaluated these lexicons across various domains. Nursal et al. \cite{nursal2025battle} compared WordNet, SentiWordNet, TextBlob, and VADER on Malaysian high-rise property reviews, using human-annotated data as a baseline. Their findings revealed that all four lexicons identified a higher proportion of positive reviews than negative or neutral ones. WordNet recorded the highest number of positive sentiments, followed closely by SentiWordNet and VADER \cite{nursal2025battle}. For negative sentiment detection, VADER proved most effective, while for neutral sentiment, VADER again detected the highest number of reviews \cite{nursal2025battle}.
 
-In terms of classification accuracy against human annotation, VADER achieved the best performance with 78.2\% accuracy, 74.3\% precision, 90.9\% recall, and an F1-score of 81.7\% \cite{nursal2025battle}. TextBlob ranked second, followed by SentiWordNet and WordNet with comparable performance around 69-70\% accuracy \cite{nursal2025battle}.
+In terms of classification accuracy against human annotation, VADER achieved the best performance with 78.2\% accuracy, 74.3\% precision, 90.9\% recall, and an $F1$-score of 81.7\% \cite{nursal2025battle}. TextBlob ranked second, followed by SentiWordNet and WordNet with comparable performance around 69-70\% accuracy \cite{nursal2025battle}.
 
 However, misclassifications occurred due to several factors: limited vocabulary coverage, difficulty detecting sarcasm, word ambiguity, and challenges with misspelled or abbreviated terms \cite{nursal2025battle}.
 
@@ -765,7 +779,7 @@ Sentence-level analysis is important because it permits a fine-grained view of d
 
 \subsubsection{Classification Algorithms}
 
-Classifiers such as Naïve Bayes (NB), Logistic Regression (\logreg{}), and Support Vector Machines (SVM) are then trained on these feature vectors. SVM and NB, in particular, have been shown to be the most effective classifiers for sentiment analysis tasks \cite{behdenna2018document}. Extracted features are used to train state-of-the-art classifiers such as SVM and NB that assume that the class of a particular feature is independent of the class of other features given the training data \cite{CHATURVEDI201865}.
+Classifiers such as Naïve Bayes (NB), Logistic Regression (\logreg{}), and Support Vector Machines (SVM) are then trained on these feature vectors. SVM and NB, in particular, have been shown to be the most effective classifiers for sentiment analysis tasks \cite{behdenna2018document}. Extracted features are used to train state-of-the-art such as NBSVM (Naive Bayes SVM), which relies on the NB assumption that features are conditionally independent given the class label~\cite{CHATURVEDI201865}.
 
 \begin{itemize}
 \item \textbf{Support Vector Machines (SVMs)} perform well on high-dimensional sparse text data due to their margin-maximization objective and have been widely adopted for sentiment classification \cite{behdenna2018document}. 
@@ -818,7 +832,7 @@ These advantages come with substantial computational costs \cite{strubell2019ene
 A fundamental shift in neural Natural Language Processing (NLP) came with the introduction of word embeddings \cite{DeSantis2023prototype}. Unlike sparse BoW representations, embeddings map words to dense continuous vectors that capture semantic similarity \cite{DeSantis2023prototype}. Two widely used embedding models are Word2Vec and GloVe \cite{pennington2014glove, DeSantis2023prototype}. These pre-trained representations allow models to use semantic knowledge learned from massive corpora, providing a richer input representation than traditional feature engineering \cite{DeSantis2023prototype, sharma2025review, behdenna2018document}.
 
 \subsubsection{Convolutional Neural Networks}
-Convolutional Neural Networks (CNN), originally developed for computer vision, were successfully adapted to NLP tasks by Collobert and Weston in 2008 \cite{Collobert2008unified}. The CNN architecture for text consists of three main layers: an input layer that receives tokenized text, a feature extraction layer comprising convolutional and pooling operations, and a classification layer with fully connected networks \cite{Collobert2008unified}.
+Convolutional Neural Networks (CNNs), originally developed for computer vision, were successfully adapted to NLP tasks by Collobert and Weston in 2008 \cite{Collobert2008unified}. The CNN architecture for text consists of three main layers: an input layer that receives tokenized text, a feature extraction layer comprising convolutional and pooling operations, and a classification layer with fully connected networks \cite{Collobert2008unified}.
 
 For sentiment analysis, CNNs excel at learning contextual features through filters that capture local patterns such as key phrases and $n$-gram indicators of sentiment \cite{sharma2025review}. One advantage of CNNs is their efficiency: compared to fully connected networks, they have fewer parameters, leading to faster training times \cite{sharma2025review}. Paredes-Valverde et al. \cite{Paredes2017sentiment} proposed a deep learning approach combining pre-processing, word embeddings, and a CNN model, demonstrating that CNN outperformed traditional SVM and Naïve Bayes classifiers. CNNs have limitations when dealing with long-term dependencies in text data, often requiring deep architectures that become computationally expensive \cite{sharma2025review}.
 
@@ -832,7 +846,7 @@ To address the vanishing gradient problem, Hochreiter and Schmidhuber (1997) \ci
 
 The gated recurrent unit (GRU) offers a simpler alternative with only two gates: a reset gate that combines new input with previous information, and an update gate that controls retention and discarding \cite{cho2014learning}. GRUs provide computational efficiency comparable to LSTMs while maintaining similar effectiveness, with bidirectional variants (Bi-GRUs) also available \cite{sharma2025review}.
 
-Tang et al.~\cite{Tang2015document} introduced neural network models combining convolutional and recurrent architectures for DLSA. The framework first learns sentence representations using either CNN or LSTM, then encodes the semantics and relations using gated RNNs \cite{Tang2015document}. Experiments on Internet Movie Database (IMDb) and Yelp datasets show that LSTM outperforms multi-filtered CNN for sentence representation \cite{Tang2015document}.
+Tang et al.~\cite{Tang2015document} introduced neural network models combining convolutional and recurrent architectures for DLSA. The framework first learns sentence representations using either CNN or LSTM, then encodes the semantics and relations using gated RNNs \cite{Tang2015document}. Experiments on IMDb and Yelp datasets show that LSTM outperforms multi-filtered CNN for sentence representation \cite{Tang2015document}.
 
 \subsubsection{Transformer Architectures}
 
@@ -905,7 +919,7 @@ Qiu et al.~\cite{qui2006GrC} propose an early granular computing framework for t
 
 Chen et al.~\cite{Chen2022threeway} propose a three-way decision model for binary sentiment analysis that selects distinct feature subsets for the positive and negative classes, rather than using a uniform representation. During testing, confident samples are classified using their class-specific optimal feature subset, while uncertain samples fall into a boundary region and are processed with the full feature set~\cite{Chen2022threeway}. Experiments on IMDb and Amazon show improved accuracy over chi-square and PCA-based feature selection, albeit with increased computational overhead~\cite{Chen2022threeway}.
 
-Behzadidoost et al.~\cite{Behzadidoost2024GrC} propose a Granular Computing-based Deep Learning model (GCDL) for cyberbullying and hate speech detection. The model generates two types of granules: textual granules, constructed by a ``reverse pancake-scramble'' algorithm that flips characters and reverses vowels, and numerical granules, extracted via ten rule-based features (e.g., hashtags, stop words, emojis)~\cite{Behzadidoost2024GrC}. Textual granules are processed by a stacked CNN-LSTM, while numerical granules feed into a stacked BiLSTM-SVM – the first such combination in granular computing~\cite{Behzadidoost2024GrC}. An attention mechanism merges both outputs for final classification~\cite{Behzadidoost2024GrC}. On three datasets (cyberbullying and two hate speech collections), GCDL achieves 88.74\%, 89.62\%, and 70.85\% accuracy, outperforming state-of-the-art models~\cite{Behzadidoost2024GrC}. Ablation studies confirm that both granule types contribute positively, and the granulation process does not exceed the original dataset size, avoiding imbalance~\cite{Behzadidoost2024GrC}.
+Behzadidoost et al.~\cite{Behzadidoost2024GrC} propose a Granular Computing-based Deep Learning model (GCDL) for cyberbullying and hate speech detection. The model generates two types of granules: textual granules, constructed by a ``reverse pancake-scramble'' algorithm that flips characters and reverses vowels, and numerical granules, extracted via ten rule-based features (e.g., hashtags, stop words, emojis)~\cite{Behzadidoost2024GrC}. Textual granules are processed by a stacked CNN-LSTM, while numerical granules feed into a stacked BiLSTM-SVM --- the first such combination in granular computing~\cite{Behzadidoost2024GrC}. An attention mechanism merges both outputs for final classification~\cite{Behzadidoost2024GrC}. On three datasets (cyberbullying and two hate speech collections), GCDL achieves 88.74\%, 89.62\%, and 70.85\% accuracy, outperforming state-of-the-art models~\cite{Behzadidoost2024GrC}. Ablation studies confirm that both granule types contribute positively, and the granulation process does not exceed the original dataset size, avoiding imbalance~\cite{Behzadidoost2024GrC}.
 
 \subsubsection{Three-Way Decision Methods}
 
@@ -937,25 +951,27 @@ Varshney and Baral~\cite{varshney2022model} describe a sequence of models of inc
 Online cascade learning proposed by Nie et al.~\cite{nie2024online}, is a framework where smaller models are updated continuously over a data stream by imitating the outputs of a LLM expert. The system is formulated as an episodic Markov decision process with a deferral policy that decides, for each incoming query, which cascade level to invoke~\cite{nie2024online}. Smaller models (e.g., \logreg{} and BERT) learn online from the LLM's annotations, improving over time and gradually handling an increasing proportion of queries~\cite{nie2024online}. This significantly reduces the number of calls to the expensive LLM, cutting inference costs by up to 90\% while maintaining accuracy comparable to using the LLM alone~\cite{nie2024online}. The approach requires no human-labeled training data and remains robust under distribution shifts in input length or category, as demonstrated on sentiment analysis (IMDb), hate speech detection, emotion classification, and fact-checking benchmarks~\cite{nie2024online}.
 
 \subsection{Gap Analysis and Contribution}
-
 \subsubsection{Gap Analysis}
 
-The preceding sections have surveyed sentiment analysis at three levels (document, sentence, aspect) and highlighted persistent challenges: contextual polarity ambiguity, sarcasm and irony, negation handling, implicit opinions, and vocabulary evolution \cite{behdenna2018document, sharma2025review}. Existing methods fall into three broad families: lexicon-based (interpretable but fragile), classic machine learning (efficient but feature-sensitive), and deep learning (accurate but computationally expensive). Granular computing offers a conceptual bridge, but existing GrC work for text has not fully exploited the trade-offs within sentiment analysis.
+The preceding sections have surveyed sentiment analysis at three levels (document, sentence, aspect) and highlighted persistent challenges: contextual polarity ambiguity, sarcasm and irony, negation handling, implicit opinions, and vocabulary evolution \cite{behdenna2018document, sharma2025review}. Existing methods fall into three broad families: lexicon-based (interpretable but fragile), classic machine learning (efficient but feature-sensitive), and deep learning (accurate but computationally expensive). Granular computing offers a conceptual bridge between these families, but existing GrC work for text classification has not fully exploited the trade-offs specific to sentiment analysis.
 
-\subsubsection{Gap 1 -- No efficient way to find the optimal deferral rate } 
-Sequential three-way decision frameworks (e.g., Yang et al.~\cite{Yang2022temporal}) defer uncertain samples to finer granularities, but they apply the same deep architecture at all levels, incurring high costs even for easy samples. In sentiment analysis, many reviews are clearly positive or negative and could be handled by a fast model (e.g., SVM), while only ambiguous or sarcastic cases require a large transformer like BERT.
-\textbf{T.B.C}
+\paragraph{Gap 1: Granular computing approaches have not been systematically evaluated for sentiment analysis.}
 
-\subsubsection{Gap 2 -- Bag-of-Concepts lacks evaluation for sentiment analysis }
-Capillo et al.~\cite{Capillo2020mining} and Possemato et al.~\cite{Possemato2013AutomaticTC} show that mining representative $n$-grams and clustering them into concept granules works well for categorising scientific abstracts and detecting spam. However, sentiment analysis differs: polarity often depends on negation, sarcasm, and subtle phrase-level cues. Whether the same pipeline can capture sentiment-specific phenomena -- and whether the resulting concept granules are interpretable for polarity detection -- remains an open question.
+GrC methods such as Bag-of-Concepts (BoC) have shown promise in tasks such as topic categorization and spam detection \cite{Capillo2020mining, Possemato2013AutomaticTC}. However, the BoC paradigm has never been assessed for polarity detection, and no prior work has explored whether injecting external sentiment knowledge (e.g., lexicon scores) during granulation can improve concept quality. Moreover, the feature space in text classification is highly sparse; Chen et al.~\cite{Chen2022threeway} demonstrated that class-specific feature selection can improve sentiment analysis performance, pointing to the potential benefits of granular vocabulary reduction. A systematic investigation that evaluates how granular methods can affect sentiment classification is therefore missing.
 
-\subsection{Contribution}
+\paragraph{Gap 2: No efficient hybrid system design that combines lightweight classifiers with transformer models for sentiment analysis.}
+
+Sequential three-way decision frameworks (e.g., Yang et al.~\cite{Yang2022temporal}) defer uncertain samples to finer granularities, but they typically apply the same deep architecture at all levels, incurring high costs even for easy samples. In sentiment analysis, many reviews are clearly positive or negative and could be handled by a computationally efficient base model, while only ambiguous or sarcastic cases require a high-capacity specialist transformer. Existing work does not provide a method to form such cascade, nor does it determine what proportion of instances should be deferred---i.e., how to select the optimal threshold that balances coverage and accuracy.
+
+\subsubsection{Contribution}
 
 This work addresses the two gaps with the following contributions:
 
-\subsubsection{Cascade Granular Computing for Sentiment Analysis}
-	
-\subsubsection{Bag-of-Concepts for Sentiment Analysis}
+\paragraph{Contribution 1: Granular Computing Methods for Sentiment Analysis.}
+An evaluation of granular computing techniques is conducted for binary sentiment analysis. Two complementary approaches are examined: (1) statistical $\zscore$-score pruning of $n$-gram features, which discards non-discriminative vocabulary based on class-separability, and (2) semantic clustering into concept granules using \code{Sentence Transformer} embeddings, optionally augmented with \code{VADER} sentiment scores. The experiments on the IMDb dataset demonstrate that $\zscore$-score pruning not only preserves or improves classification accuracy---the pruned, stemmed token representation reaches $91.41\%$ accuracy, while \logreg{} similarly benefits---but also greatly reduces feature space dimensionality. For the $(1,3)$ $n$-gram range, pruning with a threshold of $|\zscore| > 2.0$ compresses the vocabulary from $139,015$ to just $36,350$ features. This reduction mitigates the memory explosion that would otherwise occur with deeper ranges $n$-gram ranges. In contrast, concept-level representations, though producing interpretable clusters fail to surpass the unclustered $n$-gram baseline, even with sentiment-weighted embeddings. These findings delineate clear empirical boundaries for GrC in SA: token-level pruning is both beneficial and practically necessary for scaling to higher-order $n$-grams, while semantic aggregation may destroy crucial polarity cues.
+
+\paragraph{Contribution 2: Cascade Granular Computing for Sentiment Analysis.}
+A cascade ensemble architecture is proposed that follows the three-way decision paradigm at the model level rather than the feature level. A lightweight base model processes all instances; those classified with high confidence (falling outside a threshold-defined boundary region) are accepted immediately, while uncertain instances are deferred to a specialist deep learning model. The thesis provides a systematic method for selecting the optimal deferral threshold by sweeping over the validation set and maximizing hybrid accuracy, and evaluates three specialist variants (generic BERT, fine-tuned BERT, and SVM). Empirical results on the IMDb dataset demonstrate that the cascade achieves a macro $F1$-score of approximately 92.3\%, outperforming both standalone baselines, while delegating only 15–20\% of instances to the expensive model.
 
 \chapter{Granular Cascade System for Sentiment Analysis using Enumerations} \label{chap:system}
 \section{Overview of the Pipeline}
@@ -1059,7 +1075,7 @@ While the original IMDb dataset is perfectly balanced and pre-divided into equal
 	
 	\item \textbf{POS-filtered tokenization} replaces the standard stop-word removal (Sec.~\ref{sec:stop-word-removal}); the expanded text (\code{tokens\_lower}) is filtered based on the Part-Of-Speech (POS) tags; the result is stored as \code{tokens\_filtered}.
 	
-	\item \textbf{Alphabetic filtering} removes any character that is not a letter (a–z, A–Z) from \code{tokens\_lower}; tokens that become empty after this removal are discarded. The result is \code{tokens\_letters}.
+	\item \textbf{Alphabetic filtering} removes any character that is not a letter (a-z, A-Z) from \code{tokens\_lower}; tokens that become empty after this removal are discarded. The result is \code{tokens\_letters}.
 	
 	\item \textbf{Stemming} produces \code{tokens\_stemmed} from \code{tokens\_lower} by applying the Porter stemmer.
 	
@@ -1119,7 +1135,7 @@ To evaluate the impact of vocabulary representation on model performance, the to
 
 By default, scikit-learn's \code{CountVectorizer} removes terms listed in the \code{stop\_words} parameter, generates $n$-grams, and then prunes the vocabulary according to the \code{min\_df} and \code{max\_df} thresholds. To faithfully evaluate the various token representations produced during preprocessing, it is essential to preserve their exact structures. Therefore, the default tokenization behavior is overridden.
 
-At this stage, each document is a list of tokens. The lists are joined into single, space-separated strings, and a custom \code{space\_tokenizer} is supplied to the vectorizer. This tokenizer bypasses the default regular-expression-based tokenizer and splits text strictly on spaces. The vectorizer is additionally configured with \code{lowercase=False} (lowercasing was already performed during preprocessing) and the desired \code{ngram\_range} (e.g., (1,3)). This customized pipeline ensures that scikit-learn's frequency-based pruning is applied directly to the finalized $n$-grams, effectively reducing dimensionality and promoting model generalization. For this study, the minimum document frequency is set to 10 (\code{min\_df=10}) to discard extremely rare $n$-grams, and a maximum document frequency threshold of 70\% (\code{max\_df=0.7}) is established to filter out overly omnipresent combinations.
+At this stage, each document is a list of tokens. The lists are joined into single, space-separated strings, and a custom \code{space\_tokenizer} is supplied to the vectorizer. This tokenizer bypasses the default regular-expression-based tokenizer and splits text strictly on spaces. The vectorizer is additionally configured with \code{lowercase=False} (lowercasing was already performed during preprocessing) and the desired \code{ngram\_range} (e.g., $(1,3)$). This customized pipeline ensures that scikit-learn's frequency-based pruning is applied directly to the finalized $n$-grams, effectively reducing dimensionality and promoting model generalization. For this study, the minimum document frequency is set to $10$ (\code{min\_df=10}) to discard extremely rare $n$-grams, and a maximum document frequency threshold of $70\%$ (\code{max\_df=0.7}) is established to filter out overly omnipresent combinations.
 
 \subsection{Statistical Pruning} \label{sec:stat_pruning}
 
@@ -1159,17 +1175,15 @@ FAISS-accelerated K-Means clustering is utilized on these normalized, sentiment-
 
 \subsection{Models and Training} \label{sec:models}
 
-The system employs both linear classifiers and a distilled transformer model. All models are trained on the training set and tuned on the validation set; the chosen hyperparameters are those that maximise validation accuracy.
+The system employs both traditional classifiers and a distilled transformer model. All models are trained on the training set and tuned on the validation set; the chosen hyperparameters are those that maximise validation accuracy.
 
 \subsubsection{Traditional Baselines} \label{sec:trad_models}
 
-A linear SVM and \logreg{} are employed as the computationally efficient baselines. Both are trained on the TF-IDF and BoW $n$-gram vectors produced by the feature engineering pipeline. Both models are fitted on the same training split and evaluated on the same validation and test sets. The training utilizes the \code{scikit-learn} implementations with the following settings:
+A SVM and \logreg{} are employed as the computationally efficient baselines. Both are trained on the TF-IDF and BoW $n$-gram vectors produced by the feature engineering pipeline. Both models are fitted on the same training split and evaluated on the same validation and test sets. The training utilizes the \code{scikit-learn} implementations with the following settings:
 
-\begin{itemize}
-	\item \textbf{Linear SVM} \ksremark{Czy będą użyte SVM-y z innym jądrem niż liniowe?} optimizes the squared hinge loss with $L_2$ regularisation. The default penalty $C=1.0$ is retained, and the solver is allowed up to $10\,000$ iterations to guarantee convergence on high-dimensional data. Because the eventual cascade design requires calibrated probabilities, a Platt scaling calibrator (\texttt{CalibratedClassifierCV}) wraps the SVM. This post-processor maps the unbounded decision values to $[0,1]$ and produces posterior probabilities for the positive class.
-	
-	\item \textbf{\logreg} directly models $\probLarge{}{\inputtext}$ by minimizing the log-loss (cross-entropy) with an $L_2$ penalty. It is configured with the \code{L-BFGS} solver, $C=1.0$, and a maximum of $1\,000$ iterations. Unlike the SVM, \logreg{} natively outputs probability estimates without an external calibration step.
-\end{itemize}
+\paragraph{Support Vector Machine.} This model minimizes the squared hinge loss with $L_2$ regularization. The default penalty $C=1.0$ is retained, and the solver’s iteration limit is set to $10,000$ to ensure convergence on high-dimensional data. Because the final cascade architecture requires calibrated probabilities, a Platt scaling calibrator (\texttt{CalibratedClassifierCV}) is wrapped around the SVM. This post‑processing step maps the decision values to $[0,1]$, producing approximate posterior probabilities for the positive class. Two kernel types are employed: a linear kernel and the Radial Basis Function (RBF) kernel, also known as the Gaussian kernel.
+
+\paragraph{Logistic Regression Model.} directly models $\probLarge{}{\inputtext}$ by minimizing the log-loss (cross-entropy) with an $L_2$ penalty. It is configured with the \code{L-BFGS} solver, $C=1.0$, and a maximum of $1\,000$ iterations. Unlike the SVM, \logreg{} natively outputs probability estimates without an external calibration step.
 
 \subsubsection{Deep Learning Model} \label{sec:distilbert_model}
 
@@ -1180,18 +1194,18 @@ In this study, the model is further fine-tuned on the full IMDb training set. In
 \subsection{Configuration Enumeration}
 \label{sec:config_enum}
 
-The feature‑engineering options define a large design space---token representations, $n$-gram ranges, pruning thresholds, clustering granularities, and sentiment weights. To populate this space with trained classifiers, every combination of the following axes is enumerated and evaluated on the validation set:
+The feature-engineering options define a large design space---token representations, $n$-gram ranges, pruning thresholds, clustering granularities, and sentiment weights. To populate this space with trained classifiers, every combination of the following axes is enumerated and evaluated on the validation set:
 
 \begin{itemize}
 	\item \textbf{Token representation:} Cased, lowered, letter-only, filtered, stemmed, and lemmatized.
-	\item \textbf{$\boldsymbol{n}$-gram range:} $(1,1)$, $(1,2)$, $(1,3)$. The default $(1,3)$ is used for the full combinatorial sweep; narrower ranges are tested in the vocabulary-depth experiment.
+	\item \textbf{$\boldsymbol{n}$-gram range:} $(1,1)$, $(1,2)$, $(1,3)$. The default $(1,3)$ is used for the full combinatorial sweep; narrower ranges are tested in the vocabulary-depth test.
 	\item \textbf{\zscore-score threshold:} $0,1,2,3,4$, where $0$ disables pruning.
 	\item \textbf{Concept granularity ($k$):} $0$ (no clustering), $500$, $5000$, $10000$.
 	\item \textbf{Sentiment weight ($\weightparam$):} $0$, $1$, $10$, applied to the VADER score when augmenting embeddings.
 	\item \textbf{Vectorisation type:} BoW and TF-IDF (custom implementations).
-	\item \textbf{Classifier:} linear SVM (with Platt scaling) and logistic regression.
+	\item \textbf{Classifier:} linear SVM (with Platt scaling) and \logreg{}. Note that RBF SVM is tested in Section~\ref{sec:Impact-of-Kernel}, but it proved to be much slower with no accuracy benefit.
 \end{itemize}
-Not all combinations are independent: for example; when $\kconcepts=0$ the sentiment weight is irrelevant. For every configuration, the model is trained on the training set and its raw prediction vectors and classification reports are saved to disk. At this stage no representation is selected; the pool of candidate classifiers is merely created for subsequent cascade‑oriented analysis. 
+Not all combinations are independent: for example; when $\kconcepts=0$ the sentiment weight is irrelevant. For every configuration, the model is trained on the training set and its raw prediction vectors and classification reports are saved to disk. At this stage no representation is selected; the pool of candidate classifiers is merely created for subsequent cascade-oriented analysis. 
 
 \section{Cascade Ensemble} \label{sec:cascade}
 
@@ -1286,7 +1300,7 @@ The hard class label is derived by thresholding $\probSmall{\mCas}$ at $0.5$: va
 
 \subsection{Threshold Selection} \label{sec:threshold_selection}
 
-The delegation threshold $\thresh$ governs the trade‑off between the fraction of instances processed by the base model $\mBase$ (coverage) and the overall performance of the hybrid system (global accuracy). To determine both the optimal base model $\mBase_{\!\optimal}$ and the optimal threshold $\thresh_{\!\optimal}$, a joint sweep is performed on the validation set. For every candidate base model $\modelvar$ obtained from the configuration enumeration and for every candidate threshold $\sweepthresh \in [0,0.5]$, the cascade is simulated using the generic DistilBERT. The hybrid accuracy $\hybridacc{\modelvar}{\sweepthresh}$ is computed as defined below, and the pair $(\modelvar,\sweepthresh)$ that maximizes this metric is selected. Let the validation set contain $\numVal$ instances, indexed by $\idx = 1,\dots,\numVal$. For a fixed candidate base model $\modelvar$, denote the predicted probability for instance $\idx$ by $\probSmall{\mBase_{\!\modelvar}}^{(\idx)}$. For a candidate threshold $\sweepthresh$, the acceptance mask for instance $\idx$ under model $\modelvar$ is:
+The delegation threshold $\thresh$ governs the trade-off between the fraction of instances processed by the base model $\mBase$ (coverage) and the overall performance of the hybrid system (global accuracy). To determine both the optimal base model $\mBase_{\!\optimal}$ and the optimal threshold $\thresh_{\!\optimal}$, a joint sweep is performed on the validation set. For every candidate base model $\modelvar$ obtained from the configuration enumeration and for every candidate threshold $\sweepthresh \in [0,0.5]$, the cascade is simulated using the generic DistilBERT. The hybrid accuracy $\hybridacc{\modelvar}{\sweepthresh}$ is computed as defined below, and the pair $(\modelvar,\sweepthresh)$ that maximizes this metric is selected. Let the validation set contain $\numVal$ instances, indexed by $\idx = 1,\dots,\numVal$. For a fixed candidate base model $\modelvar$, denote the predicted probability for instance $\idx$ by $\probSmall{\mBase_{\!\modelvar}}^{(\idx)}$. For a candidate threshold $\sweepthresh$, the acceptance mask for instance $\idx$ under model $\modelvar$ is:
 \begin{equation}
 	\accMask{\modelvar}{\idx}{\sweepthresh} = \mathbf{1}\bigl[ \baseProb{\modelvar}{\idx} \le \sweepthresh \;\lor\; \baseProb{\modelvar}{\idx} \ge 1-\sweepthresh \bigr].
 \end{equation}
@@ -1309,11 +1323,9 @@ where $\hat{y}_{\iota}^{\,\mCas}(\sweepthresh)$ is the cascade's final predictio
 
 Two types of specialists are trained exclusively on the validation documents whose base model prediction probability $\probSmall{\mBase}^{(\idx)}$ falls within $[\thresh, 1-\thresh]$.
 
-\subsubsection{Specialist SVM}
-The same SVM architecture and hyperparameters as the base model is employed, but the model is fitted solely on the TF-IDF representations of the boundary samples. This yields a lightweight specialist that shares the feature space and decision function type of the base model while concentrating on the ambiguous region.
+\paragraph{Specialist SVM.} The same SVM architecture and hyperparameters as the base model is employed, but the model is fitted solely on the TF-IDF representations of the boundary samples. This yields a lightweight specialist that shares the feature space and decision function type of the base model while concentrating on the ambiguous region.
 
-\subsubsection{Specialist BERT}
- The basic DistilBERT model is further fine-tuned on the boundary subset. The backbone is partially frozen: the first $5$ transformer layers are kept frozen, while the remaining layers and the classification head remain trainable. The specialist is trained for $10$ epochs with a lower learning rate of $2 \times 10^{-6}$, batch size $16$, and early stopping (patience $3$ epochs). All other training settings (mixed precision, tokenizer, maximum sequence length) are identical to the basic fine-tuning. This procedure encourages the model to specialize in the ambiguous region of the decision boundary without over-fitting to the relatively small hard-sample set.
+\paragraph{Specialist BERT.} The basic DistilBERT model is further fine-tuned on the boundary subset. The backbone is partially frozen: the first $5$ transformer layers are kept frozen, while the remaining layers and the classification head remain trainable. The specialist is trained for $10$ epochs with a lower learning rate of $2 \times 10^{-6}$, batch size $16$, and early stopping (patience $3$ epochs). All other training settings (mixed precision, tokenizer, maximum sequence length) are identical to the basic fine-tuning. This procedure encourages the model to specialize in the ambiguous region of the decision boundary without over-fitting to the relatively small hard-sample set.
 
 \section{Implementation}
 
@@ -1331,7 +1343,7 @@ All experiments, data transformations, and statistical analyses are implemented 
 	\item \textbf{Statistical Testing and Visualization:} \code{statsmodels} is employed to perform McNemar's tests. All graphical representations are generated with \code{matplotlib}, \code{seaborn}, and the \code{wordcloud} library.
 \end{itemize}
 
-\chapter{Experiments}
+\chapter{Experiments} \label{chap:experiments}
 
 \section{Datasets}
 
@@ -1378,7 +1390,9 @@ The enumeration space defined in Section~\ref{sec:config_enum} is explored throu
 	
 	\item \textbf{Custom vectorization and \zscore-score pruning.} All six token representations (cased, lower, letters, filtered, stemmed, lemmatized) are combined with \zscore-score thresholds $\zscore \in \{0,1,2,3,4\}$ and both BoW and TF-IDF, using the custom space-tokenizer described in Section~\ref{sec:custom_vec}. The best token representation and pruning level are chosen for each model.
 	
-	\item \textbf{Vocabulary depth ($\boldsymbol{n}$-gram range).} With the best token representation and $\zscore=2.0$ fixed, the $n$-gram range is varied from $(1,1)$ to $(1,3)$. The experiment measures the trade-off between accuracy and feature-space size.
+	\item \textbf{Vocabulary depth ($\boldsymbol{n}$-gram range).} With the best token representation and $\zscore=2.0$ fixed, the $n$-gram range is varied from $(1,1)$ to $(1,3)$. This test measures the trade-off between accuracy and feature-space size.
+	
+	\item \textbf{Kernel type.} With the same settings as in the previous step, the impact of the kernel is assessed. The accuracy and training times of SVMs with a linear kernel and an RBF kernel are compared at two \code{max\_iter} limits: $1,000$ and $10,000$.
 	
 	\item \textbf{Semantic clustering.} For $\kconcepts \in \{500, 5000, 10000\}$ and sentiment weights $\weightparam \in \{0, 1, 10\}$, concept matrices are built from the optimal unit features (Section~\ref{sec:semantic_clustering}) and evaluated with both SVM and \logreg. This gauges whether concept compression can match the unclustered baseline.
 	
@@ -1441,24 +1455,25 @@ Every figure and table consistently encodes the outcome of McNemar's test:
 \section{Results}
 \label{sec:results}
 
-This section presents the evaluation of linear SVM and \logreg{} classifiers across various configurations. Initial tests establish that linear SVMs consistently outperform \logreg{} models, with TF-IDF representations universally yielding superior predictive performance compared to standard BoW. The findings demonstrate that implementing statistical pruning effectively mitigates the dimensionality explosion associated with complex $n$-grams while preserving optimal classification accuracy. Ultimately, the results validate the proposed cascade ensemble methodology; delegating uncertain predictions from a highly efficient linear base model to a deep-semantic BERT specialist resolves non-linear contextual cues, achieving a peak combined Macro F1-score of approximately $92.3\%$ and significantly outperforming standalone baselines.
+This section presents the evaluation of linear SVM and \logreg{} classifiers across various configurations. Initial tests establish that linear SVMs consistently outperform \logreg{} models, with TF-IDF representations universally yielding superior predictive performance compared to standard BoW. The findings demonstrate that implementing statistical pruning effectively mitigates the dimensionality explosion associated with complex $n$-grams while preserving optimal classification accuracy. Ultimately, the results validate the proposed cascade ensemble methodology; delegating uncertain predictions from a highly efficient linear base model to a deep-semantic BERT specialist resolves non-linear contextual cues, achieving a peak combined Macro $F1$-score of approximately $92.3\%$ and significantly outperforming standalone baselines.
 
 The analysis is split into several stages, each describing an individual impact:
 
 \begin{enumerate}
 	\item \textbf{Experimental Evaluation Sequence:}
 	\begin{itemize}
-		\item Impact of casing and text expansion (Sec.~\ref{sec:Impact-of-Casing-and-Text-Expansion})
-		\item Impact of filtering (Sec.~\ref{sec:Impact-of-Filtering})
-		\item Impact of custom vectorization (Sec.~\ref{sec:Impact-of-Custom-Vectorization})
-		\item Impact of vocabulary depth (Sec.~\ref{sec:Impact-of-Vocabulary-Depth})
-		\item Impact of semantic clustering (Sec.~\ref{sec:Impact-of-Semantic-Clustering})
+		\item \nameref{sec:Impact-of-Casing-and-Text-Expansion} (Sec.~\ref{sec:Impact-of-Casing-and-Text-Expansion})
+		\item \nameref{sec:Impact-of-Filtering} (Sec.~\ref{sec:Impact-of-Filtering})
+		\item \nameref{sec:Impact-of-Custom-Vectorization} (Sec.~\ref{sec:Impact-of-Custom-Vectorization})
+		\item \nameref{sec:Impact-of-Vocabulary-Depth} (Sec.~\ref{sec:Impact-of-Vocabulary-Depth})
+		\item \nameref{sec:Impact-of-Kernel} (Sec.~\ref{sec:Impact-of-Kernel})
+		\item \nameref{sec:Impact-of-Semantic-Clustering} (Sec.~\ref{sec:Impact-of-Semantic-Clustering})
 	\end{itemize}
 	
 	\item \textbf{Cascade System Experiment:}
 	\begin{itemize}
-		\item Impact of certainty (Sec.~\ref{sec:Impact-of-Certainty})
-		\item Impact of cascade ensemble (Sec.~\ref{sec:Impact-of-Cascade-Ensemble})
+		\item \nameref{sec:Impact-of-Certainty} (Sec.~\ref{sec:Impact-of-Certainty})
+		\item \nameref{sec:Impact-of-Cascade-Ensemble} (Sec.~\ref{sec:Impact-of-Cascade-Ensemble})
 	\end{itemize}
 \end{enumerate}
 
@@ -1476,7 +1491,7 @@ In this test, the performance of two classical classifiers---linear SVM and \log
 \begin{figure}[tbp]
 	\centering
 	\includegraphics[width=\textwidth]{./figures/analysis/casing-effect-slopegraph.png}
-	\caption{Macro F1 scores comparing clean versus expanded text. The left and right panels display results for cased and lowercased text, respectively. Line colors differentiate the machine learning models (blue for Linear SVM, orange for Logistic Regression), while line styles denote the text representation (solid for TF-IDF, dashed for BoW). Full line opacity indicates a statistically significant difference ($\mcnemaralpha < 0.05$), with faded lines denoting insignificant changes. Only the lowercased Linear SVM utilizing TF-IDF demonstrated a significant performance impact upon expansion.}
+	\caption{Macro $F1$ scores comparing clean versus expanded text. The left and right panels display results for cased and lowercased text, respectively. Line colors differentiate the machine learning models (blue for Linear SVM, orange for Logistic Regression), while line styles denote the text representation (solid for TF-IDF, dashed for BoW). Full line opacity indicates a statistically significant difference ($\mcnemaralpha < 0.05$), with faded lines denoting insignificant changes. Only the lowercased Linear SVM utilizing TF-IDF demonstrated a significant performance impact upon expansion.}
 	\label{fig:casing-expansion-effect}
 \end{figure}
 \ksremark{Fig. \ref{fig:casing-expansion-effect}: Czy w podpisie rysunku tu na pewno ma być $\mcnemaralpha < 0.05$, czy $p < 0.05$?}
@@ -1639,14 +1654,14 @@ It is worth noting that the results are easily interpretable. Tokens such as \li
 
 Instead of relying on the default \code{CountVectorizer}, the standard regular expression tokenization is bypassed. After the vectorization, neutral tokens are pruned based on their calculated \zscore-scores resulting in Custom BoW (\custombow) and Custom TF-IDF (\customtfidf).
 
-The following test evaluates various tokenization representations to identify the optimal \zscore-score pruning threshold, utilizing the best-performing model from the previous stage as a baseline. As illustrated in Figure~\ref{fig:zscore_threshold}, the models' Macro F1-scores can remain highly stable even when pruning is applied. However, the effectiveness of pruning is dependent on the chosen feature representation. For the linear SVM utilizing a \custombow{}, statistical pruning proves not applicable; performance degrades immediately, making $\zscore=0$ (no pruning) the optimal threshold. For the \logreg{} model with \custombow{}, the performance remains stable up to a threshold of $\zscore=1$ before declining.
+The following test evaluates various tokenization representations to identify the optimal \zscore-score pruning threshold, utilizing the best-performing model from the previous stage as a baseline. As illustrated in Figure~\ref{fig:zscore_threshold}, the models' Macro $F1$-scores can remain highly stable even when pruning is applied. However, the effectiveness of pruning is dependent on the chosen feature representation. For the linear SVM utilizing a \custombow{}, statistical pruning proves not applicable; performance degrades immediately, making $\zscore=0$ (no pruning) the optimal threshold. For the \logreg{} model with \custombow{}, the performance remains stable up to a threshold of $\zscore=1$ before declining.
 
-A particularly interesting pattern emerges when utilizing the \customtfidf{} representation. For both the linear SVM and \logreg{} models, the optimal pruning threshold shifts significantly to $\zscore=2$. At this threshold, the SVM maintains its peak baseline performance despite a substantial reduction in the feature space. Notably, the \logreg{} model exhibits a slight increase in its F1-score, suggesting that the targeted removal of neutral features actively improves the model's ability to generalize.
+A particularly interesting pattern emerges when utilizing the \customtfidf{} representation. For both the linear SVM and \logreg{} models, the optimal pruning threshold shifts significantly to $\zscore=2$. At this threshold, the SVM maintains its peak baseline performance despite a substantial reduction in the feature space. Notably, the \logreg{} model exhibits a slight increase in its $F1$-score, suggesting that the targeted removal of neutral features actively improves the model's ability to generalize.
 
 \begin{figure}[htbp]%[htbp]
 	\centering
 	\includegraphics[width=1\textwidth]{./figures/analysis/zscore_threshold.png}
-	\caption{Impact of neutral vocabulary pruning on Macro F1-Score. The $2 \times 2$ grid compares CustomBow (top row) and CustomTfidf (bottom row) representations across SVM (left column) and \logreg{} (right column) models. Line colors distinguish the six tokenization strategies. Vertical dotted lines annotate the optimal pruning threshold, with the shaded green regions highlighting the acceptable threshold range prior to performance loss.}
+	\caption{Impact of neutral vocabulary pruning on Macro $F1$-Score. The $2 \times 2$ grid compares CustomBow (top row) and CustomTfidf (bottom row) representations across SVM (left column) and \logreg{} (right column) models. Line colors distinguish the six tokenization strategies. Vertical dotted lines annotate the optimal pruning threshold, with the shaded green regions highlighting the acceptable threshold range prior to performance loss.}
 	\label{fig:zscore_threshold}
 \end{figure}
 
@@ -1798,7 +1813,7 @@ In Figure~\ref{fig:ablation_study}, the BoW and TF-IDF labels denote the unprune
 
 For the BoW, various tokenization strategies yield no improvement over the \texttt{Expanded and Lower} baseline for either the linear SVM or \logreg{} models. Furthermore, when statistical pruning is introduced (\custombow{}), performance consistently degrades across all configurations; removing vocabulary features universally harms the predictive power of BoW.
 
-In contrast, the TF-IDF representations exhibit a lot of variance. For the linear SVM, only the lemmatized tokenization approach proves significantly better than the TF-IDF Baseline. However, the introduction of $\zscore=2$ pruning actively enhances the model's capabilities, increasing the Macro F1-scores for the lowered and stemmed representations. Combining stemming and \customtfidf{} achieves the highest overall performance ($91.41\%$).
+In contrast, the TF-IDF representations exhibit a lot of variance. For the linear SVM, only the lemmatized tokenization approach proves significantly better than the TF-IDF Baseline. However, the introduction of $\zscore=2$ pruning actively enhances the model's capabilities, increasing the Macro $F1$-scores for the lowered and stemmed representations. Combining stemming and \customtfidf{} achieves the highest overall performance ($91.41\%$).
 
 For the \logreg{} model, the classification scores are generally lower than those achieved by the SVM. For the BoW approach, pruning either degrades performance (as seen with cased and letter-only tokens) or has no significant effect. However, the introduction of filtering combined with \customtfidf{} pruning proves effective. While isolated tokenization approaches do not have a clear impact on their own, the pruning strategy elevates almost all TF-IDF-based representations for \logreg{}, with the sole exception of the \texttt{Tokens Letters} configuration. The \texttt{Tokens Filtered} representation with $\zscore=2$ pruning outperforms the baseline by over 0.7 percentage points (rising from $89.98\%$ to $90.71\%$).
 
@@ -1813,7 +1828,7 @@ For the \logreg{} model, the classification scores are generally lower than thos
 
 \subsection{Impact of Vocabulary Depth} \label{sec:Impact-of-Vocabulary-Depth}
 
-This test examines the importance of selecting the optimal  $n$-gram range---the vocabulary depth. As depicted in the left panel of Figure~\ref{fig:vocabulary_depth}, expanding the token representation from simple unigrams (1, 1) to include bigrams (1, 2) yields a substantial increase in the Macro F1-score for both the linear SVM and \logreg{} models. However, extending the depth further to include trigrams (1, 3) provides only marginal performance gains, illustrating a clear pattern of diminishing returns.
+This test examines the importance of selecting the optimal  $n$-gram range---the vocabulary depth. As depicted in the left panel of Figure~\ref{fig:vocabulary_depth}, expanding the token representation from simple unigrams (1, 1) to include bigrams $(1, 2)$ yields a substantial increase in the Macro $F1$-score for both the linear SVM and \logreg{} models. However, extending the depth further to include trigrams $(1, 3)$ provides only marginal performance gains, illustrating a clear pattern of diminishing returns.
 
 \subsubsection{Dimensionality Problem}
 While deeper $n$-gram ranges capture richer sequential context, they introduce a severe structural challenge: the explosion of the feature space. The right panel of Figure~\ref{fig:vocabulary_depth} demonstrates that the base vocabulary grows aggressively, swelling from 18,471 unigrams to 139,015 total features when trigrams are included. Extrapolating this trajectory suggests that exploring even deeper ranges, such as $4$-grams (1, 4), would predictably push the raw feature count well beyond 190,000. Operating on such massive, highly sparse matrices becomes extremely memory-intensive.
@@ -1824,9 +1839,35 @@ The implementation of statistical pruning ($\zscore=2.0$) effectively mitigates 
 \begin{figure}[tbp]%[htbp]
 	\centering
 	\includegraphics[width=1\textwidth]{./figures/analysis/ngram_experiment_double.png}
-	\caption{Performance and dimensionality trends across varying $n$-gram ranges. The left panel illustrates model performance (Macro F1-Score), where dashed lines indicate the respective baselines for Linear SVM (blue) and \logreg{} (red). Hollow markers denote results that are not statistically significantly different from their baseline ($\mcnemaralpha \ge 0.05$), and a star highlights the overall best-performing configuration. The right panel highlights the feature space reduction, comparing the base vocabulary size (green bars) against the pruned vocabulary using $\zscore=2.0$ (orange bars).}
+	\caption{Performance and dimensionality trends across varying $n$-gram ranges. The left panel illustrates model performance (Macro $F1$-Score), where dashed lines indicate the respective baselines for Linear SVM (blue) and \logreg{} (red). Hollow markers denote results that are not statistically significantly different from their baseline ($\mcnemaralpha \ge 0.05$), and a star highlights the overall best-performing configuration. The right panel highlights the feature space reduction, comparing the base vocabulary size (green bars) against the pruned vocabulary using $\zscore=2.0$ (orange bars).}
 	\label{fig:vocabulary_depth}
 \end{figure}
+
+\subsection{Impact of Kernel} \label{sec:Impact-of-Kernel}
+
+To assess the influence of the kernel function, a linear SVM is compared against an RBF SVM, using the best previously determined text representation and preprocessing settings (see Table~\ref{tab:McNemarSvms}). Both models are trained with $5$-fold cross-validation and a fixed \code{max\_iter} limit. The linear SVM with \code{max\_iter=$10,000$} converges in only $1.89$ seconds, achieving $91.34\%$ accuracy.
+In contrast, the RBF kernel with the same iteration limit trains for $2042.05$ seconds (over $34$ minutes) and reaches $91.15\%$ accuracy.
+However, the RBF solver did not converge: it exhausted the maximum number of iterations before reaching the stopping criterion.
+This indicates that the RBF kernel's optimization landscape is harder to navigate, and requires more time for proper convergence.
+
+When \code{max\_iter} is reduced to $1,000$, the RBF training time drops to $267.07$ seconds (approximately $4.5$ minutes), but accuracy falls to $89.03\%$.
+The difference between this RBF variant and the linear baseline is significant according to McNemar's test ($\mcnemaralpha < 0.000001$), whereas the non-converged RBF with $10,000$ iterations does not exhibit a statistically significant difference from the linear SVM ($\mcnemaralpha = 0.142$).
+Overall, the linear kernel yields the highest accuracy and has significantly lower computational cost, making it preferable for the further tests.
+
+\begin{table}[tbp]
+	\centering
+	\caption{McNemar's test comparing linear and RBF kernel SVMs, including training times measured on \code{AMD Ryzen 7 5800H with Radeon Graphics} at different iteration limits (\code{max\_iter}).}
+	\label{tab:McNemarSvms}
+	\begin{tabular}{llllrcc}
+		\toprule
+		& \code{max\_iter} & Training Time & Model & $Acc_{Model}$ & $\uparrow$/$\downarrow$ & $\mcnemaralpha$-value \\
+		\midrule
+		\textbf{0} & \textbf{10,000} & \textbf{1.89 s} & \textbf{Linear SVM} & \textbf{91.34\%} & \textbf{} & \textbf{Baseline} \\
+		\textbf{1} & \textbf{1,000} & \textbf{267.07 s} & \textbf{RBF SVM} & \textbf{89.03\%} & \textbf{$\downarrow$} & \textbf{0.000000} \\
+		2 & 10,000 & 2042.05 s & RBF SVM & 91.15\% &  & 0.142368 \\
+		\bottomrule
+	\end{tabular}
+\end{table}
 
 \subsection{Impact of Semantic Clustering} \label{sec:Impact-of-Semantic-Clustering}
 
@@ -1849,7 +1890,7 @@ Figure~\ref{fig:concepts_neg_10000_0} illustrates that negative clusters contain
 \end{figure}
 
 \subsubsection{Weighted Approach}
-Figures~\ref{fig:concepts_pos_10000_10} and \ref{fig:concepts_neg_10000_10} depict that incorporating lexicon-based polarity increases the \zscore-score values, and thus produces more cohesive and discriminative clusters. For example, the primary positive cluster expands to integrate \literal{excellent} alongside \literal{great}. Similarly, the \literal{bad} cluster becomes more distinct and captures negative connotations, confirming the effectiveness of the weighting strategy. Descriptive but sentiment-neutral concepts (such as the \literal{his} cluster) decrease in prominence, demonstrating that VADER-weighting effectively prioritizes sentiment signals.
+Figures~\ref{fig:concepts_pos_10000_10} and \ref{fig:concepts_neg_10000_10} depict that incorporating lexicon-based polarity increases the $\zscore$-score values, and thus produces more cohesive and discriminative clusters. For example, the primary positive cluster expands to integrate \literal{excellent} alongside \literal{great}. Similarly, the \literal{bad} cluster becomes more distinct and captures negative connotations, confirming the effectiveness of the weighting strategy. Descriptive but sentiment-neutral concepts (such as the \literal{his} cluster) decrease in prominence, demonstrating that VADER-weighting effectively prioritizes sentiment signals.
 
 \begin{figure}[tbp]%[htbp]
 	\centering
@@ -1867,7 +1908,7 @@ Figures~\ref{fig:concepts_pos_10000_10} and \ref{fig:concepts_neg_10000_10} depi
 
 \subsubsection{Concept Granularity}
 
-Compressing the vocabulary to $n$ concepts results in performance degradation for both the linear SVM and \logreg{} models. As the number of clusters increases from $\kconcepts=500$ to $\kconcepts=5000$ and $\kconcepts=10000$, the Macro F1-score improves, indicating that preserving nuances in vocabulary is required for effective sentiment analysis. This performance trajectory appears bounded by the benchmark; even at $\kconcepts=10,000$, the clustered representations fail to surpass the unclustered baseline. Figure~\ref{fig:clustering_performance} highlights the benefit of sentiment weighting, especially at the lowest granularity ($\kconcepts=500$). Seemingly, injecting external sentiment knowledge mitigates information loss when the feature space is heavily compressed.
+Compressing the vocabulary to $n$ concepts results in performance degradation for both the linear SVM and \logreg{} models. As the number of clusters increases from $\kconcepts=500$ to $\kconcepts=5000$ and $\kconcepts=10000$, the Macro $F1$-score improves, indicating that preserving nuances in vocabulary is required for effective sentiment analysis. This performance trajectory appears bounded by the benchmark; even at $\kconcepts=10,000$, the clustered representations fail to surpass the unclustered baseline. Figure~\ref{fig:clustering_performance} highlights the benefit of sentiment weighting, especially at the lowest granularity ($\kconcepts=500$). Seemingly, injecting external sentiment knowledge mitigates information loss when the feature space is heavily compressed.
 
 \begin{figure}[tbp]%[htbp]
 	\centering
@@ -1897,7 +1938,7 @@ Table~\ref{tab:certainty} partitions the probability range into five symmetric z
 
 \end{itemize}
 
-Despite this favorable error distribution, \logreg{} achieves a much smaller workload in its high‑precision zone ($35.72\%$ vs.\ SVM's $71.26\%$). To match the SVM's $70\%$ coverage, three \logreg{} bins must be combined, yielding a lower average precision. The cascade therefore can benefit more from the SVM's massive high‑precision coverage, using the specialist to correct the modest, spread‑out errors.
+Despite this favorable error distribution, \logreg{} achieves a much smaller workload in its high-precision zone ($35.72\%$ vs.\ SVM's $71.26\%$). To match the SVM's $70\%$ coverage, three \logreg{} bins must be combined, yielding a lower average precision. The cascade therefore can benefit more from the SVM's massive high-precision coverage, using the specialist to correct the modest, spread-out errors.
 
 \begin{table}[tbp]%[htbp]
 	\centering
@@ -1969,16 +2010,16 @@ As shown in Figure~\ref{fig:cascade_comp}, introducing a specialist yields mixed
 \begin{figure}[tbp]%[htbp]
 	\centering
 	\includegraphics[width=1\textwidth]{./figures/thesis/cascade_comparison_f1_macro.png}
-	\caption{Comparison of Macro F1 scores across different cascade system configurations. The horizontal dashed line denotes the SVM baseline performance (0.9131). Bar colors indicate statistical significance relative to the baseline (blue for $\mcnemaralpha < 0.05$, grey for insignificant results), and exact scores are annotated above each bar. A star marker highlights the top-performing system configuration.}
+	\caption{Comparison of Macro $F1$-scores across different cascade system configurations. The horizontal dashed line denotes the SVM baseline performance (0.9131). Bar colors indicate statistical significance relative to the baseline (blue for $\mcnemaralpha < 0.05$, grey for insignificant results), and exact scores are annotated above each bar. A star marker highlights the top-performing system configuration.}
 	\label{fig:cascade_comp}
 \end{figure}
 
 \begin{itemize}
-	\item Both BERT cascade systems successfully surpass the SVM baseline's Macro F1 score of $91.31\%$. Fine-tuning a BERT specialist specifically on ``hard cases'' mined from the validation set results in a negligible performance bump over a basic BERT model ($92.36\%$ versus $92.34\%$, $p=0.859684$). This lack of statistical significance likely stems from the relatively small volume of hard samples available for fine-tuning.
+	\item Both BERT cascade systems successfully surpass the SVM baseline's Macro $F1$-score of $91.31\%$. Fine-tuning a BERT specialist specifically on ``hard cases'' mined from the validation set results in a negligible performance bump over a basic BERT model ($92.36\%$ versus $92.34\%$, $p=0.859684$). This lack of statistical significance likely stems from the relatively small volume of hard samples available for fine-tuning.
 	
-	\item The Basic BERT model alone struggled with this specific data shuffle, achieving only an $87.43\%$ F1-score on the test set, compared to its validation score of $91.27\%$. While this difficulty explains why the cascade approach dropped by almost $1\%$ overall, it highlights an interesting dynamic: combining two individually weaker models can still produce a more robust and improved overall score.
+	\item The Basic BERT model alone struggled with this specific data shuffle, achieving only an $87.43\%$ $F1$-score on the test set, compared to its validation score of $91.27\%$. While this difficulty explains why the cascade approach dropped by almost $1\%$ overall, it highlights an interesting dynamic: combining two individually weaker models can still produce a more robust and improved overall score.
 	
-	\item Deploying a secondary SVM as the specialist model degrades the system's performance, dragging the Macro F1-score down to $0.9031$. This deterioration points to a structural limitation: the base classifier has already exploited the linear feature space. Any remaining uncertain predictions rely on subtle, highly contextual cues.
+	\item Deploying a secondary SVM as the specialist model degrades the system's performance, dragging the Macro $F1$-score down to $0.9031$. This deterioration points to a structural limitation: the base classifier has already exploited the linear feature space. Any remaining uncertain predictions rely on subtle, highly contextual cues.
 \end{itemize}
 
 \subsubsection{The Linear Limitation}
@@ -1998,166 +2039,54 @@ This structural barrier becomes apparent when isolating model performance strict
 	\item \textbf{Semantic Capacity:} In sharp contrast, both BERT variants possess the deep semantic capacity necessary to untangle these non-linear, contextual cues. By successfully interpreting these complex patterns, the basic and specialist BERT models elevate the subset accuracy to $71.9\%$ and $72.1\%$, respectively.
 \end{itemize}
 
-%
-%This chapter presents the experiments. It is a crucial part of the thesis and has to dominate in the thesis. 
-%The experiments and their analysis should be done in the way commonly accepted in the scientific community (eg. benchmark datasets, cross validation of elaborated results, reproducibility and replicability of tests etc).
-%
-%
-%\section{Methodology}
-%
-%\begin{itemize}
-%\item description of methodology of experiments
-%\item description of experimental framework (description of user interface of research applications – move to an appendix)
-%\end{itemize}
-%
-%
-%\section{Data sets}
-%
-%\begin{itemize}
-%\item description of data sets
-%\end{itemize}
-%
-%
-%\section{Results}
-%
-%\begin{itemize}
-%\item presentation of results, analysis and wide discussion of elaborated results, conclusions
-%\end{itemize}
-%
-%
-%
-%\begin{table}
-%\centering
-%\caption{A caption of a table is ABOVE it.}
-%\label{id:tab:wyniki}
-%\begin{tabular}{rrrrrrrr}
-%\toprule
-%	         &                                     \multicolumn{7}{c}{method}                                      \\
-%	         \cmidrule{2-8}
-%	         &         &         &        \multicolumn{3}{c}{alg. 3}        & \multicolumn{2}{c}{alg. 4, $\gamma = 2$} \\
-%	         \cmidrule(r){4-6}\cmidrule(r){7-8}
-%	$\zeta$ &     alg. 1 &   alg. 2 & $\alpha= 1.5$ & $\alpha= 2$ & $\alpha= 3$ &   $\beta = 0.1$  &   $\beta = -0.1$ \\
-%\midrule
-%	       0 &  8.3250 & 1.45305 &       7.5791 &    14.8517 &    20.0028 & 1.16396 &                       1.1365 \\
-%	       5 &  0.6111 & 2.27126 &       6.9952 &    13.8560 &    18.6064 & 1.18659 &                       1.1630 \\
-%	      10 & 11.6126 & 2.69218 &       6.2520 &    12.5202 &    16.8278 & 1.23180 &                       1.2045 \\
-%	      15 &  0.5665 & 2.95046 &       5.7753 &    11.4588 &    15.4837 & 1.25131 &                       1.2614 \\
-%	      20 & 15.8728 & 3.07225 &       5.3071 &    10.3935 &    13.8738 & 1.25307 &                       1.2217 \\
-%	      25 &  0.9791 & 3.19034 &       5.4575 &     9.9533 &    13.0721 & 1.27104 &                       1.2640 \\
-%	      30 &  2.0228 & 3.27474 &       5.7461 &     9.7164 &    12.2637 & 1.33404 &                       1.3209 \\
-%	      35 & 13.4210 & 3.36086 &       6.6735 &    10.0442 &    12.0270 & 1.35385 &                       1.3059 \\
-%	      40 & 13.2226 & 3.36420 &       7.7248 &    10.4495 &    12.0379 & 1.34919 &                       1.2768 \\
-%	      45 & 12.8445 & 3.47436 &       8.5539 &    10.8552 &    12.2773 & 1.42303 &                       1.4362 \\
-%	      50 & 12.9245 & 3.58228 &       9.2702 &    11.2183 &    12.3990 & 1.40922 &                       1.3724 \\
-%\bottomrule
-%\end{tabular}
-%\end{table}  
+\chapter{Summary} \label{chap:summary}
+\section{Summary of Work}
 
-%%%%%%%%%%%%%%%%%%%%%
-% FIGURE FROM FILE
-%
-%\begin{figure}
-%\centering
-%\includegraphics[width=0.5\textwidth]{./politechnika_sl_logo_bw_pion_en.pdf}
-%\caption{Caption of a figure is always below the figure.}
-%\label{fig:label}
-%\end{figure}
-%Fig. \ref{fig:label} presents …
-%%%%%%%%%%%%%%%%%%%%%
-%
-%%%%%%%%%%%%%%%%%%%%
-%% SUBFIGURES
-%
-%\begin{figure}
-%\centering
-%\begin{subfigure}{0.4\textwidth}
-%    \includegraphics[width=\textwidth]{./politechnika_sl_logo_bw_pion_en.pdf}
-%    \caption{Upper left figure.}
-%    \label{fig:upper-left}
-%\end{subfigure}
-%\hfill
-%\begin{subfigure}{0.4\textwidth}
-%    \includegraphics[width=\textwidth]{./politechnika_sl_logo_bw_pion_en.pdf}
-%    \caption{Upper right figure.}
-%    \label{fig:upper-right}
-%\end{subfigure}
-%
-%\begin{subfigure}{0.4\textwidth}
-%    \includegraphics[width=\textwidth]{./politechnika_sl_logo_bw_pion_en.pdf}
-%    \caption{Lower left figure.}
-%    \label{fig:lower-left}
-%\end{subfigure}
-%\hfill
-%\begin{subfigure}{0.4\textwidth}
-%    \includegraphics[width=\textwidth]{./politechnika_sl_logo_bw_pion_en.pdf}
-%    \caption{Lower right figure.}
-%    \label{fig:lower-right}
-%\end{subfigure}
-%        
-%\caption{Common caption for all subfigures.}
-%\label{fig:subfigures}
-%\end{figure}
-%Fig. \ref{fig:subfigures} presents very important information, eg. Fig. \ref{fig:upper-right} is an upper right subfigure.
-%%%%%%%%%%%%%%%%%%%%%
+This thesis addressed the problem that GrC approaches had not been systematically verified in the SA pipeline. Through an enumeration of preprocessing, representation, and modeling choices, the most effective configurations were identified. The work demonstrated that a statistical $\zscore$-based pruning technique can discard the ``neutral'' granule---the $n$-grams that do not discriminate between positive and negative classes---thereby reducing the feature space while preserving or even improving accuracy. Building on this, a hybrid cascade ensemble was proposed: a lightweight linear SVM acts as a base model, handling the majority of instances with high confidence, while a deep learning specialist (DistilBERT) resolves the remaining uncertain cases. The cascade achieved a macro $F1$-score of approximately $92.3\%$, outperforming both standalone baselines while delegating only $15\%$–$20\%$ of the data to the expensive model.
 
+\section{Conclusions}
 
-%
-%\begin{figure}
-%\centering
-%\begin{tikzpicture}
-%\begin{axis}[
-%    y tick label style={
-%        /pgf/number format/.cd,
-%            fixed,   % po zakomentowaniu os rzednych jest indeksowana wykladniczo
-%            fixed zerofill, % 1.0 zamiast 1
-%            precision=1,
-%        /tikz/.cd
-%    },
-%    x tick label style={
-%        /pgf/number format/.cd,
-%            fixed,
-%            fixed zerofill,
-%            precision=2,
-%        /tikz/.cd
-%    }
-%]
-%\addplot [domain=0.0:0.1] {rnd};
-%\end{axis} 
-%\end{tikzpicture}
-%\caption{Figure caption is BELOW the figure.}
-%\label{fig:2}
-%\end{figure}
-%
-%\begin{figure}
-%\begin{lstlisting}
-%if (_nClusters < 1)
-%	throw std::string ("unknown number of clusters");
-%if (_nIterations < 1 and _epsilon < 0)
-%	throw std::string ("You should set a maximal number of iteration or minimal difference -- epsilon.");
-%if (_nIterations > 0 and _epsilon > 0)
-%	throw std::string ("Both number of iterations and minimal epsilon set -- you should set either number of iterations or minimal epsilon.");
-%\end{lstlisting}
-%\caption{Example of pseudocode.}
-%\end{figure}
+The positive aspects of the proposed approaches are lower computational cost and less sparse feature spaces. Most of the workload can be handled by the baseline SVM model, while only a small fraction of the most difficult instances is passed to the specialist. This division of labor combines efficiency with high accuracy and demonstrates that granular principles can successfully guide the design of a practical sentiment analysis system.
 
-% TODO
-\chapter{Summary}
-
-%\begin{itemize}
-%\item What problem have I solved?
-%\item How have I solved the problem?
-%\item What are pros and cons of my solutions?
-%\item Can I state some recommendations?
-%\end{itemize}
+\subsection{Recommendations}
 
 \begin{itemize}
-\item synthetic description of performed work
-\item conclusions
-\item  future development, potential future research
-\item Has the objective been reached?
+	\item \textbf{Preprocessing is necessary, and data unification is important.} Text should be at least lowercased and expanded (contraction resolution) to ensure better generalization when using traditional machine learning approaches. Stemming and lemmatization do not significantly improve or degrade accuracy and may be omitted.
+	
+	\item \textbf{POS-based filtering (stop-word removal) is not advised.} Although it reduces the feature space, it imposes a ceiling on performance and is not among the best-performing representations for SVM.
+	
+	\item \textbf{SVMs are a much better choice than \logreg{} as baseline models.} SVMs achieve higher standalone accuracy and, critically, separate easy from difficult cases more effectively, making them more suitable for cascade architectures.
+	
+	\item \textbf{Custom Bag-of-Words (BoW) does not benefit from pruning, but $\mathbf{\zscore}$-based pruning works well with TF-IDF.} A pruning threshold of $\zscore = 2.0$ retains or even improves accuracy while discarding over $60\%$ of the feature space.
+	
+	\item \textbf{There is no statistically significant difference between $\mathbf{(1,2)}$-grams and $\mathbf{(1,3)}$-grams.} Unigrams alone are not enough to capture sufficient understanding.
+	
+	\item \textbf{The linear kernel is fast and reliable.} The RBF kernel trains much longer and does not converge in an acceptable time, while offering no accuracy benefit.
+	
+	\item \textbf{Semantic clustering works for topic classification, but is not useful for SA.} Even when external sentiment values are injected, concept-level representations erase too many polarity cues and underperform token-level features.
+	
+	\item \textbf{The cascade ensemble works better than expected.} Because the SVM and the transformer model operate on different feature spaces, they learn complementary aspects: the SVM handles the separation of easy from difficult cases, while the transformer focuses on understanding nuanced, contextual sentiment. The cascade achieves better results than DistilBERT or SVM baselines alone. An SVM cannot be used as a specialist because the remaining ambiguities are not resolvable within a pure vectorized (BoW or TF-IDF) representation.
+	
+	\item \textbf{Cascade systems can reliably use a separate validation set to establish the optimal deferral rate.} The threshold selected on held-out data generalizes well to unseen test data.
 \end{itemize}
 
+\subsection{Research Questions Revisited}
 
+\paragraph{RQ1:} \emph{Can granular approaches be used to optimize the sentiment analysis pipeline?}
+
+Yes. Statistical pruning based on $\zscore$-scores works effectively: the ``not sentiment’’ granule is discarded, leading to a more compact and equally or more accurate feature representation.
+
+\paragraph{RQ2:} \emph{Can a hybrid system be designed to combine the efficiency of lightweight classifiers with the semantic understanding of transformer models?}
+
+Yes. A cascade ensemble can be built that improves overall performance, with the base SVM handling the majority of instances and the specialist transformer resolving only the hardest cases.
+
+\subsection{Further Research}
+
+Further research could verify whether higher-order $n$-grams (e.g., $(1,4)$ and beyond) become feasible when combined with the proposed statistical pruning approach.
+
+It should also be tested whether stronger models---full BERT or LLMs---could benefit from a cascade, saving inference tokens by deferring only a small fraction of instances to the heavyweight model; it is possible that such models are already so strong that the cascade would weaken their performance.
+
+Another direction is to test whether semantic clustering could be applied at the sentence level, where similar sentences are grouped into prototypical concepts. This would require a specialized classifier that maps a sentence to its concept representative, since the set of possible sentences is unlimited and a static mapping matrix---as used here for $n$-grams---would not be possible.
 
 \backmatter
 
