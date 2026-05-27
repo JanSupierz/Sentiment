@@ -674,11 +674,11 @@ Following this definition, the main objective of sentiment analysis is to determ
 Sentiment analysis tasks are typically categorized by their granularity of analysis, reflecting different levels at which opinions can be extracted and aggregated \cite{azzeddine2018sentiment}. The choice of granularity determines both the complexity of the task and the type of insights that can be obtained. Three main levels of analysis are recognized in the literature:
 
 \begin{itemize}	
-	\item \textbf{Document-level sentiment analysis (DLSA)} operates at the coarsest granularity, aiming to determine the overall opinion expressed in an entire document \cite{behdenna2018document}. Following the opinion quintuple formulation, DLSA identifies the overall sentiment of the opinion holder about the entity \cite{azzeddine2018sentiment}. Documents are typically classified as positive, negative, or neutral, under the assumption that the document focuses on a single entity or topic, and that the opinion is coherent \cite{sharma2025review}. The task commonly follows a two-step approach: Topic Relevance Retrieval followed by Opinion Finding \cite{azzeddine2018sentiment, missen2012opinion}. Considered the simplest sentiment analysis task, DLSA has been the most frequently studied granularity in the field, with 73 out of 159 reviewed articles operating at this level \cite{azzeddine2018sentiment, ravi2015survey}.
+	\item \textbf{Document-Level Sentiment Analysis (DLSA)} operates at the coarsest granularity, aiming to determine the overall opinion expressed in an entire document \cite{behdenna2018document}. Following the opinion quintuple formulation, DLSA identifies the overall sentiment of the opinion holder about the entity \cite{azzeddine2018sentiment}. Documents are typically classified as positive, negative, or neutral, under the assumption that the document focuses on a single entity or topic, and that the opinion is coherent \cite{sharma2025review}. The task commonly follows a two-step approach: Topic Relevance Retrieval followed by Opinion Finding \cite{azzeddine2018sentiment, missen2012opinion}. Considered the simplest sentiment analysis task, DLSA has been the most frequently studied granularity in the field, with 73 out of 159 reviewed articles operating at this level \cite{azzeddine2018sentiment, ravi2015survey}.
 	
-	\item \textbf{Sentence-level sentiment analysis (SLSA)} operates at a finer granularity by considering individual sentences as the unit of analysis \cite{behdenna2018document}. This level typically involves a two-step process. The first step, known as Subjectivity Classification, distinguishes subjective sentences (expressing opinions) from objective sentences (presenting facts) \cite{azzeddine2018sentiment, CHATURVEDI201865}. The second step, Sentence Sentiment Classification, then assigns polarity labels (positive, negative, or neutral) to subjective sentences \cite{azzeddine2018sentiment}. This approach is particularly useful when documents contain a mixture of factual statements and opinions \cite{sharma2025review}. However, a known limitation is that objective sentences can sometimes carry implicit sentiment \cite{behdenna2018document}. Furthermore, sentence-level analysis commonly assumes that each sentence expresses a single sentiment; sentences containing multiple opposing sentiments require more nuanced treatment \cite{azzeddine2018sentiment}.
+	\item \textbf{Sentence-Level Sentiment Analysis (SLSA)} operates at a finer granularity by considering individual sentences as the unit of analysis \cite{behdenna2018document}. This level typically involves a two-step process. The first step, known as Subjectivity Classification, distinguishes subjective sentences (expressing opinions) from objective sentences (presenting facts) \cite{azzeddine2018sentiment, CHATURVEDI201865}. The second step, Sentence Sentiment Classification, then assigns polarity labels (positive, negative, or neutral) to subjective sentences \cite{azzeddine2018sentiment}. This approach is particularly useful when documents contain a mixture of factual statements and opinions \cite{sharma2025review}. However, a known limitation is that objective sentences can sometimes carry implicit sentiment \cite{behdenna2018document}. Furthermore, sentence-level analysis commonly assumes that each sentence expresses a single sentiment; sentences containing multiple opposing sentiments require more nuanced treatment \cite{azzeddine2018sentiment}.
 	
-	\item \textbf{Aspect-based sentiment analysis (ABSA)} represents the finest granularity, focusing on identifying sentiments expressed towards specific aspects or attributes of an entity \cite{yadav2020sentiment}. Rather than assigning a single polarity to an entire document or sentence, ABSA extracts both the target of opinion and its associated sentiment, corresponding to the first three components of the opinion quintuple: entity, aspect, and sentiment \cite{behdenna2018document, azzeddine2018sentiment}. For example, in a restaurant review, the sentiment expressed towards \literal{food} may differ from that towards \literal{service} \cite{sharma2025review}. This fine-grained analysis addresses the need to know exactly what people liked or disliked \cite{azzeddine2018sentiment}. Aspects may be expressed either explicitly or implicitly \cite{azzeddine2018sentiment}, and ABSA consequently requires two core subtasks: Aspect Extraction and Aspect-Level Sentiment Classification \cite{sharma2025review}.
+	\item \textbf{Aspect-Based Sentiment Analysis (ABSA)} represents the finest granularity, focusing on identifying sentiments expressed towards specific aspects or attributes of an entity \cite{yadav2020sentiment}. Rather than assigning a single polarity to an entire document or sentence, ABSA extracts both the target of opinion and its associated sentiment, corresponding to the first three components of the opinion quintuple: entity, aspect, and sentiment \cite{behdenna2018document, azzeddine2018sentiment}. For example, in a restaurant review, the sentiment expressed towards \literal{food} may differ from that towards \literal{service} \cite{sharma2025review}. This fine-grained analysis addresses the need to know exactly what people liked or disliked \cite{azzeddine2018sentiment}. Aspects may be expressed either explicitly or implicitly \cite{azzeddine2018sentiment}, and ABSA consequently requires two core subtasks: Aspect Extraction and Aspect-Level Sentiment Classification \cite{sharma2025review}.
 \end{itemize}
 
 \subsection{Sentiment Analysis Tasks}
@@ -686,15 +686,15 @@ Sentiment analysis tasks are typically categorized by their granularity of analy
 The explosive growth of user-generated content on social media, review platforms, and forums has made automated sentiment detection an essential tool for businesses, governments, and researchers \cite{sharma2025review}. Applications span brand monitoring, customer feedback analysis, political trend prediction, and mental health assessment \cite{sharma2025review}. More broadly, the field supports business intelligence, recommendation systems, review summarization, and government intelligence, demonstrating its impact \cite{behdenna2018document}. As recent comprehensive surveys discuss \cite{sharma2025review}, the field has evolved beyond simple polarity detection to address multiple complementary problems. Below are some of the recent fields of research:
 
 \begin{itemize}	
-	\item \textbf{Emotion detection (ED)} extends polarity classification by identifying fine-grained emotional states such as joy, anger, sadness, or frustration \cite{sharma2025review}. Unlike binary or ternary sentiment classification, emotion detection requires more expressive representations and often relies on specialized lexical resources or machine learning algorithms \cite{sharma2025review}.
+	\item \textbf{Emotion Detection (ED)} extends polarity classification by identifying fine-grained emotional states such as joy, anger, sadness, or frustration \cite{sharma2025review}. Unlike binary or ternary sentiment classification, emotion detection requires more expressive representations and often relies on specialized lexical resources or machine learning algorithms \cite{sharma2025review}.
 	
 	\item \textbf{Multi-domain sentiment classification} addresses the challenge of transferring models across different application domains \cite{sharma2025review}. For instance, a model trained on movie reviews may perform poorly on product reviews due to differences in vocabulary and linguistic patterns. Domain adaptation and transfer learning techniques are commonly employed to bridge this gap \cite{sharma2025review}.
 	
 	\item \textbf{Multilingual sentiment analysis} aims to analyse sentiment across multiple languages \cite{sharma2025review}. This task typically leverages language-specific resources such as sentiment lexicons, large translated corpora, or language detection systems as preprocessing steps \cite{sharma2025review}.
 	
-	\item \textbf{Multimodal sentiment analysis (MMSA)} integrates information from multiple channels, including text, audio, and visual signals \cite{sharma2025review}. By moving beyond purely textual analysis, MMSA enables more advanced applications such as analysing spoken reviews and vlogs, interpreting images and social media tags, and understanding human-machine interactions \cite{sharma2025review}.
+	\item \textbf{MultiModal Sentiment Analysis (MMSA)} integrates information from multiple channels, including text, audio, and visual signals \cite{sharma2025review}. By moving beyond purely textual analysis, MMSA enables more advanced applications such as analysing spoken reviews and vlogs, interpreting images and social media tags, and understanding human-machine interactions \cite{sharma2025review}.
 	
-	\item \textbf{Opinion spam detection (OSD)} focuses on identifying deceptive or fabricated opinions intended to mislead users or automated sentiment analysis tools \cite{sharma2025review}. These deceptive opinions include fake reviews designed to manipulate public perception and social media posts that artificially promote specific individuals, products, or services \cite{sharma2025review}.
+	\item \textbf{Opinion Spam Detection (OSD)} focuses on identifying deceptive or fabricated opinions intended to mislead users or automated sentiment analysis tools \cite{sharma2025review}. These deceptive opinions include fake reviews designed to manipulate public perception and social media posts that artificially promote specific individuals, products, or services \cite{sharma2025review}.
 \end{itemize}
 
 \subsection{Sentiment Analysis Challenges}
@@ -733,7 +733,7 @@ Lexicon-based methods are divided into two main categories: dictionary-based and
 \end{itemize}
 
 \subsubsection{Semantic Orientation and Pointwise Mutual Information}
-A pioneering unsupervised algorithm was proposed by Turney \cite{azzeddine2018sentiment, behdenna2018document}, who introduced a method based on semantic orientation (SO). The algorithm proceeds in three steps: first, extracting two consecutive words whose part-of-speech tags follow a specific patterns; second, estimating the polarity of adjectives and adverbs using pointwise mutual information (PMI); and third, aggregating individual polarities to classify the entire review \cite{azzeddine2018sentiment}.
+A pioneering unsupervised algorithm was proposed by Turney \cite{azzeddine2018sentiment, behdenna2018document}, who introduced a method based on Semantic Orientation (SO). The algorithm proceeds in three steps: first, extracting two consecutive words whose part-of-speech tags follow a specific patterns; second, estimating the polarity of adjectives and adverbs using Pointwise Mutual Information (PMI); and third, aggregating individual polarities to classify the entire review \cite{azzeddine2018sentiment}.
 
 PMI measures the statistical dependence between a phrase and reference words (typically \literal{excellent} and \literal{poor}) based on their co-occurrence in a corpus or across the web \cite{azzeddine2018sentiment}. A sentence receives positive SO when it has stronger associations with \literal{excellent} and negative SO when associated with \literal{poor} \cite{behdenna2018document}. Rothfels and Tibshirani extended this approach by using two seed reference sets rather than single words, improving domain adaptability  \cite{behdenna2018document}.
 
@@ -2159,14 +2159,47 @@ Another direction is to test whether semantic clustering could be applied at the
 % TODO
 \chapter{List of abbreviations and symbols}
 
-\begin{itemize}
-\item[DNA] deoxyribonucleic acid
-\item[MVC] model--view--controller 
-\item[$N$] cardinality of data set
-\item[$\mu$] membership function of a fuzzy set
-\item[$\mathbb{E}$] set of edges of a graph
-\item[$\mathcal{L}$] Laplace transformation
-\end{itemize}
+\begin{description}
+	\item[ABSA] Aspect-Based Sentiment Analysis
+	\item[BERT] Bidirectional Encoder Representations from Transformers
+	\item[BoW] Bag-of-Words
+	\item[CNN] Convolutional Neural Network
+	\item[DLSA] Document-Level Sentiment Analysis
+	\item[ED] Emotion Detection
+	\item[GA] Genetic Algorithm
+	\item[GPU] Graphics Processing Unit
+	\item[GrC] Granular Computing
+	\item[GNN] Graph Neural Network
+	\item[GRU] Gated Recurrent Unit
+	\item[LSTM] Long Short-Term Memory
+	\item[LLM] Large Language Models
+	\item[LR] Logistic Regression
+	\item[MMSA] MultiModal Sentiment Analysis
+	\item[NLP] Natural Language Processing
+	\item[NB] Naïve Bayes
+	\item[NBSVM] Naïve Bayes SVM
+	\item[NLTK] Natural Language ToolKit
+	\item[\customtfidf] Custom TF-IDF
+	\item[\custombow] Custom Bag-of-Words
+	\item[RQ\#] Research Question \#
+	\item[IMDb] Internet Movie Database
+	\item[IG] Information Granulation
+	\item[OSD] Opinion Spam Detection
+	\item[OCA] Opinion Corpus for Arabic
+	\item[PCI] P..
+	\item[PMI] Pointwise Mutual Information.
+	\item[POS] Part-Of-Speech
+	\item[RNN] Recurrent Naural Network
+	\item[SA] Sentiment Analysis
+	\item[SO] Semantic Orientation
+	\item[SVM] Support Vector Machine
+	\item[SLSA] Sentence-Level Sentiment Analysis
+	\item[TF-IDF] Term Frequency-Inverse Document Frequency
+	\item[TPU] Tensor Processing Unit
+	\item[TAO] Trisecting-Acting-Outcome
+	\item[VADER] Valance Aware Dictionary sEntiment Reasoner
+	\item[3WD] Three-Way Decision
+\end{description}
 
 % TODO
 \chapter{List of additional files in~electronic submission (if applicable)}
