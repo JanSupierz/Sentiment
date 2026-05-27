@@ -328,13 +328,17 @@
 \newcommand{\Count}[1]{\|{#1}\|}
 
 \newcommand{\vocabsize}{V}
-\newcommand{\tokenclass}{c}
+\newcommand{\tokenclass}{\kappa}
+\newcommand{\instanceClass}{c}
 \newcommand{\numbertokens}[1]{T_{#1}}
 \newcommand{\smoothparam}{\beta}
 \newcommand{\kconcepts}{k}
 \newcommand{\conceptWeight}{w}
 \newcommand{\inputtext}{X}
-\newcommand{\mcnemaralpha}{p}
+
+\newcommand{\mcnemarp}{p}
+\newcommand{\mcnemarchi}{\chi^2}
+
 \newcommand{\weightparam}{w}
 
 \newcommand{\literal}[1]{\textit{``#1''}}
@@ -349,6 +353,8 @@
 
 \newcommand{\modelvar}{\mu}
 \newcommand{\sweepthresh}{t}
+\newcommand{\missclassified}[1]{n_{#1}}
+\newcommand{\nullhypo}{H_0}
 
 \newcommand{\probSmall}[1]{p_{#1}}
 \newcommand{\probLarge}[2]{P_{#1}(\predVal=1 \mid #2)}
@@ -430,7 +436,7 @@
 \usepackage{listings}
 \lstset{%
 morekeywords={string,exception,std,vector},% add the keyword you need
-language=C++,% C, Matlab, Python, SQL, TeX, XML, bash, ... – vide https://www.ctan.org/pkg/listings
+language=C++,% C, Matlab, Python, SQL, TeX, XML, bash, ... - vide https://www.ctan.org/pkg/listings
 commentstyle=\textit,%
 identifierstyle=\textsf,%
 keywordstyle=\sffamily\bfseries, %\texttt, %
@@ -574,10 +580,13 @@ escapeinside={@*}{*@},%
 \Title
 
 \subsubsection*{Abstract} 
-(Thesis abstract -- to be copied into an appropriate field during an electronic submission --- in English.)
 
-\subsubsection*{Key words}  
-(2-5 keywords, separated by commas)
+Sentiment analysis models face a persistent trade‑off between the high accuracy of deep learning and the computational efficiency required for practical use.
+This thesis investigates whether granular computing techniques can bridge this gap.
+A statistical $\zscore$-score pruning method is proposed that discards non‑discriminative $n$-grams, shrinking the feature space by over $60\%$ while maintaining or improving classification accuracy (RQ1). Semantic concept clustering is explored as an alternative granulation strategy. Building on the best lightweight model, a cascade ensemble architecture is proposed: a linear support vector machine handles the majority of reviews with high confidence, and a specialist transformer model resolves only the uncertain cases (RQ2). All methods are evaluated on the IMDb movie review dataset. The cascade achieves a macro $F_{1}$-score of approximately $92.3\%$, significantly outperforming both standalone baselines while delegating only $15\%$-$20\%$ of the test instances to the deep-learning specialist. These results demonstrate that granular vocabulary reduction and model‑level deferral can successfully balance accuracy and efficiency in sentiment analysis systems.
+
+\subsubsection*{Key words}
+Sentiment Analysis, Granular Computing, Cascade Ensemble, Machine Learning, Natural Language Processing
 
 \subsubsection*{Tytuł pracy}
 \begin{otherlanguage}{polish}
@@ -586,16 +595,13 @@ escapeinside={@*}{*@},%
 
 \subsubsection*{Streszczenie} 
 \begin{otherlanguage}{polish}
-(Streszczenie pracy - odpowiednie pole w systemie APD powinno zawierać kopię tego streszczenia.)
+Modele służące do wykrywania ładunku emocjonalnego stale balansują między wysoką dokładnością uczenia głębokiego a wydajnością obliczeniową niezbędną w praktycznych zastosowaniach. Niniejsza praca bada, czy techniki obliczeń ziarnistych mogą wypełnić tę lukę. Zaproponowano statystyczną metodę odrzucania opartą na $\zscore$-score, która odrzuca niedyskryminujące $n$-gramy, zmniejszając przestrzeń cech o ponad $60\%$ przy jednoczesnym utrzymaniu lub poprawie dokładności klasyfikacji (RQ1). Jako alternatywną strategię granulacji analizowane jest grupowanie pojęć semantycznych. Opierając się na najlepszym lekkim modelu, zaproponowano architekturę zespołu kaskadowego: liniowa maszyna wektorów wspierających obsługuje większość recenzji z wysoką pewnością, a wyspecjalizowany model architektury transformer rozwiązuje tylko niepewne przypadki (RQ2). Wszystkie metody oceniono na zbiorze danych recenzji filmów IMDb. Zespół kaskadowy osiąga makro-$F_{1}$ na poziomie około $92{,}3\%$, znacząco przewyższając oba samodzielne modele bazowe, przekazując przy tym jedynie $15\%$-$20\%$ instancji testowych do specjalisty wykorzystującego uczenie głębokie. Wyniki te pokazują, że ziarnista redukcja słownictwa oraz odraczanie decyzji na poziomie modelu mogą skutecznie równoważyć dokładność i wydajność w systemach wykrywania ładunku emocjonalnego.
 \end{otherlanguage}
 
 \subsubsection*{Słowa kluczowe} 
 \begin{otherlanguage}{polish}
-(2-5 slow (fraz) kluczowych, oddzielonych przecinkami)
+wykrywanie ładunku emocjonalnego, obliczenia ziarniste, zespół kaskadowy, uczenie maszynowe, przetwarzanie języka naturalnego
 \end{otherlanguage}
-
-
-
 
 %%%%%%%%%%%%%%%%%% Table of contents %%%%%%%%%%%%%%%%%%%%%%
 % Add \thispagestyle{empty} to the toc file (main.toc), because \pagestyle{empty} doesn't work if the TOC has multiple pages
@@ -639,7 +645,7 @@ This thesis explores the application of machine learning techniques, deep learni
 
 The contributions of this thesis are twofold: 
 
-\paragraph{First,} an evaluation of GrC \ksremark{Każdy skrót przy pierwszym wystąpieniu trzeba rozwinąć.} methods for SA is performed. Statistical $\zscore$-score pruning of $n$-gram features is shown to reduce the feature space while preserving or even improving classification accuracy. In contrast, semantic clustering into concept granules produces interpretable, but accuracy-limited representations; even when augmented with sentiment lexicon scores. 
+\paragraph{First,} an evaluation of Granular Computing (GrC) methods for SA is performed. Statistical $\zscore$-score pruning of $n$-gram features is shown to reduce the feature space while preserving or even improving classification accuracy. In contrast, semantic clustering into concept granules produces interpretable, but accuracy-limited representations; even when augmented with sentiment lexicon scores. 
 
 \paragraph{Second,} a cascade ensemble architecture is proposed that uses three-way decisions paradigm at the model level. A lightweight base model handles confident predictions, and a specialist resolves uncertain cases. On the IMDb dataset, this cascade achieves a macro $F_1$-score of approximately $92.3\%$, outperforming standalone baselines, while delegating only 15-20\% of instances to the deep-learning model.
 
@@ -931,10 +937,10 @@ For open topic classification where test data may contain unseen classes, the au
 
 Moving beyond word-level representations, several authors have explored Bag-of-Concepts (BoC) approaches that aggregate semantically related tokens into higher-level information granules~\cite{Capillo2020mining, DeSantis2023prototype, Possemato2013AutomaticTC}. De Santis et al.~\cite{DeSantis2023prototype} directly apply prototype theory: word embeddings are clustered into Voronoi regions, and each document is represented by a histogram of cluster memberships. This concept-level representation can rival word-level methods for text processing tasks, while offering better interpretability~\cite{DeSantis2023prototype}.
 
-Capillo et al.~\cite{Capillo2020mining} present a granular computing framework that mines $m$-grams (short phrases) as information granules for text categorization. Each word in an $m$-gram is mapped to a vector using fastText embeddings, and the resulting sequence of vectors is compared using a custom edit distance that operates on word vectors rather than characters~\cite{Capillo2020mining}. A per-class clustering procedure extracts representative $m$-grams, which serve as alphabet symbols (concepts)~\cite{Capillo2020mining}. Documents are then transformed into symbolic histograms counting the occurrences of these concepts, and the histograms are classified by a SVM~\cite{Capillo2020mining}. A Genetic Algorithm (GA) optimises the system's hyperparameters and selects the most discriminative symbols~\cite{Capillo2020mining}. Experiments on scientific abstracts (four classes) achieve about 93\% accuracy, and on an SMS spam dataset about 95\% accuracy~\cite{Capillo2020mining}. Importantly, the selected symbols are interpretable phrases (e.g. \literal{string field theory} for theoretical physics, \literal{customer care} for spam), demonstrating that the BoC approach yields both high performance and explainable models~\cite{Capillo2020mining}.
+Capillo et al.~\cite{Capillo2020mining} present a granular computing framework that mines $m$-grams (short phrases) as information granules for text categorization. Each word in an $m$-gram is mapped to a vector using fastText embeddings, and the resulting sequence of vectors is compared using a custom edit distance that operates on word vectors rather than characters~\cite{Capillo2020mining}. A per-class clustering procedure extracts representative $m$-grams, which serve as alphabet symbols (concepts)~\cite{Capillo2020mining}. Documents are then transformed into symbolic histograms counting the occurrences of these concepts, and the histograms are classified by an SVM~\cite{Capillo2020mining}. A Genetic Algorithm (GA) optimises the system's hyperparameters and selects the most discriminative symbols~\cite{Capillo2020mining}. Experiments on scientific abstracts (four classes) achieve about 93\% accuracy, and on an SMS spam dataset about 95\% accuracy~\cite{Capillo2020mining}. Importantly, the selected symbols are interpretable phrases (e.g. \literal{string field theory} for theoretical physics, \literal{customer care} for spam), demonstrating that the BoC approach yields both high performance and explainable models~\cite{Capillo2020mining}.
 
 Possemato et al.~\cite{Possemato2013AutomaticTC} extend the BoC approach to handle unbalanced datasets by extracting $n$-grams and then running a per-class granular mining algorithm known as Reinforcement Learning Granular Approach for DIscrete
-Sequence (RL-GRADIS) to obtain representative symbols for each category~\cite{Possemato2013AutomaticTC}. The union of these per-class symbols forms the final alphabet, and documents are converted into symbolic histograms by counting occurrences of each symbol~\cite{Possemato2013AutomaticTC}. A SVM with a Gaussian kernel then classifies the histograms, and a GA performs feature selection to retain only discriminative symbols~\cite{Possemato2013AutomaticTC}. Experiments on the unbalanced Reuters-21578 dataset (ten categories) show that the per-class strategy improves results compared to the standard unsupervised version, demonstrating better handling of sparse classes~\cite{Possemato2013AutomaticTC}. The extracted symbols remain interpretable~\cite{Possemato2013AutomaticTC}.
+Sequence (RL-GRADIS) to obtain representative symbols for each category~\cite{Possemato2013AutomaticTC}. The union of these per-class symbols forms the final alphabet, and documents are converted into symbolic histograms by counting occurrences of each symbol~\cite{Possemato2013AutomaticTC}. An SVM with a Gaussian kernel then classifies the histograms, and a GA performs feature selection to retain only discriminative symbols~\cite{Possemato2013AutomaticTC}. Experiments on the unbalanced Reuters-21578 dataset (ten categories) show that the per-class strategy improves results compared to the standard unsupervised version, demonstrating better handling of sparse classes~\cite{Possemato2013AutomaticTC}. The extracted symbols remain interpretable~\cite{Possemato2013AutomaticTC}.
 
 \subsubsection{Hierarchical Methods}
 
@@ -971,7 +977,7 @@ This work addresses the two gaps with the following contributions:
 An evaluation of granular computing techniques is conducted for binary sentiment analysis. Two complementary approaches are examined: (1) statistical $\zscore$-score pruning of $n$-gram features, which discards non-discriminative vocabulary based on class-separability, and (2) semantic clustering into concept granules using \code{Sentence Transformer} embeddings, optionally augmented with \code{VADER} sentiment scores. The experiments on the IMDb dataset demonstrate that $\zscore$-score pruning not only preserves or improves classification accuracy---the pruned, stemmed token representation reaches $91.41\%$ accuracy, while \logreg{} similarly benefits---but also greatly reduces feature space dimensionality. For the $(1,3)$ $n$-gram range, pruning with a threshold of $|\zscore| > 2.0$ compresses the vocabulary from $139{,}015$ to just $36{,}350$ features. This reduction mitigates the memory explosion that would otherwise occur with deeper ranges $n$-gram ranges. In contrast, concept-level representations, though producing interpretable clusters fail to surpass the unclustered $n$-gram baseline, even with sentiment-weighted embeddings. These findings delineate clear empirical boundaries for GrC in SA: token-level pruning is both beneficial and practically necessary for scaling to higher-order $n$-grams, while semantic aggregation may destroy crucial polarity cues.
 
 \paragraph{Contribution 2: Cascade Granular Computing for Sentiment Analysis.}
-A cascade ensemble architecture is proposed that follows the three-way decision paradigm at the model level rather than the feature level. A lightweight base model processes all instances; those classified with high confidence (falling outside a threshold-defined boundary region) are accepted immediately, while uncertain instances are deferred to a specialist deep learning model. The thesis provides a systematic method for selecting the optimal deferral threshold by sweeping over the validation set and maximizing hybrid accuracy, and evaluates three specialist variants (generic BERT, fine-tuned BERT, and SVM). Empirical results on the IMDb dataset demonstrate that the cascade achieves a macro $F_1$-score of approximately 92.3\%, outperforming both standalone baselines, while delegating only 15–20\% of instances to the expensive model.
+A cascade ensemble architecture is proposed that follows the three-way decision paradigm at the model level rather than the feature level. A lightweight base model processes all instances; those classified with high confidence (falling outside a threshold-defined boundary region) are accepted immediately, while uncertain instances are deferred to a specialist deep learning model. The thesis provides a systematic method for selecting the optimal deferral threshold by sweeping over the validation set and maximizing hybrid accuracy, and evaluates three specialist variants (generic BERT, fine-tuned BERT, and SVM). Empirical results on the IMDb dataset demonstrate that the cascade achieves a macro $F_1$-score of approximately 92.3\%, outperforming both standalone baselines, while delegating only 15-20\% of instances to the expensive model.
 
 \chapter{Granular Cascade System for Sentiment Analysis using Enumerations} \label{chap:system}
 \section{Overview of the Pipeline}
@@ -1150,14 +1156,14 @@ First, the smoothed token-level probability of a feature in a given class $\toke
 
 where:
 \begin{itemize}
-	\item $\Count{\tokenclass}$ is the number of occurrences of the feature in class $c$,
+	\item $\Count{\tokenclass}$ is the number of occurrences of the feature in class $\tokenclass$,
 	\item $\numbertokens{\tokenclass}$ is the total number of tokens in all documents of class $\tokenclass$,
 	\item $\vocabsize$ is the total size of the vocabulary.
 \end{itemize}
 This formulation treats each feature as a token generator---representing the probability of drawing that specific term when sampling tokens from class $\tokenclass$.
 
-\subsubsection{Computing the \zscore-Score}
-Next, the log-odds ratio of the feature's smoothed probability in the positive class versus the negative class is calculated. The \zscore-score normalizes this log-odds ratio by its standard error:
+\subsubsection{Computing the $\mathbf{\zscore}$-Score}
+Next, the log-odds ratio of the feature's smoothed probability in the positive class versus the negative class is calculated. The $\zscore$-score normalizes this log-odds ratio by its standard error:
 \begin{equation}
 	\zscore = \frac{\ln\frac{\smoothedprob{\positive}}{\smoothedprob{\negative}}}{\sqrt{\frac{1}{\Count{\positive} + \smoothparam} + \frac{1}{\Count{\negative} + \smoothparam}}}.
 \end{equation}
@@ -1179,7 +1185,7 @@ The system employs both traditional classifiers and a distilled transformer mode
 
 \subsubsection{Traditional Baselines} \label{sec:trad_models}
 
-A SVM and \logreg{} are employed as the computationally efficient baselines. Both are trained on the TF-IDF and BoW $n$-gram vectors produced by the feature engineering pipeline. Both models are fitted on the same training split and evaluated on the same validation and test sets. The training utilizes the \code{scikit-learn} implementations with the following settings:
+An SVM and \logreg{} are employed as the computationally efficient baselines. Both are trained on the TF-IDF and BoW $n$-gram vectors produced by the feature engineering pipeline. Both models are fitted on the same training split and evaluated on the same validation and test sets. The training utilizes the \code{scikit-learn} implementations with the following settings:
 
 \paragraph{Support Vector Machine.} This model minimizes the squared hinge loss with $L_2$ regularization. The default penalty $C=1.0$ is retained, and the solver’s iteration limit is set to $10{,}000$ to ensure convergence on high-dimensional data. Because the final cascade architecture requires calibrated probabilities, a Platt scaling calibrator (\texttt{CalibratedClassifierCV}) is wrapped around the SVM. This post‑processing step maps the decision values to $[0,1]$, producing approximate posterior probabilities for the positive class. Two kernel types are employed: a linear kernel and the Radial Basis Function (RBF) kernel, also known as the Gaussian kernel.
 
@@ -1421,28 +1427,73 @@ All three cascade variants are evaluated on the held-out test set, together with
 
 \section{Evaluation Metrics}
 
-Because the data splits are exactly balanced through stratified sampling, accuracy and macro $F_1$-score \ksremark{Trzeba podać wzory na accuracy i macro $F_1$-score.} are equally reliable indicators of performance. Both are reported in the experiments. The primary metric for selecting the best configuration is accuracy, as it directly aligns with the McNemar test.
+Because the data splits are exactly balanced through stratified sampling, accuracy and macro $F_1$-score are equally reliable indicators of performance. Both are reported in all experiments. The primary metric for selecting the best configuration is accuracy, as it directly aligns with the McNemar test.
 
-\subsubsection{Statistical Significance Testing}
+\subsection{Notation}
+Let $\numVal$ be the number of test instances. For each instance $\idx \in \{1,\dots,\numVal\}$, let $\predVal_{\idx} \in \{0,1\}$ denote the true label and $\hat{\predVal}_{\idx} \in \{0,1\}$ the predicted label.
 
-All pairwise model comparisons are validated with McNemar's test at $\mcnemaralpha = 0.05$. The test evaluates whether the error distributions of two classifiers, computed on the same set of instances, differ significantly. In each experiment a baseline is chosen---typically the best-performing configuration from the previous test. The continuity-corrected variant of the test is employed (\code{statsmodels}), and raw $\mcnemaralpha$-values \ksremark{$p$-values?} are reported without multiplicity correction, given the sequential, hypothesis-driven design.
+\paragraph{Accuracy} is the fraction of correct predictions:
+\begin{equation}
+	\text{Accuracy} = \frac{1}{\numVal} \sum_{\idx=1}^{\numVal} \mathbf{1}[\hat{\predVal}_{\idx} = \predVal_{\idx}],
+\end{equation}
 
-\subsubsection{Visualisation of Statistical Significance}
+\paragraph{Macro $\mathbf{F_1}$-score} averages the $F_1$ score over the two classes without weighting.
+For a given class $\instanceClass \in \{0,1\}$, let $\text{TP}_{\instanceClass}$, $\text{FP}_{\instanceClass}$, $\text{FN}_{\instanceClass}$ be the true positives, false positives, and false negatives, respectively.
+The per‑class precision, recall, and $F_1$ are:
+\begin{equation}	
+	P_{\instanceClass} = 	\frac{\text{TP}_{\instanceClass}}{\text{TP}_{\instanceClass} + \text{FP}_{\instanceClass}}
+\end{equation}
 
-Every figure and table consistently encodes the outcome of McNemar's test:
+\begin{equation}
+	R_{\instanceClass} = \frac{\text{TP}_{\instanceClass}}{\text{TP}_{\instanceClass} + \text{FN}_{\instanceClass}}
+\end{equation}
+
+\begin{equation}
+	F_{1,\instanceClass} = 2 \cdot \frac{P_{\instanceClass} \cdot R_{\instanceClass}}{P_{\instanceClass} + R_{\instanceClass}}
+\end{equation}
+
+The macro $F_1$-score is the arithmetic mean of the two per‑class values:
+\begin{equation}
+	\text{Macro } F_1 = \frac{1}{2} \sum_{\instanceClass=0}^{1} F_{1,\instanceClass}
+\end{equation}
+
+\subsection{Statistical Significance Testing}
+
+All pairwise model comparisons are validated with McNemar’s test at the $\mcnemarp = 0.05$ significance level.
+The test evaluates whether the error distributions of two classifiers, computed on the same set of instances, differ significantly.
+In each experiment a baseline is chosen---typically the best‑performing configuration from the previous stage.
+The implementation follows \texttt{statsmodels}, using the chi‑squared approximation with a continuity correction (\code{exact=False, correction=True}).
+Raw $\mcnemarp$-values are reported without multiplicity correction, given the sequential, hypothesis‑driven design.
+
+Let $\missclassified{10}$ be the number of instances misclassified by the baseline only, and $\missclassified{01}$ the number misclassified by the challenger only.
+The null hypothesis is $\nullhypo: \missclassified{10} = \missclassified{01}$ (the two classifiers have the same error distribution).
+The test statistic is:
+\begin{equation}
+	\mcnemarchi = \frac{(|\missclassified{10} - \missclassified{01}| - 1)^2}{\missclassified{10} + \missclassified{01}},
+\end{equation}
+which, under $\nullhypo$, approximately follows a chi‑squared ($\mcnemarchi$) distribution with one degree of freedom.
+
+The $\mcnemarp$-value is the probability that a $\mcnemarchi_1$ random variable would be at least as large as the observed value $\mcnemarchi_{\text{obs}}$.
+In the code, this is computed via the survival function: \code{stats.chi2.sf(}$\mcnemarchi$\code{, df=1)}.
+If $\mcnemarp < 0.05$, the difference between the two classifiers is considered statistically significant.
+Because the statistic squares the absolute difference, the test is two‑sided: it detects any deviation from $\nullhypo$, irrespective of increase or decrease in the accuracy.
+
+\subsection{Visualization of Statistical Significance}
+
+Every figure and table consistently encodes the outcome of McNemar’s test:
 
 \begin{itemize}
-	\item \textbf{Graphs.} Significant comparisons ($\mcnemaralpha < 0.05$) are drawn with full colour saturation, thick lines, and solid markers; non-significant ones use low opacity, thinner lines, and hollow markers. The legend carries the tags ``Sig.\ Diff'' and ``Not Sig.'' where appropriate.
-	\item \textbf{Tabular reports.} Rows with $\mcnemaralpha < 0.05$ are set in bold and accompanied by a directional arrow ($\uparrow$ for improvement, $\downarrow$ for degradation \ksremark{Czy ten test jest na pewno symetryczny? Tzn. czy sprawdzamy, czy $A > B$ (ale nie $A < B$) czy $A \neq B$?}). The baseline row is also bold. Rows with $\mcnemaralpha \ge 0.05$ use regular weight and no arrow, as illustrated in Table~\ref{tab:McNemarExample}.
+	\item \textbf{Graphs.} Significant comparisons ($p < 0.05$) are drawn with full colour saturation, thick lines, and solid markers; non‑significant ones use low opacity, thinner lines, and hollow markers. The legend carries the tags “Sig.\ Diff” and “Not Sig.” where appropriate.
+	\item \textbf{Tabular reports.} Rows with $p < 0.05$ are set in bold and accompanied, when a significant result is obtained, a directional arrow ($\uparrow$ for improvement, $\downarrow$ for degradation) is added based on the raw accuracy difference. The baseline row is also bold. Rows with $p \ge 0.05$ use regular weight and no arrow, as illustrated in Table~\ref{tab:McNemarExample}.
 \end{itemize}
 
 \begin{table}[htbp]
 	\centering
 	\caption{Example results of the McNemar test. Bold text indicates statistical significance, while directional arrows denote a significant increase or decrease in accuracy of the challenger model relative to the baseline.}
 	\label{tab:McNemarExample}
-	\begin{tabular}{lllrc}
+	\begin{tabular}{llcr}
 		\toprule
-		Model Description & $Acc_{Model}$ & Direction & $\mcnemaralpha$-value \\
+		Model Description & $Acc_{Model}$ & Direction & $\mcnemarp$-value \\
 		\midrule
 		\textbf{Challenger A (significantly better)} & \textbf{0.8542} & \textbf{$\uparrow$} & \textbf{0.001} \\
 		\textbf{Baseline model}                      & \textbf{0.8310} &                      & \textbf{---}  \\
@@ -1491,7 +1542,7 @@ In this test, the performance of two classical classifiers---linear SVM and \log
 \begin{figure}[tbp]
 	\centering
 	\includegraphics[width=\textwidth]{./figures/analysis/casing-effect-slopegraph.png}
-	\caption{Macro $F_1$-scores comparing clean versus expanded text. The left and right panels display results for cased and lowercased text, respectively. Line colors differentiate the machine learning models (blue for Linear SVM, orange for Logistic Regression), while line styles denote the text representation (solid for TF-IDF, dashed for BoW). Full line opacity indicates a statistically significant difference ($\mcnemaralpha < 0.05$), with faded lines denoting insignificant changes. Only the lowercased Linear SVM utilizing TF-IDF demonstrated a significant performance impact upon expansion.}
+	\caption{Macro $F_1$-scores comparing clean versus expanded text. The left and right panels display results for cased and lowercased text, respectively. Line colors differentiate the machine learning models (blue for Linear SVM, orange for Logistic Regression), while line styles denote the text representation (solid for TF-IDF, dashed for BoW). Full line opacity indicates a statistically significant difference ($\mcnemarp < 0.05$), with faded lines denoting insignificant changes. Only the lowercased Linear SVM utilizing TF-IDF demonstrated a significant performance impact upon expansion.}
 	\label{fig:casing-expansion-effect}
 \end{figure}
 
@@ -1510,7 +1561,7 @@ Tables~\ref{tab:McNemarE1a} through \ref{tab:McNemarE1d} provide a cross-configu
 
 \begin{table}[tbp]%[htbp]
 	\centering
-	\caption{McNemar test results analyzing the impact of casing, text expansion, representation, and model choice. Across all subtables, bold text indicates a statistically significant difference ($\mcnemaralpha < 0.05$) relative to the baseline, with arrows denoting the direction of the change in accuracy.}
+	\caption{McNemar test results analyzing the impact of casing, text expansion, representation, and model choice. Across all subtables, bold text indicates a statistically significant difference ($\mcnemarp < 0.05$) relative to the baseline, with arrows denoting the direction of the change in accuracy.}
 	\label{tab:McNemarE1_all}
 	\begin{subtable}{\textwidth}
 		\centering
@@ -1518,7 +1569,7 @@ Tables~\ref{tab:McNemarE1a} through \ref{tab:McNemarE1d} provide a cross-configu
 		\label{tab:McNemarE1a}
 		\begin{tabular}{llllrcc}
 			\toprule
-			& Text & Representation & Model & $Acc_{Model}$ & $\uparrow$/$\downarrow$ & $\mcnemaralpha$-value \\
+			& Text & Representation & Model & $Acc_{Model}$ & $\uparrow$/$\downarrow$ & $\mcnemarp$-value \\
 			\midrule
 			\textbf{0} & \textbf{Cased} & \textbf{TF-IDF} & \textbf{SVM} & \textbf{90.61\%} & \textbf{} & \textbf{Baseline} \\
 			\textbf{1} & \textbf{Cased} & \textbf{TF-IDF} & \textbf{\logreg{}} & \textbf{89.75\%} & \textbf{$\downarrow$} & \textbf{0.000000} \\
@@ -1537,7 +1588,7 @@ Tables~\ref{tab:McNemarE1a} through \ref{tab:McNemarE1d} provide a cross-configu
 		\label{tab:McNemarE1b}
 		\begin{tabular}{llllrcc}
 			\toprule
-			& Text & Representation & Model & $Acc_{Model}$ & $\uparrow$/$\downarrow$ & $\mcnemaralpha$-value \\
+			& Text & Representation & Model & $Acc_{Model}$ & $\uparrow$/$\downarrow$ & $\mcnemarp$-value \\
 			\midrule
 			\textbf{0} & \textbf{Expanded and Lower} & \textbf{TF-IDF} & \textbf{SVM} & \textbf{90.98\%} & \textbf{$\uparrow$} & \textbf{0.036879} \\
 			\textbf{1} & \textbf{Lower} & \textbf{TF-IDF} & \textbf{SVM} & \textbf{90.78\%} & \textbf{} & \textbf{Baseline} \\
@@ -1556,7 +1607,7 @@ Tables~\ref{tab:McNemarE1a} through \ref{tab:McNemarE1d} provide a cross-configu
 		\label{tab:McNemarE1c}
 		\begin{tabular}{llllrcc}
 			\toprule
-			& Text & Representation & Model & $Acc_{Model}$ & $\uparrow$/$\downarrow$ & $\mcnemaralpha$-value \\
+			& Text & Representation & Model & $Acc_{Model}$ & $\uparrow$/$\downarrow$ & $\mcnemarp$-value \\
 			\midrule
 			\textbf{0} & \textbf{Cased} & \textbf{TF-IDF} & \textbf{SVM} & \textbf{90.61\%} & \textbf{$\uparrow$} & \textbf{0.000000} \\
 			\textbf{1} & \textbf{Cased} & \textbf{TF-IDF} & \textbf{\logreg{}} & \textbf{89.75\%} & \textbf{} & \textbf{Baseline} \\
@@ -1575,7 +1626,7 @@ Tables~\ref{tab:McNemarE1a} through \ref{tab:McNemarE1d} provide a cross-configu
 		\label{tab:McNemarE1d}
 		\begin{tabular}{llllrcc}
 			\toprule
-			& Text & Representation & Model & $Acc_{Model}$ & $\uparrow$/$\downarrow$ & $\mcnemaralpha$-value \\
+			& Text & Representation & Model & $Acc_{Model}$ & $\uparrow$/$\downarrow$ & $\mcnemarp$-value \\
 			\midrule
 			\textbf{0} & \textbf{Lower} & \textbf{TF-IDF} & \textbf{SVM} & \textbf{90.78\%} & \textbf{$\uparrow$} & \textbf{0.000000} \\
 			\textbf{1} & \textbf{Lower} & \textbf{TF-IDF} & \textbf{\logreg{}} & \textbf{89.82\%} & \textbf{} & \textbf{Baseline} \\
@@ -1593,7 +1644,7 @@ Table~\ref{tab:McNemarE1b} and Figure~\ref{fig:casing-expansion-effect} highligh
 \subsection{Impact of Filtering}
 \label{sec:Impact-of-Filtering}
 
-POS filtering reduces the overall dimensionality of the feature space by approximately $17\%$. For example, the number of positive tokens decreased from $19{,}172$ \ksremark{$19{,}172$ Trzeba dodać klamry, bo w trybie matematycznym \LaTeX\ po przecinku wstawia półspację.} to $15{,}794$, and the volume of discarded neutral tokens dropped from $102{,}665$ to $85{,}174$. In the word clouds (Figure~\ref{fig:tokens_lower_clouds} and Figure~\ref{fig:tokens_filtered_clouds}), the size of each word is proportional to its \zscore-score, which represents its correlation with the sentiment. By discarding neutral, the filtered approach amplifies the polarity of key sentiment indicators. For example, discriminative words such as \literal{worst} achieve notably higher \zscore-scores in the filtered configuration. Consequently, they appear visibly larger in Figure~\ref{fig:tokens_filtered_clouds}.
+POS filtering reduces the overall dimensionality of the feature space by approximately $17\%$. For example, the number of positive tokens decreased from $19{,}172$ to $15{,}794$, and the volume of discarded neutral tokens dropped from $102{,}665$ to $85{,}174$. In the word clouds (Figure~\ref{fig:tokens_lower_clouds} and Figure~\ref{fig:tokens_filtered_clouds}), the size of each word is proportional to its \zscore-score, which represents its correlation with the sentiment. By discarding neutral, the filtered approach amplifies the polarity of key sentiment indicators. For example, discriminative words such as \literal{worst} achieve notably higher \zscore-scores in the filtered configuration. Consequently, they appear visibly larger in Figure~\ref{fig:tokens_filtered_clouds}.
 
 \begin{figure}[tbp]%[htbp]
 	\centering
@@ -1666,14 +1717,14 @@ A particularly interesting pattern emerges when utilizing the \customtfidf{} rep
 
 \subsubsection{Impact of Token Type}
 
-As detailed in Table~\ref{tab:McNemarE2}, the most effective token representations rely on stemming, lemmatization, and simple lowercasing. The optimal configuration utilizes stemmed tokens paired with a \zscore-score pruning threshold of $\zscore=2$, achieving a peak accuracy of $91.41\%$ ($\mcnemaralpha = 0.0125$). Lemmatization/Stemming collapses tokens to their morphological roots and thus reduces the feature dimensionality compared to standard tokenization. Additionally, the lemmatized representations at pruning thresholds $\zscore=0$ and $\zscore=2$ achieve a nearly identical accuracy---reducing the dimensionality even more---this shows that pruning can be employed without negatively affecting the accuracy.
+As detailed in Table~\ref{tab:McNemarE2}, the most effective token representations rely on stemming, lemmatization, and simple lowercasing. The optimal configuration utilizes stemmed tokens paired with a \zscore-score pruning threshold of $\zscore=2$, achieving a peak accuracy of $91.41\%$ ($\mcnemarp = 0.0125$). Lemmatization/Stemming collapses tokens to their morphological roots and thus reduces the feature dimensionality compared to standard tokenization. Additionally, the lemmatized representations at pruning thresholds $\zscore=0$ and $\zscore=2$ achieve a nearly identical accuracy---reducing the dimensionality even more---this shows that pruning can be employed without negatively affecting the accuracy.
 
 \begin{table} [tbp]%[htbp]
 	\centering
-	\caption{McNemar test results comparing the baseline TF-IDF representation against custom (\customtfidf{}) representations with different $\zscore$-score pruning values. Only SVM models are considered. Bold text indicates a statistically significant difference ($\mcnemaralpha < 0.05$) relative to the baseline, with arrows denoting the direction of the change in accuracy.}	\label{tab:McNemarE2}
+	\caption{McNemar test results comparing the baseline TF-IDF representation against custom (\customtfidf{}) representations with different $\zscore$-score pruning values. Only SVM models are considered. Bold text indicates a statistically significant difference ($\mcnemarp < 0.05$) relative to the baseline, with arrows denoting the direction of the change in accuracy.}	\label{tab:McNemarE2}
 	\begin{tabular}{llllrcc}
 		\toprule
-		& Text & Representation & Model & $Acc_{Model}$ & $\uparrow$/$\downarrow$ & $\mcnemaralpha$-value \\
+		& Text & Representation & Model & $Acc_{Model}$ & $\uparrow$/$\downarrow$ & $\mcnemarp$-value \\
 		\midrule
 		\textbf{0} & \textbf{Tokens Stemmed} & \textbf{\customtfidf{} (\zscore2)} & \textbf{SVM} & \textbf{91.41\%} & \textbf{$\uparrow$} & \textbf{0.012517} \\
 		\textbf{1} & \textbf{Tokens Lemmatized} & \textbf{\customtfidf{} (\zscore2)} & \textbf{SVM} & \textbf{91.37\%} & \textbf{$\uparrow$} & \textbf{0.020340} \\
@@ -1710,17 +1761,17 @@ As detailed in Table~\ref{tab:McNemarE2}, the most effective token representatio
 	\end{tabular}
 \end{table}
 
-While a few configurations at $\zscore=1$ and $\zscore=2$ yield improvements over the baseline ($\uparrow$), the vast majority of combinations between $\zscore=0$ and $\zscore=3$ result in $\mcnemaralpha$-values greater than $0.05$. This indicates that for most representation strategies, moderate statistical pruning perfectly maintains classification performance on par with the unpruned baseline. Significant degradation ($\downarrow$) only begins to manifest under aggressive pruning at $\zscore=4$.
+While a few configurations at $\zscore=1$ and $\zscore=2$ yield improvements over the baseline ($\uparrow$), the vast majority of combinations between $\zscore=0$ and $\zscore=3$ result in $\mcnemarp$-values greater than $0.05$. This indicates that for most representation strategies, moderate statistical pruning perfectly maintains classification performance on par with the unpruned baseline. Significant degradation ($\downarrow$) only begins to manifest under aggressive pruning at $\zscore=4$.
 
 As detailed in Table~\ref{tab:McNemarE2logreg}, the simplest representation (Tokens Letters with $\zscore=0$) is chosen as the baseline. Compared to this baseline, a statistically significant increase in accuracy is observed when utilizing more sophisticated representations. 
 
 \begin{table}[tbp]%[htbp]
 	\centering
-	\caption{McNemar test results comparing the simplest representation baseline (alphabetical filtering, \customtfidf{} with no pruning) against custom representations with different $\zscore$-score pruning values. Only \logreg{} models are considered. Bold text indicates a statistically significant difference ($\mcnemaralpha < 0.05$) relative to the baseline, with arrows denoting the direction of the change in accuracy.}
+	\caption{McNemar test results comparing the simplest representation baseline (alphabetical filtering, \customtfidf{} with no pruning) against custom representations with different $\zscore$-score pruning values. Only \logreg{} models are considered. Bold text indicates a statistically significant difference ($\mcnemarp < 0.05$) relative to the baseline, with arrows denoting the direction of the change in accuracy.}
 	\label{tab:McNemarE2logreg}
 	\begin{tabular}{llllrcc}
 		\toprule
-		& Text & Representation & Model & $Acc_{Model}$ & $\uparrow$/$\downarrow$ & $\mcnemaralpha$-value \\
+		& Text & Representation & Model & $Acc_{Model}$ & $\uparrow$/$\downarrow$ & $\mcnemarp$-value \\
 		\midrule
 		\textbf{0} & \textbf{Tokens Filtered} & \textbf{\customtfidf{} (\zscore2)} & \textbf{\logreg{}} & \textbf{90.72\%} & \textbf{$\uparrow$} & \textbf{0.000007} \\
 		\textbf{1} & \textbf{Tokens Lower} & \textbf{\customtfidf{} (\zscore2)} & \textbf{\logreg{}} & \textbf{90.68\%} & \textbf{$\uparrow$} & \textbf{0.000003} \\
@@ -1760,16 +1811,15 @@ Notably, the filtered representation combined with $\zscore=2$ pruning achieves 
 
 \subsubsection{Impact of Representation}
 
-The \customtfidf{} representation achieves higher accuracy than the \texttt{\custombow{}} approach across all tested configurations. This outcome verifies that the pattern observed in the initial tests (Tables~\ref{tab:McNemarE1a} through~\ref{tab:McNemarE1d}) holds true: TF-IDF outperforms BoW for the sentiment analysis task. The superiority of TF-IDF is robust and largely independent of the tokenization strategy. Additionally, consistent with the trends previously illustrated in Figure~\ref{fig:zscore_threshold}, aggressive pruning at $\zscore=4$ results in performance degradation.
+The \customtfidf{} representation achieves higher accuracy than the \texttt{\custombow{}} approach across all tested configurations (see Table~\ref{tab:McNemar}). This outcome verifies that the pattern observed in the initial tests (Tables~\ref{tab:McNemarE1a} through~\ref{tab:McNemarE1d}) holds true: TF-IDF outperforms BoW for the sentiment analysis task. The superiority of TF-IDF is robust and largely independent of the tokenization strategy. Additionally, consistent with the trends previously illustrated in Figure~\ref{fig:zscore_threshold}, aggressive pruning at $\zscore=4$ results in performance degradation.
 
-\ksremark{Tab. \ref{tab:McNemar} nie ma odnośnika w tekście.}
 \begin{table}[tbp]%[htbp]
 	\centering
-	\caption{McNemar test results comparing the baseline SVM model (lowered tokens, \customtfidf{}, $\zscore=2$) against Custom Bag-of-Words (\custombow{}) representations. Only SVM models are considered. Bold text indicates a statistically significant difference ($\mcnemaralpha < 0.05$) relative to the baseline, with arrows denoting the direction of the change in accuracy.}
+	\caption{McNemar test results comparing the baseline SVM model (lowered tokens, \customtfidf{}, $\zscore=2$) against Custom Bag-of-Words (\custombow{}) representations. Only SVM models are considered. Bold text indicates a statistically significant difference ($\mcnemarp < 0.05$) relative to the baseline, with arrows denoting the direction of the change in accuracy.}
 	\label{tab:McNemar}
 	\begin{tabular}{llllrcc}
 		\toprule
-		& Text & Representation & Model & $Acc_{Model}$ & $\uparrow$/$\downarrow$ & $\mcnemaralpha$-value \\
+		& Text & Representation & Model & $Acc_{Model}$ & $\uparrow$/$\downarrow$ & $\mcnemarp$-value \\
 		\midrule
 		\textbf{0} & \textbf{Tokens Lower} & \textbf{\customtfidf{} (\zscore2)} & \textbf{SVM} & \textbf{91.34\%} & \textbf{} & \textbf{Baseline} \\
 		\textbf{1} & \textbf{Tokens Lower} & \textbf{\custombow{} (\zscore0)} & \textbf{SVM} & \textbf{90.07\%} & \textbf{$\downarrow$} & \textbf{0.000000} \\
@@ -1819,7 +1869,7 @@ For the \logreg{} model, the classification scores are generally lower than thos
 \begin{figure}[tbp]%[htbp]
 	\centering
 	\includegraphics[width=1\textwidth]{./figures/analysis/ablation_study.png}
-	\caption{Ablation study evaluating standard tokenized representations versus custom representations with statistical pruning across various preprocessing steps. Bar colors distinguish the representation family (blues for TF-IDF, reds for BoW), vertical lines mark the baseline performance on lower-cased expanded text. Hashed bars indicate results that are not statistically significantly different from their respective baseline ($\mcnemaralpha \ge 0.05$). The top-performing configurations for each model are outlined and annotated with a star.}
+	\caption{Ablation study evaluating standard tokenized representations versus custom representations with statistical pruning across various preprocessing steps. Bar colors distinguish the representation family (blues for TF-IDF, reds for BoW), vertical lines mark the baseline performance on lower-cased expanded text. Hashed bars indicate results that are not statistically significantly different from their respective baseline ($\mcnemarp \ge 0.05$). The top-performing configurations for each model are outlined and annotated with a star.}
 	\label{fig:ablation_study}
 \end{figure}
 
@@ -1838,19 +1888,18 @@ The implementation of statistical pruning ($\zscore=2.0$) effectively mitigates 
 \begin{figure}[tbp]%[htbp]
 	\centering
 	\includegraphics[width=1\textwidth]{./figures/analysis/ngram_experiment_double.png}
-	\caption{Performance and dimensionality trends across varying $n$-gram ranges. The left panel illustrates model performance (macro $F_1$-score), where dashed lines indicate the respective baselines for Linear SVM (blue) and \logreg{} (red). Hollow markers denote results that are not statistically significantly different from their baseline ($\mcnemaralpha \ge 0.05$), and a star highlights the overall best-performing configuration. The right panel highlights the feature space reduction, comparing the base vocabulary size (green bars) against the pruned vocabulary using $\zscore=2.0$ (orange bars).}
+	\caption{Performance and dimensionality trends across varying $n$-gram ranges. The left panel illustrates model performance (macro $F_1$-score), where dashed lines indicate the respective baselines for Linear SVM (blue) and \logreg{} (red). Hollow markers denote results that are not statistically significantly different from their baseline ($\mcnemarp \ge 0.05$), and a star highlights the overall best-performing configuration. The right panel highlights the feature space reduction, comparing the base vocabulary size (green bars) against the pruned vocabulary using $\zscore=2.0$ (orange bars).}
 	\label{fig:vocabulary_depth}
 \end{figure}
 
 \subsection{Impact of Kernel} \label{sec:Impact-of-Kernel}
 
-To assess the influence of the kernel function, a linear SVM is compared against an RBF SVM, using the best previously determined text representation and preprocessing settings (see Table~\ref{tab:McNemarSvms}). Both models are trained with $5$-fold cross-validation and a fixed \code{max\_iter} limit. The linear SVM with \code{max\_iter=10000} converges in only $1.89$ seconds, achieving $91.34\%$ accuracy. \ksremark{Mamy 5-krotną walidację krzyżową. I mamy średnią dokładność. A jakie jest odchylenie standardowe?}
-In contrast, the RBF kernel with the same iteration limit trains for $2042.05$ seconds (over $34$ minutes) and reaches $91.15\%$ accuracy.
-However, the RBF solver did not converge: it exhausted the maximum number of iterations before reaching the stopping criterion.
-This indicates that the RBF kernel's optimization landscape is harder to navigate, and requires more time for proper convergence.
+To assess the influence of the kernel function, a linear SVM is compared against an RBF SVM, using the best previously determined text representation and preprocessing settings (see Table~\ref{tab:McNemarSvms}). Both models were trained on the full training set, with probability calibration performed internally via $5$-fold cross‑validation (\texttt{CalibratedClassifierCV}) -- no cross-validation accuracy metrics are exported by the calibration procedure. 
+
+Both variants use a fixed \code{max\_iter} limit. The linear SVM with \code{max\_iter=10000} trains and converges in only $1.89$ seconds, achieving $91.34\%$ accuracy. In contrast, the RBF kernel with the same iteration limit trains for $2042.05$ seconds (over $34$ minutes) and reaches $91.15\%$ accuracy. However, the RBF solver did not converge: it exhausted the maximum number of iterations before reaching the stopping criterion. This indicates that the RBF kernel's optimization landscape is harder to navigate, and requires more time for proper convergence.
 
 When \code{max\_iter} is reduced to $1{,}000$, the RBF training time drops to $267.07$ seconds (approximately $4.5$ minutes), but accuracy falls to $89.03\%$.
-The difference between this RBF variant and the linear baseline is significant according to McNemar's test ($\mcnemaralpha < 0.000001$), whereas the non-converged RBF with $10{,}000$ iterations does not exhibit a statistically significant difference from the linear SVM ($\mcnemaralpha = 0.142$).
+The difference between this RBF variant and the linear baseline is significant according to McNemar's test ($\mcnemarp < 0.000001$), whereas the non-converged RBF with $10{,}000$ iterations does not exhibit a statistically significant difference from the linear SVM ($\mcnemarp = 0.142$).
 Overall, the linear kernel yields the highest accuracy and has significantly lower computational cost, making it preferable for the further tests.
 
 \begin{table}[tbp]
@@ -1859,7 +1908,7 @@ Overall, the linear kernel yields the highest accuracy and has significantly low
 	\label{tab:McNemarSvms}
 	\begin{tabular}{llllrcc}
 		\toprule
-		& \code{max\_iter} & Training Time & Model & $Acc_{Model}$ & $\uparrow$/$\downarrow$ & $\mcnemaralpha$-value \\
+		& \code{max\_iter} & Training Time & Model & $Acc_{Model}$ & $\uparrow$/$\downarrow$ & $\mcnemarp$-value \\
 		\midrule
 		\textbf{0} & \textbf{10,000} & \textbf{1.89 s} & \textbf{Linear SVM} & \textbf{91.34\%} & \textbf{} & \textbf{Baseline} \\
 		\textbf{1} & \textbf{1,000} & \textbf{267.07 s} & \textbf{RBF SVM} & \textbf{89.03\%} & \textbf{$\downarrow$} & \textbf{0.000000} \\
@@ -2009,7 +2058,7 @@ As shown in Figure~\ref{fig:cascade_comp}, introducing a specialist yields mixed
 \begin{figure}[tbp]%[htbp]
 	\centering
 	\includegraphics[width=1\textwidth]{./figures/thesis/cascade_comparison_f1_macro.png}
-	\caption{Comparison of macro $F_1$-scores across different cascade system configurations. The horizontal dashed line denotes the SVM baseline performance (0.9131). Bar colors indicate statistical significance relative to the baseline (blue for $\mcnemaralpha < 0.05$, grey for insignificant results), and exact scores are annotated above each bar. A star marker highlights the top-performing system configuration.}
+	\caption{Comparison of macro $F_1$-scores across different cascade system configurations. The horizontal dashed line denotes the SVM baseline performance (0.9131). Bar colors indicate statistical significance relative to the baseline (blue for $\mcnemarp < 0.05$, grey for insignificant results), and exact scores are annotated above each bar. A star marker highlights the top-performing system configuration.}
 	\label{fig:cascade_comp}
 \end{figure}
 
@@ -2040,11 +2089,13 @@ This structural barrier becomes apparent when isolating model performance strict
 
 \chapter{Summary} \label{chap:summary}
 
-\ksremark{Trzeba tutaj napisać, o co w ogóle w pracy chodzi.} 
+\section{Motivation and Objective}
+
+Sentiment analysis is a well-established NLP task, yet a persistent trade‑off remains between the high accuracy of modern deep learning models and the computational efficiency required for practical deployment. This thesis investigated whether GrC techniques can bridge this gap.
 
 \section{Summary of Work}
 
-This thesis addressed the problem that GrC approaches had not been systematically verified in the SA pipeline. Through an enumeration of preprocessing, representation, and modeling choices, the most effective configurations were identified. The work demonstrated that a statistical $\zscore$-based pruning technique can discard the ``neutral'' granule---the $n$-grams that do not discriminate between positive and negative classes---thereby reducing the feature space while preserving or even improving accuracy. Building on this, a hybrid cascade ensemble was proposed: a lightweight linear SVM acts as a base model, handling the majority of instances with high confidence, while a deep learning specialist (DistilBERT) resolves the remaining uncertain cases. The cascade achieved a macro $F_1$-score of approximately $92.3\%$, outperforming both standalone baselines while delegating only $15\%$–$20\%$ of the data to the expensive model.
+Granular computing approaches had not been systematically verified in the sentiment analysis pipeline. Through an enumeration of preprocessing, representation, and modeling choices, the most effective configurations were identified. The work demonstrated that a statistical $\zscore$-based pruning technique can discard the ``neutral'' granule---the $n$-grams that do not discriminate between positive and negative classes---thereby reducing the feature space while preserving or even improving accuracy. Building on this, a hybrid cascade ensemble was proposed: a lightweight linear SVM acts as a base model, handling the majority of instances with high confidence, while a deep learning specialist (DistilBERT) resolves the remaining uncertain cases. The cascade achieved a macro $F_1$-score of approximately $92.3\%$, outperforming both standalone baselines while delegating only $15\%$-$20\%$ of the data to the expensive model.
 
 \section{Conclusions}
 
