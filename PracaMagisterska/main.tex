@@ -235,6 +235,7 @@
 \fancyhead[LO]{\nouppercase{\it\rightmark}}
 \fancyhead[RE]{\nouppercase{\it\leftmark}}
 \fancyhead[LE,RO]{\it\thepage}
+\setlength{\headheight}{14.5pt}
 
 
 \fancypagestyle{onlyPageNumbers}{%
@@ -1221,9 +1222,28 @@ To balance the computational efficiency of traditional machine learning algorith
 
 The cascade operates in three stages:
 
-\begin{figure}[htbp]
+\begin{enumerate}
+	\item \textbf{Initial inference:} A computationally inexpensive base model evaluates an input text $\inputtext$ and outputs a probability score
+	\begin{equation}
+		\probSmall{\mBase} = \probLarge{\mBase}{\inputtext} \in [0,1].
+	\end{equation}
+	
+	\item \textbf{Uncertainty delegation:} A threshold $\thresh \in [0, 0.5]$ is defined. The intervals $[0, \thresh)$ and $(1-\thresh, 1]$ correspond to high-confidence negative and positive predictions, respectively, which are accepted without further processing. Otherwise $\inputtext$ is placed in the boundary region if the base model's probability lies within the closed interval:
+	\begin{equation}
+		\thresh \le \probSmall{\mBase} \le 1 - \thresh,
+	\end{equation}
+	
+	\item \textbf{Specialist resolution:} Instances in the boundary region are forwarded to a specialist model. Three specialist configurations are evaluated:
+	\begin{itemize}
+		\item a generic DistilBERT classifier used as a black-box specialist;
+		\item a DistilBERT specialist fine-tuned exclusively on the boundary samples mined from the validation set;
+		\item an SVM specialist trained on the same boundary samples to verify whether a two-stage traditional approach would achieve satisfying results.
+	\end{itemize}
+\end{enumerate}
+
+\begin{figure}[tbp]
 	\centering
-	\begin{tikzpicture}[node distance=1cm and 2.5cm]
+	\begin{tikzpicture}[node distance=2em and 9em]
 		
 		% Nodes
 		% Left side: input
@@ -1273,25 +1293,6 @@ The cascade operates in three stages:
 	\caption{Architecture of the three-stage cascade showing initial inference, uncertainty delegation, and specialist resolution.}
 	\label{fig:cascade_architecture_diagram}
 \end{figure}
-
-\begin{enumerate}
-	\item \textbf{Initial inference:} A computationally inexpensive base model evaluates an input text $\inputtext$ and outputs a probability score
-	\begin{equation}
-		\probSmall{\mBase} = \probLarge{\mBase}{\inputtext} \in [0,1].
-	\end{equation}
-	
-	\item \textbf{Uncertainty delegation:} A threshold $\thresh \in [0, 0.5]$ is defined. The intervals $[0, \thresh)$ and $(1-\thresh, 1]$ correspond to high-confidence negative and positive predictions, respectively, which are accepted without further processing. Otherwise $\inputtext$ is placed in the boundary region if the base model's probability lies within the closed interval:
-	\begin{equation}
-		\thresh \le \probSmall{\mBase} \le 1 - \thresh,
-	\end{equation}
-	
-	\item \textbf{Specialist resolution:} Instances in the boundary region are forwarded to a specialist model. Three specialist configurations are evaluated:
-	\begin{itemize}
-		\item a generic DistilBERT classifier used as a black-box specialist;
-		\item a DistilBERT specialist fine-tuned exclusively on the boundary samples mined from the validation set;
-		\item an SVM specialist trained on the same boundary samples to verify whether a two-stage traditional approach would achieve satisfying results.
-	\end{itemize}
-\end{enumerate}
 
 Let $\probSmall{\mSpec} = \probLarge{\mSpec}{\inputtext}$ denote the probability output of the chosen specialist. The final cascaded probability, $\probSmall{\mCas}$, is obtained by combining the two models:
 \begin{equation}
@@ -2148,7 +2149,7 @@ Another direction is to test whether semantic clustering could be applied at the
 
 \cleardoublepage
 \phantomsection
-\bibliographystyle{plplain}  % bibtex
+\bibliographystyle{plain}  % bibtex
 \bibliography{biblio} % bibtex
 \addcontentsline{toc}{chapter}{Bibliography}
 %\printbibliography           % biblatex
