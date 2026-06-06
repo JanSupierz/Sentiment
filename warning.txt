@@ -2,7 +2,4 @@ Warning--empty booktitle in azzeddine2018sentiment
 Warning--empty booktitle in sentiwordnet2010
 Warning--empty booktitle in Capillo2020mining
 Warning--empty journal in Delvin2018bert
-Warning--empty booktitle in Govindarajan2014SentimentAO
-Warning--empty booktitle in pennington2014glove
 Warning--empty booktitle in Tang2015document
-Warning--empty journal in vaswani2017attention
