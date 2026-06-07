@@ -1147,7 +1147,7 @@ At this stage, each document is a list of tokens. The lists are joined into sing
 
 \subsection{Statistical Pruning} \label{sec:stat_pruning}
 
-A custom statistical pruning method based on \zscore-scores is employed to discard neutral noise and retain only highly discriminative vocabulary. This process evaluates each feature by comparing its relative frequency between the positive class ($\positive$) and the negative class ($\negative$) through the following steps:
+A custom statistical pruning method based on $\zscore$-scores is employed to discard neutral noise and retain only highly discriminative vocabulary. This process evaluates each feature by comparing its relative frequency between the positive class ($\positive$) and the negative class ($\negative$) through the following steps:
 
 \subsubsection{Smoothed Probabilities}
 
@@ -1171,7 +1171,7 @@ Next, the log-odds ratio of the feature's smoothed probability in the positive c
 \end{equation}
 
 \subsubsection{Thresholding}
-Finally, features whose absolute \zscore-score falls below a defined threshold (e.g., $|\zscore| \le 2.0$) are discarded. This preserves only the vocabulary that demonstrates statistically significant separation in token distribution between the two classes.
+Finally, features whose absolute $\zscore$-score falls below a defined threshold (e.g., $|\zscore| \le 2.0$) are discarded. This preserves only the vocabulary that demonstrates statistically significant separation in token distribution between the two classes.
 
 \subsection{Semantic Clustering} \label{sec:semantic_clustering}
 
@@ -1179,7 +1179,7 @@ To address the sparsity inherent in BoW and TF-IDF representations, an optional 
 
 Each $n$-gram in the vocabulary is encoded with this Sentence Transformer model. The resulting embedding is then augmented with a sentiment score obtained from the VADER lexicon: the compound polarity score of the $n$-gram is multiplied by a tunable hyperparameter $\weightparam$ and concatenated to the embedding vector. After augmentation, $L_2$ normalization is reapplied to restore unit length, ensuring the final vector space balances semantic proximity with sentiment polarity.
 
-FAISS-accelerated K-Means clustering is utilized on these normalized, sentiment-aware vectors to partition the vocabulary into $\kconcepts$ discrete groups. Each cluster forms a ``concept'' that aggregates semantically and sentimentally related $n$-grams. The resulting mapping from each original $n$-gram to its concept identifier is stored. Concept-level feature matrices are then constructed by summing the term-frequency counts of all $n$-grams belonging to the same concept for each document. This produces a dense $D \times \kconcepts$ matrix that compresses the original high-dimensional vocabulary while preserving discriminative information. Statistical pruning via \zscore-scores can be applied to these concept features in exactly the same manner as to the original units, further reducing dimensionality and focusing the representation on the most sentiment-bearing concepts.
+FAISS-accelerated K-Means clustering is utilized on these normalized, sentiment-aware vectors to partition the vocabulary into $\kconcepts$ discrete groups. Each cluster forms a ``concept'' that aggregates semantically and sentimentally related $n$-grams. The resulting mapping from each original $n$-gram to its concept identifier is stored. Concept-level feature matrices are then constructed by summing the term-frequency counts of all $n$-grams belonging to the same concept for each document. This produces a dense $D \times \kconcepts$ matrix that compresses the original high-dimensional vocabulary while preserving discriminative information. Statistical pruning via $\zscore$-scores can be applied to these concept features in exactly the same manner as to the original units, further reducing dimensionality and focusing the representation on the most sentiment-bearing concepts.
 
 \subsection{Models and Training} \label{sec:models}
 
@@ -1207,7 +1207,7 @@ The feature-engineering options define a large design space---token representati
 \begin{itemize}
 	\item \textbf{Token representation:} Cased, lowered, letter-only, filtered, stemmed, and lemmatized.
 	\item \textbf{$\boldsymbol{n}$-gram range:} $(1,1)$, $(1,2)$, $(1,3)$. The default $(1,3)$ is used for the full combinatorial sweep; narrower ranges are tested in the vocabulary-depth test.
-	\item \textbf{\zscore-score threshold:} $0,1,2,3,4$, where $0$ disables pruning.
+	\item \textbf{$\mathbf{\zscore}$-score threshold:} $0,1,2,3,4$, where $0$ disables pruning.
 	\item \textbf{Concept granularity ($k$):} $0$ (no clustering), $500$, $5\,000$, $10\,000$.
 	\item \textbf{Sentiment weight ($\weightparam$):} $0$, $1$, $10$, applied to the VADER score when augmenting embeddings.
 	\item \textbf{Vectorisation type:} BoW and TF-IDF (custom implementations).
@@ -1399,7 +1399,7 @@ The enumeration space defined in Section~\ref{sec:config_enum} is explored throu
 \begin{enumerate}
 	\item \textbf{Preprocessing and basic representation.} Using the default \texttt{CountVectorizer} with $(1,3)$ $n$-grams, the four combinations of text variant (clean vs.\ expanded) and casing (cased vs.\ lowercased) are evaluated with both BoW and TF-IDF for the linear SVM and \logreg{}. This stage identifies the best preprocessing choice (expanded, lowercased, TF-IDF).
 	
-	\item \textbf{Custom vectorization and \zscore-score pruning.} All six token representations (cased, lower, letters, filtered, stemmed, lemmatized) are combined with \zscore-score thresholds $\zscore \in \{0,1,2,3,4\}$ and both BoW and TF-IDF, using the custom space-tokenizer described in Section~\ref{sec:custom_vec}. The best token representation and pruning level are chosen for each model.
+	\item \textbf{Custom vectorization and $\mathbf{\zscore}$-score pruning.} All six token representations (cased, lower, letters, filtered, stemmed, lemmatized) are combined with $\zscore$-score thresholds $\zscore \in \{0,1,2,3,4\}$ and both BoW and TF-IDF, using the custom space-tokenizer described in Section~\ref{sec:custom_vec}. The best token representation and pruning level are chosen for each model.
 	
 	\item \textbf{Vocabulary depth ($\boldsymbol{n}$-gram range).} With the best token representation and $\zscore=2.0$ fixed, the $n$-gram range is varied from $(1,1)$ to $(1,3)$. This test measures the trade-off between accuracy and feature-space size.
 	
@@ -1649,7 +1649,7 @@ Table~\ref{tab:McNemarE1b} and Figure~\ref{fig:casing-expansion-effect} highligh
 \subsection{Impact of Filtering}
 \label{sec:Impact-of-Filtering}
 
-POS filtering reduces the overall dimensionality of the feature space by approximately $17\%$. For example, the number of positive tokens decreased from $19{,}172$ to $15{,}794$, and the volume of discarded neutral tokens dropped from $102{,}665$ to $85{,}174$. In the word clouds (Figure~\ref{fig:tokens_lower_clouds} and Figure~\ref{fig:tokens_filtered_clouds}), the size of each word is proportional to its \zscore-score, which represents its correlation with the sentiment. By discarding neutral, the filtered approach amplifies the polarity of key sentiment indicators. For example, discriminative words such as \literal{worst} achieve notably higher \zscore-scores in the filtered configuration. Consequently, they appear visibly larger in Figure~\ref{fig:tokens_filtered_clouds}.
+POS filtering reduces the overall dimensionality of the feature space by approximately $17\%$. For example, the number of positive tokens decreased from $19{,}172$ to $15{,}794$, and the volume of discarded neutral tokens dropped from $102{,}665$ to $85{,}174$. In the word clouds (Figure~\ref{fig:tokens_lower_clouds} and Figure~\ref{fig:tokens_filtered_clouds}), the size of each word is proportional to its $\zscore$-score, which represents its correlation with the sentiment. By discarding neutral, the filtered approach amplifies the polarity of key sentiment indicators. For example, discriminative words such as \literal{worst} achieve notably higher $\zscore$-scores in the filtered configuration. Consequently, they appear visibly larger in Figure~\ref{fig:tokens_filtered_clouds}.
 
 \begin{figure}[tbp]%[htbp]
 	\centering
@@ -1673,7 +1673,7 @@ POS filtering reduces the overall dimensionality of the feature space by approxi
 		\caption{Extracted negative words (total kept: 17178)}
 		\label{fig:tokens_lower_negative}
 	\end{subfigure}
-	\caption{Word clouds for \code{tokens\_lower} (kept and discarded by \zscore-score).}
+	\caption{Word clouds for \code{tokens\_lower} (kept and discarded by $\zscore$-score).}
 	\label{fig:tokens_lower_clouds}
 \end{figure}
 
@@ -1698,7 +1698,7 @@ POS filtering reduces the overall dimensionality of the feature space by approxi
 		\caption{Extracted negative words (total kept: 14268)}
 		\label{fig:tokens_filtered_negative}
 	\end{subfigure}
-	\caption{Word clouds for \code{tokens\_filtered} (kept and discarded by \zscore-score).}
+	\caption{Word clouds for \code{tokens\_filtered} (kept and discarded by $\zscore$-score).}
 	\label{fig:tokens_filtered_clouds}
 \end{figure}
 
@@ -1707,9 +1707,9 @@ It is worth noting that the results are easily interpretable. Tokens such as \li
 
 \subsection{Impact of Custom Vectorization} \label{sec:Impact-of-Custom-Vectorization}
 
-Instead of relying on the default \code{CountVectorizer}, the standard regular expression tokenization is bypassed. After the vectorization, neutral tokens are pruned based on their calculated \zscore-scores resulting in Custom BoW (\custombow) and Custom TF-IDF (\customtfidf).
+Instead of relying on the default \code{CountVectorizer}, the standard regular expression tokenization is bypassed. After the vectorization, neutral tokens are pruned based on their calculated $\zscore$-scores resulting in Custom BoW (\custombow) and Custom TF-IDF (\customtfidf).
 
-The following test evaluates various tokenization representations to identify the optimal \zscore-score pruning threshold, utilizing the best-performing model from the previous stage as a baseline. As illustrated in Figure~\ref{fig:zscore_threshold}, the models' macro $F_1$-scores can remain highly stable even when pruning is applied. However, the effectiveness of pruning is dependent on the chosen feature representation. For the linear SVM utilizing a \custombow{}, statistical pruning proves not applicable; performance degrades immediately, making $\zscore=0$ (no pruning) the optimal threshold. For the \logreg{} model with \custombow{}, the performance remains stable up to a threshold of $\zscore=1$ before declining.
+The following test evaluates various tokenization representations to identify the optimal $\zscore$-score pruning threshold, utilizing the best-performing model from the previous stage as a baseline. As illustrated in Figure~\ref{fig:zscore_threshold}, the models' macro $F_1$-scores can remain highly stable even when pruning is applied. However, the effectiveness of pruning is dependent on the chosen feature representation. For the linear SVM utilizing a \custombow{}, statistical pruning proves not applicable; performance degrades immediately, making $\zscore=0$ (no pruning) the optimal threshold. For the \logreg{} model with \custombow{}, the performance remains stable up to a threshold of $\zscore=1$ before declining.
 
 A particularly interesting pattern emerges when utilizing the \customtfidf{} representation. For both the linear SVM and \logreg{} models, the optimal pruning threshold shifts significantly to $\zscore=2$. At this threshold, the SVM maintains its peak baseline performance despite a substantial reduction in the feature space. Notably, the \logreg{} model exhibits a slight increase in its $F_1$-score, suggesting that the targeted removal of neutral features actively improves the model's ability to generalize.
 
@@ -1722,7 +1722,7 @@ A particularly interesting pattern emerges when utilizing the \customtfidf{} rep
 
 \subsubsection{Impact of Token Type}
 
-As detailed in Table~\ref{tab:McNemarE2}, the most effective token representations rely on stemming, lemmatization, and simple lowercasing. The optimal configuration utilizes stemmed tokens paired with a \zscore-score pruning threshold of $\zscore=2$, achieving a peak accuracy of $91.41\%$ ($\mcnemarp = 0.0125$). Lemmatization/Stemming collapses tokens to their morphological roots and thus reduces the feature dimensionality compared to standard tokenization. Additionally, the lemmatized representations at pruning thresholds $\zscore=0$ and $\zscore=2$ achieve a nearly identical accuracy---reducing the dimensionality even more---this shows that pruning can be employed without negatively affecting the accuracy.
+As detailed in Table~\ref{tab:McNemarE2}, the most effective token representations rely on stemming, lemmatization, and simple lowercasing. The optimal configuration utilizes stemmed tokens paired with a $\zscore$-score pruning threshold of $\zscore=2$, achieving a peak accuracy of $91.41\%$ ($\mcnemarp = 0.0125$). Lemmatization/Stemming collapses tokens to their morphological roots and thus reduces the feature dimensionality compared to standard tokenization. Additionally, the lemmatized representations at pruning thresholds $\zscore=0$ and $\zscore=2$ achieve a nearly identical accuracy---reducing the dimensionality even more---this shows that pruning can be employed without negatively affecting the accuracy.
 
 \begin{table} [tbp]%[htbp]
 	\centering
@@ -1924,7 +1924,7 @@ Overall, the linear kernel yields the highest accuracy and has significantly low
 
 \subsection{Impact of Semantic Clustering} \label{sec:Impact-of-Semantic-Clustering}
 
-Semantic clustering groups related $n$-grams to capture conceptual representations. As shown in Figure~\ref{fig:concepts_pos_10000_0}, the cluster containing \literal{great}, \literal{wonderful}, and \literal{amazing} forms the most discriminative positive concept, achieving a \zscore-score of $44.20$. Clusters focused on structural phrases, such as \literal{his} or \literal{is an} rank among the top positive concepts, reinforcing the earlier observation that reviewers tend to use more descriptive language when expressing a positive opinion.
+Semantic clustering groups related $n$-grams to capture conceptual representations. As shown in Figure~\ref{fig:concepts_pos_10000_0}, the cluster containing \literal{great}, \literal{wonderful}, and \literal{amazing} forms the most discriminative positive concept, achieving a $\zscore$-score of $44.20$. Clusters focused on structural phrases, such as \literal{his} or \literal{is an} rank among the top positive concepts, reinforcing the earlier observation that reviewers tend to use more descriptive language when expressing a positive opinion.
 
 \begin{figure}[tbp]%[htbp]
 	\centering
