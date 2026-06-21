@@ -1,0 +1,25 @@
+%%%% REMARK LIST GENERATOR %%%%%%%%%
+
+%\usepackage{tikz}
+%\usepackage{manfnt}   % dangerous sign 
+\usepackage{color}
+\definecolor{brickred}      {cmyk}{0   , 0.89, 0.94, 0.28}
+
+\makeatletter \newcommand \kslistofremarks{\section*{Uwagi} \@starttoc{rks}}
+  \newcommand\l@uwagas[2]
+    {\par\noindent \textbf{#2:} %\parbox{10cm}
+{#1}\par} \makeatother
+
+
+\newcommand{\xyzremark}[3]{%
+{%\marginpar{\textdbend}
+{\color{#3}{[#2]}}}%
+\addcontentsline{rks}{uwagas}{\protect{#1 #2}}%
+}
+
+\newcommand{\ksremark}[1]{\xyzremark{KS: }{#1}{brickred}}
+\newcommand{\jsremark}[1]{\xyzremark{JS: }{#1}{green}}
+%\newcommand{\nnremark}[1]{\xyzremark{NN: }{#1}{blue}}
+
+
+%%%%%%%%%%%%%% END OF REMARK LIST GENERATOR %%%%%%%%%%%
