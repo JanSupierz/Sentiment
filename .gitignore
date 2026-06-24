@@ -80,11 +80,13 @@ docs/_build/
 *.xdv
 *.dvi
 *.rks 
+*.abs
 
 #Other LaTeX
 *.run.xml
 *-blx.bib
 
 main.pdf
+artykul.pdf
 
 combined_output.py
