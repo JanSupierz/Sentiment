@@ -40,6 +40,23 @@
 \newcommand{\precision}{P}
 \newcommand{\recall}{R}
 \newcommand{\FOne}{F_1}
+\newcommand{\MacroFOne}{\overline{\FOne}}
+
+\newcommand{\positiveclass}{p}
+\newcommand{\negativeclass}{n} 
+
+\newcommand{\ksTP}{[\positiveclass \to \positiveclass]}
+\newcommand{\ksFP}{[\negativeclass \to \positiveclass]}
+\newcommand{\ksTN}{[\negativeclass \to \negativeclass]}
+\newcommand{\ksFN}{[\positiveclass \to \negativeclass]}
+\newcommand{\ksOriginalPositive}{[\positiveclass\to]}
+\newcommand{\ksOriginalNegative}{[\negativeclass\to]} 
+\newcommand{\ksPredictedPositive}{[\to\positiveclass]}
+\newcommand{\ksPredictedNegative}{[\to\negativeclass]}
+\newcommand{\ksAll}{[\to]} 
+
+
+
 
 \newcommand{\TP}{\mathrm{TP}}
 \newcommand{\FP}{\mathrm{FP}}
@@ -132,6 +149,7 @@
 \newcommand{\vocabsize}{V}
 \newcommand{\tokenclass}{\kappa}
 \newcommand{\instanceClass}{c}
+\newcommand{\insclass}{^{(\instanceClass)}}
 \newcommand{\numbertokens}[1]{T_{#1}}
 \newcommand{\smoothparam}{\beta}
 \newcommand{\kconcepts}{k}
@@ -1156,28 +1174,34 @@ Accuracy $\accuracy$ is the fraction of correct predictions:
 \end{equation}
 where $\mathbf{1}[a]$ equals 1 if condition $a$ is true, otherwise it is 0.
 
+In the following sections, we use the notation taken from \citep{id:Siminski2021Outlier}.
+The first item in a pair describes the original class (positive $\positiveclass$ or negative $\negativeclass$). 
+The second item -- the elaborated class by classifiers, eg.
+$\ksTP$ stands for the number of positive class items classified as positive (true positive), 
+$\ksOriginalPositive$ is the number of positive items in a dataset,
+$\ksPredictedPositive$ is the number of items classified as positive,
+and $\ksAll$ stands for the number of all items.
 
 Macro $\FOne$-score averages the $\FOne$-score over the two classes without weighting.
-For a given class $\instanceClass \in \{0,1\}$, let $\text{TP}_{\instanceClass}$, $\text{FP}_{\instanceClass}$, $\text{FN}_{\instanceClass}$ be the true positives, false positives, and false negatives, respectively.
+For a given class $\instanceClass \in \{0,1\}$, let $\TP\insclass = \ksTP\insclass$, $\FP\insclass = \ksFP\insclass$, $\FN\insclass = \ksFN\insclass$ be the true positives, false positives, and false negatives, respectively.
 The per‑class precision, recall, and $F_1$ are:
 \begin{equation}	
-	\precision_{\instanceClass} = 	\frac{\text{TP}_{\instanceClass}}{\text{TP}_{\instanceClass} + \text{FP}_{\instanceClass}}
+   \precision\insclass = 	\frac{\text{TP}\insclass}{\text{TP}\insclass + \text{FP}\insclass} = \frac{\ksTP\insclass}{\ksPredictedPositive\insclass},
 \end{equation}
 %
 \begin{equation}
-	\recall_{\instanceClass} = \frac{\text{TP}_{\instanceClass}}{\text{TP}_{\instanceClass} + \text{FN}_{\instanceClass}}
+   \recall\insclass = \frac{\text{TP}\insclass}{\text{TP}\insclass + \text{FN}\insclass} = \frac{\ksTP\insclass}{\ksOriginalPositive\insclass},
 \end{equation}
 %
 \begin{equation}
-	F_{1,\instanceClass} = 2 \cdot \frac{P_{\instanceClass} \cdot R_{\instanceClass}}{P_{\instanceClass} + R_{\instanceClass}}
+   \FOne\insclass = \frac{2P\insclass  R\insclass}{P\insclass + R\insclass} =  \frac{2\ksTP\insclass}{\ksOriginalPositive\insclass + \ksPredictedPositive\insclass}.
 \end{equation}
 %
-The macro $F_1$-score is the arithmetic mean of the two per‑class values:
+The macro $\FOne$-score $\MacroFOne$ is the arithmetic mean of the two per‑class values:
 \begin{equation}
-	\text{Macro } F_1 = \frac{1}{2} \sum_{\instanceClass=0}^{1} F_{1,\instanceClass}
+	\MacroFOne = \frac{1}{2} \sum_{\instanceClass=0}^{1} \FOne\insclass.
 	\label{eq:macro:f1}
 \end{equation}
-\ksremark{Wzór \eqref{eq:macro:f1}: tutaj też trzeba wymyślić jakiś symbol.}
 
 \subsubsection{Statistical Significance Testing}
 
