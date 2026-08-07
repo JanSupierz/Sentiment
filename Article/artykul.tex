@@ -239,11 +239,19 @@
 
 %\nonumnote{This note has no numbers. In this work we demonstrate $a_b$ the formation Y\_1 of a new type of polariton on the interface between a cuprous oxide slab and a polystyrene micro-sphere placed on the slab. }
 
+ 
+	
 \begin{abstract}
-Sentiment analysis models face a persistent trade‑off between the high accuracy of deep learning and the computational efficiency required for practical use.
-This thesis investigates whether granular computing techniques can bridge this gap.
-A statistical $\zscore$-score pruning method is proposed that discards non‑discriminative $n$-grams, shrinking the feature space by over $60\%$ while maintaining or improving classification accuracy (RQ1). Semantic concept clustering is explored as an alternative granulation strategy. Building on the best lightweight model, a cascade ensemble architecture is proposed: a linear support vector machine handles the majority of reviews with high confidence, and a specialist transformer model resolves only the uncertain cases (RQ2). All methods are evaluated on the IMDb movie review dataset. The cascade achieves a macro $\FOne$-score of approximately $92.3\%$, significantly outperforming both standalone baselines while delegating only $15\%$-$20\%$ of the test instances to the deep-learning specialist. These results demonstrate that granular vocabulary reduction and model‑level deferral can successfully balance accuracy and efficiency in sentiment analysis systems.
+	The explosion of user-generated content on the internet has made sentiment analysis a critical tool for organizations seeking to understand public opinion and drive data-driven decision-making. However, processing these massive text streams in real time poses severe computational challenges. 
+	Sentiment analysis models face a persistent trade-off between the high accuracy of deep learning and the computational efficiency required for practical deployment. 
+	This paper investigates how granular computing techniques can bridge this gap. 
+	The main contribution of this work is an optimized lightweight cascade model, where a linear support vector machine handles the majority of reviews with high confidence, while a specialist transformer model resolves only the remaining uncertain cases. 
+	The proposed method is evaluated on the IMDb movie review dataset, achieving a macro $F_1$-score of approximately $92.3\%$. 
+	This architecture significantly outperforms both standalone baselines while delegating only $15\%$--$20\%$ of the test instances to the deep-learning specialist. 
+	These results demonstrate that granular vocabulary reduction combined with model-level deferral can successfully balance accuracy and efficiency in sentiment analysis systems.
 \end{abstract}
+
+ 
 
 \begin{graphicalabstract}
 \includegraphics{figs/cas-grabs.pdf}
