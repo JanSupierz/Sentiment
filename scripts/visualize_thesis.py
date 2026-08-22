@@ -130,11 +130,15 @@ def plot_cascade_specialists_only():
     sns.despine(left=True)
     ax.grid(axis='y', linestyle='--', alpha=0.3, zorder=0)
 
-    legend_elements = [
-        plt.Line2D([0], [0], color=NAVY, linestyle='--', lw=2, label='SVM Baseline'),
-        mpatches.Patch(color=BLUE, label='Statistically Significant (p < 0.05)'),
-        mpatches.Patch(color=GREY, label='Insignificant')
-    ]
+    has_sig = any(NAME_MAP.get(lbl, lbl) in significant_improvements for lbl in plot_labels)
+    has_insig = any(NAME_MAP.get(lbl, lbl) not in significant_improvements for lbl in plot_labels)
+
+    legend_elements = [plt.Line2D([0], [0], color=NAVY, linestyle='--', lw=2, label='SVM Baseline')]
+    if has_sig:
+        legend_elements.append(mpatches.Patch(color=BLUE, label='Statistically Significant (p < 0.05)'))
+    if has_insig:
+        legend_elements.append(mpatches.Patch(color=GREY, label='Insignificant'))
+
     ax.legend(handles=legend_elements, loc='upper right', frameon=True, facecolor='white', shadow=True)
 
     plt.tight_layout()
