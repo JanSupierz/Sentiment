@@ -1,0 +1,3 @@
+[submodule "Article-ESwA"]
+	path = Article-ESwA
+	url = https://github.com/JanSupierz/Sentiment-GrC-Article.git
